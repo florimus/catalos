@@ -1,0 +1,11 @@
+server:
+  port: 8071
+  error:
+    include-stacktrace: never
+
+spring:
+  application:
+    name: catalos
+  data:
+    mongodb:
+      uri: mongodb+srv://catalos_read_write_user:Yht4gVfjC9Jdr5er@flourimus-b2c-core.rwrgd.mongodb.net/catalos_backend_dev
