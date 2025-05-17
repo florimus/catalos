@@ -5,5 +5,5 @@ import com.commerce.catalos.models.users.RegisterUserResponse;
 
 public interface UserService {
 
-    public RegisterUserResponse registerUser(final RegisterUserRequest registerUserRequest);
+	public RegisterUserResponse registerUser(final RegisterUserRequest registerUserRequest);
 }

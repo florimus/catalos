@@ -1,6 +1,8 @@
 package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.enums.DefaultRoles;
+import com.commerce.catalos.core.enums.GrandType;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.utils.PasswordUtil;
 import com.commerce.catalos.helpers.UserHelper;
@@ -33,8 +35,12 @@ public class UserServiceImpl implements UserService {
 
         User user = UserHelper.toUserFromRegisterUserRequest(registerUserRequest);
         user.setPassword(PasswordUtil.hash(user.getPassword()));
+        user.setGrandType(GrandType.password);
+        user.setRoleId(DefaultRoles.Customer.name());
+        user.setCreatedBy(user.getEmail());
+        user.setUpdatedBy(user.getEmail());
 
-        user = userRepository.save(User.builder().email(registerUserRequest.getEmail()).build());
+        user = userRepository.save(user);
         Logger.info("47cb6454-1f5d-422e-b38b-82873fc2e0e7", "User registration completed with email: {}",
                 registerUserRequest.getEmail());
 

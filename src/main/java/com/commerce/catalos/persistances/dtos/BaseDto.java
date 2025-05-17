@@ -1,6 +1,5 @@
 package com.commerce.catalos.persistances.dtos;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
@@ -8,15 +7,15 @@ import java.util.Date;
 @Data
 public class BaseDto {
 
-    private boolean active;
+    private boolean active = true;
 
-    private boolean enabled;
+    private boolean enabled = true;
 
     private String createdBy;
 
     private String updatedBy;
 
-    private Date createdAt;
+    private Date createdAt = new Date();
 
-    private Date updatedAt;
+    private Date updatedAt = new Date();
 }
