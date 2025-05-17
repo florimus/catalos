@@ -1,5 +1,6 @@
 package com.commerce.catalos.controllers;
 
+import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     @PostMapping()
-    public RegisterUserResponse registerUser(@RequestBody RegisterUserRequest registerUserRequest){
-        return RegisterUserResponse.builder().firstName("custom user").build();
+    public ResponseEntity<RegisterUserResponse> registerUser(@RequestBody RegisterUserRequest registerUserRequest){
+        return new ResponseEntity<RegisterUserResponse>(RegisterUserResponse.builder().firstName("custom user").build());
     }
 }

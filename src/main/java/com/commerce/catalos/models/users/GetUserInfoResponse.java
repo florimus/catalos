@@ -2,17 +2,17 @@ package com.commerce.catalos.models.users;
 
 import com.commerce.catalos.core.enums.GrandType;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterUserResponse {
+public class GetUserInfoResponse {
 
     private String id;
+
+    private String userGroupId;
 
     private String firstName;
 
@@ -25,4 +25,6 @@ public class RegisterUserResponse {
     private String roleId;
 
     private boolean verified;
+
+    private boolean active;
 }
