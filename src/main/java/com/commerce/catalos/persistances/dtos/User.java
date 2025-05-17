@@ -1,14 +1,14 @@
 package com.commerce.catalos.persistances.dtos;
 
 import com.commerce.catalos.core.enums.GrandType;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Document("cat_users")
 public class User extends BaseDto {

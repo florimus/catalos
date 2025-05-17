@@ -19,21 +19,17 @@ public class ResponseEntity<T> {
 
     private String message;
 
-    private List<String> traces;
-
     //  For success responses
     public ResponseEntity(T data){
         this.data = data;
         this.success = true;
         this.message = null;
-        this.traces = new ArrayList<>();
     }
 
     //  For error responses
-    public ResponseEntity(String message, List<String> traces){
+    public ResponseEntity(String message){
         this.data = null;
         this.success = false;
         this.message = message;
-        this.traces = traces;
     }
 }
