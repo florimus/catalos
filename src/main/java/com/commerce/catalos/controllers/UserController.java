@@ -1,7 +1,7 @@
 package com.commerce.catalos.controllers;
 
-import com.commerce.catalos.models.user.RegisterUserRequest;
-import com.commerce.catalos.models.user.RegisterUserResponse;
+import com.commerce.catalos.models.users.RegisterUserRequest;
+import com.commerce.catalos.models.users.RegisterUserResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,0 +1,38 @@
+package com.commerce.catalos.persistances.dtos;
+
+import com.commerce.catalos.core.enums.AddressType;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Data
+@Builder
+@Document("cat_address")
+@EqualsAndHashCode(callSuper = true)
+public class Address extends BaseDto {
+
+    @Id
+    private String id;
+
+    private String sourceId;
+
+    private AddressType addressType;
+
+    private String phone;
+
+    private String addressLine1;
+
+    private String addressLine2;
+
+    private String country;
+
+    private String state;
+
+    private String city;
+
+    private String area;
+
+    private Integer pinCode;
+}

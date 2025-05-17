@@ -1,4 +1,4 @@
-package com.commerce.catalos.models.user;
+package com.commerce.catalos.models.users;
 
 import lombok.Builder;
 import lombok.Data;
@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class RegisterUserRequest {
+
     private String firstName;
 
     private String lastName;

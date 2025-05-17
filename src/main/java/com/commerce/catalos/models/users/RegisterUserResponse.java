@@ -1,4 +1,4 @@
-package com.commerce.catalos.models.user;
+package com.commerce.catalos.models.users;
 
 import com.commerce.catalos.core.enums.GrandType;
 import lombok.AllArgsConstructor;
