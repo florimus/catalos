@@ -1,12 +1,10 @@
 package com.commerce.catalos.models.users;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder
 public class UserTokenResponse {
 
     private String accessToken;

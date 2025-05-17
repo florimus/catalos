@@ -9,3 +9,7 @@ spring:
   data:
     mongodb:
       uri: mongodb+srv://catalos_read_write_user:Yht4gVfjC9Jdr5er@flourimus-b2c-core.rwrgd.mongodb.net/catalos_backend_dev
+
+jwt:
+  secret: my-very-secure-secret-must-be-at-least-32-chars
+  expirationMs: 86400000

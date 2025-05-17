@@ -2,12 +2,10 @@ package com.commerce.catalos.models.users;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 
 @Data
-@Builder
 public class RegisterUserRequest {
 
     @NotBlank(message = "firstName is mandatory")
