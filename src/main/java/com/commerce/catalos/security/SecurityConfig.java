@@ -18,6 +18,18 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /**
+     * The Spring Security configuration for the application. This method
+     * customizes the HTTP security configuration to disable CSRF and to only
+     * allow OPTIONS requests to any endpoint and POST requests to the "/users"
+     * and "/users/login" endpoints. All other requests must be authenticated.
+     * The session creation policy is set to STATELESS, which means that no
+     * session will be created for any request.
+     * 
+     * @param http the HTTP security configuration
+     * @return the customized HTTP security configuration
+     * @throws Exception if any error occurs during the configuration
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

@@ -24,6 +24,15 @@ public class JwtUtil {
 
     private static final Key KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
+    /**
+     * Generates a JWT token for the given user.
+     * 
+     * @param userId         the id of the user
+     * @param userEmail      the email of the user
+     * @param isRefreshToken whether the token is a refresh token
+     * @param isGuest        whether the user is a guest
+     * @return a JWT token
+     */
     private static String generateToken(String userId, String userEmail, boolean isRefreshToken, boolean isGuest) {
         return Jwts.builder()
                 .setSubject(userId)
@@ -37,6 +46,14 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     * Generates a UserTokenResponse for the given user.
+     * 
+     * @param userId    the id of the user
+     * @param userEmail the email of the user
+     * @param IsGuest   whether the user is a guest
+     * @return a JWT token response
+     */
     public static UserTokenResponse generateTokens(String userId, String userEmail, boolean IsGuest) {
         Logger.info("ffe5eb2d-9ad5-4c49-85d4-876ed2619543", "Generating tokens for user: {}", userEmail);
         return UserTokenResponse.builder()
@@ -44,6 +61,14 @@ public class JwtUtil {
                 .refreshToken(generateToken(userId, userEmail, true, IsGuest))
                 .build();
     }
+
+    /**
+     * Extracts the claims from a JWT token.
+     *
+     * @param token the JWT token from which claims are to be extracted
+     * @return a TokenClaims object containing the claims extracted from the token,
+     *         or null if the token is invalid
+     */
 
     public static TokenClaims getTokenClaims(String token) {
         if (JwtUtil.isTokenValid(token)) {
@@ -62,6 +87,12 @@ public class JwtUtil {
         return null;
     }
 
+    /**
+     * Verifies whether the provided token is valid.
+     *
+     * @param token the token to be verified
+     * @return true if the token is valid, false otherwise
+     */
     public static boolean isTokenValid(String token) {
         try {
             Jwts.parserBuilder()

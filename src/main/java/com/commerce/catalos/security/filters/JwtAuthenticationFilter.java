@@ -32,6 +32,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserService userService;
 
+    /**
+     * Verifies the JWT token in the Authorization header and authenticates the
+     * user. If the token is invalid, throws an UnAuthorizedException.
+     * 
+     * @param request     the request object
+     * @param response    the response object
+     * @param filterChain the filter chain
+     * @throws ServletException if thrown by the filter chain
+     * @throws IOException      if thrown by the filter chain
+     */
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
             final FilterChain filterChain)

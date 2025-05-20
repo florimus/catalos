@@ -29,6 +29,12 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * Creates a new user. The user is not verified at the moment.
+     * 
+     * @param registerUserRequest the details of the user to be created
+     * @return a response containing the newly created user
+     */
     @PostMapping()
     public ResponseEntity<RegisterUserResponse> registerUser(
             @RequestBody final @Valid RegisterUserRequest registerUserRequest) {
@@ -37,6 +43,13 @@ public class UserController {
         return new ResponseEntity<RegisterUserResponse>(userService.registerUser(registerUserRequest));
     }
 
+    /**
+     * Authenticates a user using the provided email and password and returns a
+     * response containing access and refresh tokens.
+     * 
+     * @param loginUserRequest the details of the user to be authenticated
+     * @return a response containing the access and refresh tokens
+     */
     @PostMapping("/login")
     public ResponseEntity<UserTokenResponse> loginUser(
             @RequestBody final @Valid LoginUserRequest loginUserRequest) {
@@ -45,6 +58,13 @@ public class UserController {
         return new ResponseEntity<UserTokenResponse>(userService.loginUser(loginUserRequest));
     }
 
+    /**
+     * Refreshes the user token.
+     * 
+     * @param refreshTokenRequest the refresh token to be used for generating new
+     *                            access and refresh tokens
+     * @return a response containing the new access and refresh tokens
+     */
     @PutMapping("/refresh")
     public ResponseEntity<UserTokenResponse> refreshUserToken(
             @RequestBody final @Valid RefreshTokenRequest refreshTokenRequest) {
@@ -53,6 +73,13 @@ public class UserController {
                 userService.refreshUserToken(refreshTokenRequest.getRefreshToken()));
     }
 
+    /**
+     * Updates the user information. This endpoint is secured with the role
+     * {@code USR:NN}.
+     * 
+     * @param updateUserInfoRequest the details of the user to be updated
+     * @return a response containing the updated user
+     */
     @PreAuthorize("hasRole('USR:NN')")
     @PutMapping()
     public ResponseEntity<UpdateUserInfoResponse> updateUserInfo(

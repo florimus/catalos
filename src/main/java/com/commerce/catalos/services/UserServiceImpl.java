@@ -31,21 +31,48 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
     private final AuthContext authContext;
 
+    /**
+     * Check if user email exists in the database
+     * 
+     * @param email Email to be checked
+     * @return true if email exists, false otherwise
+     */
     private boolean isEmailExits(final String email) {
         return userRepository.existsByEmail(email);
     }
 
+    /**
+     * Retrieves a user by its email
+     * 
+     * @param email Email of the user to be retrieved
+     * @return A user if found, null otherwise
+     */
     private User getUserByEmail(final String email) {
         return userRepository.findByEmail(email).orElse(null);
     }
 
+    /**
+     * Retrieves user information based on the provided email.
+     * 
+     * @param email Email of the user whose information is to be retrieved.
+     * @return A GetUserInfoResponse containing the user's information, or null if
+     *         the user is not found.
+     */
     @Override
     public GetUserInfoResponse getUserInfoByEmail(final String email) {
         return UserHelper.toGetUserInfoResponseFromUser(this.getUserByEmail(email));
     }
 
+    /**
+     * Creates a new user in the system.
+     * 
+     * @param registerUserRequest contains the user information to be registered.
+     * @return a response containing the newly created user
+     * @throws ConflictException if the email already exists in the system.
+     */
     @Override
     public RegisterUserResponse registerUser(final RegisterUserRequest registerUserRequest) {
         Logger.info("942e37c4-7c4f-4592-8c10-44456f8983c3", "User registration started");
@@ -70,6 +97,13 @@ public class UserServiceImpl implements UserService {
         return UserHelper.toRegisterUserResponseFromUser(user);
     }
 
+    /**
+     * Authenticates a user using the provided email and password and returns a
+     * response containing access and refresh tokens.
+     * 
+     * @param loginUserRequest the details of the user to be authenticated
+     * @return a response containing the access and refresh tokens
+     */
     @Override
     public UserTokenResponse loginUser(final LoginUserRequest loginUserRequest) {
         User user = this.getUserByEmail(loginUserRequest.getEmail());
@@ -88,6 +122,16 @@ public class UserServiceImpl implements UserService {
         return JwtUtil.generateTokens(user.getId(), user.getEmail(), false);
     }
 
+    /**
+     * Refreshes the user token using the provided refresh token.
+     * 
+     * @param refreshToken the refresh token to be used for generating new access
+     *                     and refresh tokens
+     * @return a UserTokenResponse containing the new access and refresh tokens
+     * @throws ConflictException if the refresh token is invalid or if the
+     *                           associated user account does not exist or is
+     *                           inactive
+     */
     @Override
     public UserTokenResponse refreshUserToken(final String refreshToken) {
         TokenClaims claims = JwtUtil.getTokenClaims(refreshToken);
@@ -109,6 +153,13 @@ public class UserServiceImpl implements UserService {
         return JwtUtil.generateTokens(user.getId(), user.getEmail(), false);
     }
 
+    /**
+     * Updates the information of the currently authenticated user.
+     * 
+     * @param updateUserInfoRequest the request containing the new user details
+     * @return an UpdateUserInfoResponse containing the updated user information
+     * @throws NotFoundException if the current user is not found
+     */
     @Override
     public UpdateUserInfoResponse updateUserInfo(final UpdateUserInfoRequest updateUserInfoRequest) {
         GetUserInfoResponse userInfo = authContext.getCurrentUser();
