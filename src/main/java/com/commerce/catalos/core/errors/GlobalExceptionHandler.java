@@ -15,15 +15,26 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorResponseEntity> handleConflictException(ConflictException ex) {
-        return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(List.of(ex.getMessage())), HttpStatus.CONFLICT);
+        return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(List.of(ex.getMessage())),
+                HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UnAuthorizedException.class)
+    public ResponseEntity<ErrorResponseEntity> handleUnAuthorizedException(ConflictException ex) {
+        return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(List.of(ex.getMessage())),
+                HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponseEntity> handleNotFoundException(ConflictException ex) {
+        return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(List.of(ex.getMessage())),
+                HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseEntity> handleValidationException(MethodArgumentNotValidException ex) {
         List<String> errors = new ArrayList<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.add(error.getDefaultMessage())
-        );
+        ex.getBindingResult().getFieldErrors().forEach(error -> errors.add(error.getDefaultMessage()));
         return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(errors), HttpStatus.BAD_REQUEST);
     }
 }

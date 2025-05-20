@@ -4,17 +4,26 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.enums.DefaultRoles;
 import com.commerce.catalos.core.enums.GrandType;
 import com.commerce.catalos.core.errors.ConflictException;
+import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.core.utils.JwtUtil;
 import com.commerce.catalos.core.utils.PasswordUtil;
 import com.commerce.catalos.helpers.UserHelper;
+import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.models.users.LoginUserRequest;
 import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
 import com.commerce.catalos.models.users.TokenClaims;
+import com.commerce.catalos.models.users.UpdateUserInfoRequest;
+import com.commerce.catalos.models.users.UpdateUserInfoResponse;
 import com.commerce.catalos.models.users.UserTokenResponse;
 import com.commerce.catalos.persistances.dtos.User;
 import com.commerce.catalos.persistances.repositories.UserRepository;
+import com.commerce.catalos.security.AuthContext;
+
 import lombok.RequiredArgsConstructor;
+
+import java.util.Date;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,6 +31,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final AuthContext authContext;
 
     private boolean isEmailExits(final String email) {
         return userRepository.existsByEmail(email);
@@ -29,6 +39,11 @@ public class UserServiceImpl implements UserService {
 
     private User getUserByEmail(final String email) {
         return userRepository.findByEmail(email).orElse(null);
+    }
+
+    @Override
+    public GetUserInfoResponse getUserInfoByEmail(final String email) {
+        return UserHelper.toGetUserInfoResponseFromUser(this.getUserByEmail(email));
     }
 
     @Override
@@ -92,5 +107,23 @@ public class UserServiceImpl implements UserService {
         }
         Logger.info("3fbbae2f-6cc1-46c5-9665-fbb3ad948ffb", "Account found with email: {}", user.getEmail());
         return JwtUtil.generateTokens(user.getId(), user.getEmail(), false);
+    }
+
+    @Override
+    public UpdateUserInfoResponse updateUserInfo(final UpdateUserInfoRequest updateUserInfoRequest) {
+        GetUserInfoResponse userInfo = authContext.getCurrentUser();
+        if (userInfo == null) {
+            Logger.error("992d11f4-8362-4b4f-ba91-fd19c825dc61", "User not found");
+            throw new NotFoundException("User not found");
+        }
+        User user = UserHelper.toUserFromGetUserInfoResponse(userInfo);
+        if (updateUserInfoRequest.getFirstName() != null && !updateUserInfoRequest.getFirstName().trim().isEmpty()) {
+            user.setFirstName(updateUserInfoRequest.getFirstName());
+        }
+        user.setLastName(updateUserInfoRequest.getLastName());
+        user.setUserGroupId(updateUserInfoRequest.getUserGroupId());
+        user.setUpdatedAt(new Date());
+        return UserHelper.toUpdateUserInfoResponseFromUser(
+                userRepository.save(user));
     }
 }

@@ -6,10 +6,15 @@ import com.commerce.catalos.models.users.LoginUserRequest;
 import com.commerce.catalos.models.users.RefreshTokenRequest;
 import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
+import com.commerce.catalos.models.users.UpdateUserInfoRequest;
+import com.commerce.catalos.models.users.UpdateUserInfoResponse;
 import com.commerce.catalos.models.users.UserTokenResponse;
 import com.commerce.catalos.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
+@EnableMethodSecurity
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
@@ -45,5 +51,14 @@ public class UserController {
         Logger.info("d5884c7c-9d28-46ee-9dd4-a6c946a02779", "Received request for refresh user token");
         return new ResponseEntity<UserTokenResponse>(
                 userService.refreshUserToken(refreshTokenRequest.getRefreshToken()));
+    }
+
+    @PreAuthorize("hasRole('USR:NN')")
+    @PutMapping()
+    public ResponseEntity<UpdateUserInfoResponse> updateUserInfo(
+            @RequestBody final @Valid UpdateUserInfoRequest updateUserInfoRequest) {
+        Logger.info("f3995061-d51b-48f5-80be-2d896e8e6394", "Received request for update user info");
+        return new ResponseEntity<UpdateUserInfoResponse>(
+                userService.updateUserInfo(updateUserInfoRequest));
     }
 }
