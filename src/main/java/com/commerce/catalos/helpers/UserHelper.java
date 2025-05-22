@@ -5,6 +5,10 @@ import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
 import com.commerce.catalos.persistances.dtos.User;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.BeanUtils;
 
 public class UserHelper {
@@ -88,5 +92,18 @@ public class UserHelper {
         UpdateUserInfoResponse response = new UpdateUserInfoResponse();
         BeanUtils.copyProperties(user, response);
         return response;
+    }
+
+    /**
+     * Converts a list of User objects to a list of GetUserInfoResponse objects.
+     * 
+     * @param users the list of User objects to be converted
+     * @return a list of GetUserInfoResponse objects with the properties copied from
+     *         the given users
+     */
+    public static List<GetUserInfoResponse> toGetUserInfoResponseFromUsers(List<User> users) {
+        return users.stream()
+                .map(user -> UserHelper.toGetUserInfoResponseFromUser(user))
+                .collect(Collectors.toList());
     }
 }

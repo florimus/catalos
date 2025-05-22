@@ -1,7 +1,10 @@
 package com.commerce.catalos.controllers;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.configurations.ResponseEntity;
+import com.commerce.catalos.core.constants.SortConstants;
+import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.models.users.LoginUserRequest;
 import com.commerce.catalos.models.users.RefreshTokenRequest;
 import com.commerce.catalos.models.users.RegisterUserRequest;
@@ -13,11 +16,16 @@ import com.commerce.catalos.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 
@@ -87,5 +95,21 @@ public class UserController {
         Logger.info("f3995061-d51b-48f5-80be-2d896e8e6394", "Received request for update user info");
         return new ResponseEntity<UpdateUserInfoResponse>(
                 userService.updateUserInfo(updateUserInfoRequest));
+    }
+
+    /**
+     * Lists all users in the system. This endpoint is secured with the role
+     * {@code USR:LS}.
+     * 
+     * @param pageable the pagination details
+     * @return a response containing the list of users
+     */
+    @PreAuthorize("hasRole('USR:LS')")
+    @GetMapping("/search")
+    public ResponseEntity<Page<GetUserInfoResponse>> listUsers(
+            @RequestParam(required = false, defaultValue = "") String query,
+            @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Direction.DESC) Pageable pageable) {
+        Logger.info("01d3047d-314b-44ec-b7e0-3bbd88dc676e", "Received request for list users");
+        return new ResponseEntity<Page<GetUserInfoResponse>>(userService.listUsers(query, pageable));
     }
 }

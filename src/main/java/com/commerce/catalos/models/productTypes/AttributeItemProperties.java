@@ -1,6 +1,5 @@
 package com.commerce.catalos.models.productTypes;
 
-import com.commerce.catalos.core.enums.AttributeTarget;
 import com.commerce.catalos.core.enums.AttributeType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

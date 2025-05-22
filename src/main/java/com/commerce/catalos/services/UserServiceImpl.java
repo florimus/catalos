@@ -1,6 +1,7 @@
 package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.enums.DefaultRoles;
 import com.commerce.catalos.core.enums.GrandType;
 import com.commerce.catalos.core.errors.ConflictException;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -176,5 +178,20 @@ public class UserServiceImpl implements UserService {
         user.setUpdatedAt(new Date());
         return UserHelper.toUpdateUserInfoResponseFromUser(
                 userRepository.save(user));
+    }
+
+    /**
+     * Retrieves a page of users.
+     * 
+     * @param pageable the pagination details
+     * @return a page of users
+     */
+    @Override
+    public Page<GetUserInfoResponse> listUsers(String query, Pageable pageable) {
+        Logger.info("ad6cc059-42b2-432d-aa92-d8ae96e4b801", "Finding users with query: {} and pageable: {}", query,
+                pageable);
+        Page<User> users = userRepository.searchUsers(query, pageable);
+        return new Page<GetUserInfoResponse>(UserHelper.toGetUserInfoResponseFromUsers(users.getHits()),
+                users.getTotalHitsCount(), users.getCurrentPage(), users.getPageSize());
     }
 }

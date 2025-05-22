@@ -4,20 +4,21 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.enums.DefaultRoles;
 import com.commerce.catalos.core.errors.UnAuthorizedException;
 import com.commerce.catalos.core.utils.JwtUtil;
+import com.commerce.catalos.core.utils.StringUtils;
 import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.models.users.TokenClaims;
 import com.commerce.catalos.security.utils.FilterUtils;
 import com.commerce.catalos.security.utils.HeaderUtils;
+import com.commerce.catalos.services.RoleService;
 import com.commerce.catalos.services.UserService;
 
 import jakarta.servlet.FilterChain;
@@ -31,6 +32,13 @@ import lombok.RequiredArgsConstructor;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserService userService;
+
+    private final RoleService roleService;
+
+    private static final List<String> POST_SKIP_PATHS = List.of(
+            "/users",
+            "/users/login");
+    private static final List<String> PUT_SKIP_PATHS = List.of("/users/refresh");
 
     /**
      * Verifies the JWT token in the Authorization header and authenticates the
@@ -46,6 +54,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
             final FilterChain filterChain)
             throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+
+        if (request.getMethod().equals("POST") && POST_SKIP_PATHS.contains(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (request.getMethod().equals("PUT") && PUT_SKIP_PATHS.contains(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = HeaderUtils.getUserToken(request);
         TokenClaims tokenClaims = JwtUtil.getTokenClaims(authHeader);
 
@@ -59,26 +80,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throw new UnAuthorizedException("Refresh token is not allowed");
         }
 
+        UsernamePasswordAuthenticationToken authentication;
+
         if (tokenClaims.isGuest()) {
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            String permissions = roleService.getRoleById(DefaultRoles.Customer.name());
+            authentication = new UsernamePasswordAuthenticationToken(
                     GetUserInfoResponse.builder()
                             .active(true)
                             .id(tokenClaims.getUserId())
                             .email(tokenClaims.getEmail())
                             .build(),
                     null,
-                    null);
+                    FilterUtils.populateAuthorities(StringUtils.populateArrayFromString(permissions)));
         } else {
             GetUserInfoResponse userInfo = userService.getUserInfoByEmail(tokenClaims.getEmail());
-
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            String permissions = roleService.getRoleById(userInfo.getRoleId());
+            authentication = new UsernamePasswordAuthenticationToken(
                     userInfo,
                     null,
-                    FilterUtils.populateAuthorities(List.of("USR:NN")));
+                    FilterUtils.populateAuthorities(StringUtils.populateArrayFromString(permissions)));
 
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
     }
 

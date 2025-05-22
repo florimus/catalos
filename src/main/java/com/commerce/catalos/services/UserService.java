@@ -1,5 +1,8 @@
 package com.commerce.catalos.services;
 
+import org.springframework.data.domain.Pageable;
+
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.models.users.LoginUserRequest;
 import com.commerce.catalos.models.users.RegisterUserRequest;
@@ -19,4 +22,6 @@ public interface UserService {
 	public UserTokenResponse refreshUserToken(final String refreshToken);
 
 	public UpdateUserInfoResponse updateUserInfo(final UpdateUserInfoRequest updateUserInfoRequest);
+
+	public Page<GetUserInfoResponse> listUsers(String query, Pageable pageable);
 }

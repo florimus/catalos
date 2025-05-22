@@ -40,9 +40,15 @@ public class GlobalExceptionHandler {
      * @return a response with a 401 status and the error message
      */
     @ExceptionHandler(UnAuthorizedException.class)
-    public ResponseEntity<ErrorResponseEntity> handleUnAuthorizedException(ConflictException ex) {
+    public ResponseEntity<ErrorResponseEntity> handleUnAuthorizedException(UnAuthorizedException ex) {
         return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(List.of(ex.getMessage())),
                 HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponseEntity> handleBadRequestException(BadRequestException ex) {
+        return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(List.of(ex.getMessage())),
+                HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -56,9 +62,9 @@ public class GlobalExceptionHandler {
      * @return a response with a 404 status and the error message
      */
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorResponseEntity> handleNotFoundException(ConflictException ex) {
+    public ResponseEntity<ErrorResponseEntity> handleNotFoundException(NotFoundException ex) {
         return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(List.of(ex.getMessage())),
-                HttpStatus.UNAUTHORIZED);
+                HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -78,5 +84,11 @@ public class GlobalExceptionHandler {
         List<String> errors = new ArrayList<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> errors.add(error.getDefaultMessage()));
         return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(errors), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseEntity> handleUnknownException(Exception ex) {
+        List<String> errors = new ArrayList<>();
+        return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(errors), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
