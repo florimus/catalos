@@ -1,7 +1,13 @@
 package com.commerce.catalos.controllers;
 
+import com.commerce.catalos.core.configurations.Page;
+import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.models.productTypes.*;
+import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.services.ProductTypeService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,5 +53,13 @@ public class ProductTypeController {
         Logger.info("cfea675d-bd40-4eb3-bd22-11c9b3d76957", "Received request for updating product-type with id: {}",
                 updateProductTypeRequest.getId());
         return new ResponseEntity<UpdateProductTypeResponse>(productTypeService.updateProductType(updateProductTypeRequest));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProductTypeListResponse>> listProductTypes(
+            @RequestParam(required = false, defaultValue = "") String query,
+            @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable) {
+        Logger.info("28e780ac-bff8-4aae-8dcf-80a52561bd53", "Received request for list product-types");
+        return new ResponseEntity<Page<ProductTypeListResponse>>(productTypeService.listProductTypes(query, pageable));
     }
 }

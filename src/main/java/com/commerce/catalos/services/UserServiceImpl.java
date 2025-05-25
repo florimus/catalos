@@ -169,7 +169,7 @@ public class UserServiceImpl implements UserService {
             Logger.error("992d11f4-8362-4b4f-ba91-fd19c825dc61", "User not found");
             throw new NotFoundException("User not found");
         }
-        User user = UserHelper.toUserFromGetUserInfoResponse(userInfo);
+        User user = this.getUserByEmail(userInfo.getEmail());
         if (updateUserInfoRequest.getFirstName() != null && !updateUserInfoRequest.getFirstName().trim().isEmpty()) {
             user.setFirstName(updateUserInfoRequest.getFirstName());
         }
@@ -187,7 +187,7 @@ public class UserServiceImpl implements UserService {
      * @return a page of users
      */
     @Override
-    public Page<GetUserInfoResponse> listUsers(String query, Pageable pageable) {
+    public Page<GetUserInfoResponse> listUsers(final String query, final Pageable pageable) {
         Logger.info("ad6cc059-42b2-432d-aa92-d8ae96e4b801", "Finding users with query: {} and pageable: {}", query,
                 pageable);
         Page<User> users = userRepository.searchUsers(query, pageable);

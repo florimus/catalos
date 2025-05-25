@@ -1,6 +1,7 @@
 package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
@@ -9,6 +10,7 @@ import com.commerce.catalos.models.productTypes.*;
 import com.commerce.catalos.persistances.dtos.ProductType;
 import com.commerce.catalos.persistances.repositories.ProductTypeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -95,5 +97,17 @@ public class ProductTypeServiceImpl implements ProductTypeService {
                 .status(productType.isActive())
                 .message(productType.isActive() ? "Activated the product-type" : "Deactivated the product-type")
                 .build();
+    }
+
+    @Override
+    public Page<ProductTypeListResponse> listProductTypes(final String query, final Pageable pageable) {
+        Logger.info("uuid", "Finding product-types with query: {} and pageable: {}", query, pageable);
+        Page<ProductType> productTypes = productTypeRepository.searchProductTypes(query, pageable);
+        return new Page<ProductTypeListResponse>(
+                ProductTypeHelper.toProductTypeListResponseFromProductTypes(productTypes.getHits()),
+                productTypes.getTotalHitsCount(),
+                productTypes.getCurrentPage(),
+                productTypes.getPageSize()
+        );
     }
 }

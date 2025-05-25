@@ -35,6 +35,17 @@ public class ProductTypeHelper {
         return response;
     }
 
+    public static List<ProductTypeListResponse> toProductTypeListResponseFromProductTypes(final List<ProductType> productTypes) {
+        return productTypes.stream()
+                .map(productType -> ProductTypeListResponse.builder()
+                        .id(productType.getId())
+                        .slug(productType.getSlug())
+                        .active(productType.isActive())
+                        .name(productType.getName())
+                        .build())
+                .toList();
+    }
+
 
     public static void validatePlaneAttributes(final AttributeItemProperties attributeItemProperties) {
         attributeItemProperties.setOptions(null);
