@@ -17,4 +17,6 @@ public interface ProductTypeService {
     public ProductTypeStatusUpdateResponse updateProductTypeStatus(final String id, final boolean status);
 
     public Page<ProductTypeListResponse> listProductTypes(final String query, final Pageable pageable);
+
+    public ProductTypeDeleteResponse deleteProductTypes(final String id);
 }

@@ -7,17 +7,24 @@ import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.ProductTypeHelper;
 import com.commerce.catalos.models.productTypes.*;
+import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.persistances.dtos.ProductType;
 import com.commerce.catalos.persistances.repositories.ProductTypeRepository;
+import com.commerce.catalos.security.AuthContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ProductTypeServiceImpl implements ProductTypeService {
 
     private final ProductTypeRepository productTypeRepository;
+
+    private final AuthContext authContext;
 
     private boolean isSlugExits(final String slug) {
         return productTypeRepository.existsBySlug(slug);
@@ -35,6 +42,11 @@ public class ProductTypeServiceImpl implements ProductTypeService {
         }
 
         ProductType productType = ProductTypeHelper.toProductTypeFromCreateProductTypeRequest(createProductTypeRequest);
+        GetUserInfoResponse userInfo = authContext.getCurrentUser();
+        productType.setUpdatedAt(new Date());
+        productType.setCreatedAt(new Date());
+        productType.setCreatedBy(userInfo.getEmail());
+        productType.setUpdatedBy(userInfo.getEmail());
         Logger.info("a6c14689-7693-4027-ac54-babc9eb68059", "Creating product type {}", createProductTypeRequest.getName());
         return ProductTypeHelper.toCreateProductTypeResponseFromProductType(productTypeRepository.save(productType));
     }
@@ -58,6 +70,10 @@ public class ProductTypeServiceImpl implements ProductTypeService {
         }
         productType.setProductAttributes(updateProductTypeRequest.getProductAttributes());
         productType.setVariantAttributes(updateProductTypeRequest.getVariantAttributes());
+
+        GetUserInfoResponse userInfo = authContext.getCurrentUser();
+        productType.setUpdatedAt(new Date());
+        productType.setUpdatedBy(userInfo.getEmail());
 
         Logger.info("06cb9db2-f0a8-4a3d-a831-5a0e8e6095b0", "Saving Product type");
         return ProductTypeHelper.toUpdateProductTypeResponseFromProductType(productTypeRepository.save(productType));
@@ -89,7 +105,10 @@ public class ProductTypeServiceImpl implements ProductTypeService {
             Logger.error("788276e7-da47-44ff-9b59-e38940289a69", "Product type not found: {}", id);
             throw new NotFoundException("Product-type not found");
         }
+        GetUserInfoResponse userInfo = authContext.getCurrentUser();
         productType.setActive(status);
+        productType.setUpdatedAt(new Date());
+        productType.setUpdatedBy(userInfo.getEmail());
         Logger.info(
                 "318e4c67-4c4c-4a08-bc33-b02b61ce7a6c", status ? "Activating the product-type {}" : "Deactivating the product-type {}", id);
         productType = productTypeRepository.save(productType);
@@ -109,5 +128,32 @@ public class ProductTypeServiceImpl implements ProductTypeService {
                 productTypes.getCurrentPage(),
                 productTypes.getPageSize()
         );
+    }
+
+    @Override
+    public ProductTypeDeleteResponse deleteProductTypes(String id) {
+        if (id.isBlank()) {
+            Logger.error("23057ef3-11a8-4463-ad0c-605870113abe", "Product-type id cannot be blank");
+            throw new BadRequestException("Invalid product-type id");
+        }
+        ProductType productType = this.findProductTypeById(id);
+        if (productType == null || !productType.getId().equals(id)) {
+            Logger.error("37e47d1c-31a7-4c38-8345-a5903dd14b26", "Product type not found: {}", id);
+            throw new NotFoundException("Product-type not found");
+        }
+        GetUserInfoResponse userInfo = authContext.getCurrentUser();
+        productType.setActive(false);
+        productType.setEnabled(false);
+        productType.setUpdatedAt(new Date());
+        productType.setUpdatedBy(userInfo.getEmail());
+
+        // TODO: Need to delete products in async.
+
+        Logger.info("ac117033-bed7-4be0-8818-3dc837c03f3e", "Deleting product-type: {}", productType.getName());
+        productTypeRepository.save(productType);
+        return ProductTypeDeleteResponse.builder()
+                .ids(List.of(id))
+                .message("Product-type deleted successfully")
+                .build();
     }
 }

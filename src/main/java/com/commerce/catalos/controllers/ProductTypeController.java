@@ -63,5 +63,9 @@ public class ProductTypeController {
         return new ResponseEntity<Page<ProductTypeListResponse>>(productTypeService.listProductTypes(query, pageable));
     }
 
-//    public ResponseEntity<>
+    @DeleteMapping("/id/{id}")
+    public ResponseEntity<ProductTypeDeleteResponse> deleteProductTypes(@PathVariable final String id) {
+        Logger.info("4aabbc43-ef1b-4377-abc7-8ca9dd94eb1b", "Received request for deleting product-type: {}", id);
+        return new ResponseEntity<ProductTypeDeleteResponse>(productTypeService.deleteProductTypes(id));
+    }
 }
