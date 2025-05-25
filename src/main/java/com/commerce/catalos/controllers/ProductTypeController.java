@@ -62,4 +62,6 @@ public class ProductTypeController {
         Logger.info("28e780ac-bff8-4aae-8dcf-80a52561bd53", "Received request for list product-types");
         return new ResponseEntity<Page<ProductTypeListResponse>>(productTypeService.listProductTypes(query, pageable));
     }
+
+//    public ResponseEntity<>
 }

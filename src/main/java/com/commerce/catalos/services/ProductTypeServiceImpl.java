@@ -101,7 +101,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
 
     @Override
     public Page<ProductTypeListResponse> listProductTypes(final String query, final Pageable pageable) {
-        Logger.info("uuid", "Finding product-types with query: {} and pageable: {}", query, pageable);
+        Logger.info("a7ff367d-1e60-4ab5-83e1-816a8a47c76b", "Finding product-types with query: {} and pageable: {}", query, pageable);
         Page<ProductType> productTypes = productTypeRepository.searchProductTypes(query, pageable);
         return new Page<ProductTypeListResponse>(
                 ProductTypeHelper.toProductTypeListResponseFromProductTypes(productTypes.getHits()),
