@@ -1,12 +1,11 @@
 package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
+import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.ProductTypeHelper;
-import com.commerce.catalos.models.productTypes.CreateProductTypeRequest;
-import com.commerce.catalos.models.productTypes.CreateProductTypeResponse;
-import com.commerce.catalos.models.productTypes.UpdateProductTypeRequest;
-import com.commerce.catalos.models.productTypes.UpdateProductTypeResponse;
+import com.commerce.catalos.models.productTypes.*;
 import com.commerce.catalos.persistances.dtos.ProductType;
 import com.commerce.catalos.persistances.repositories.ProductTypeRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,10 @@ public class ProductTypeServiceImpl implements ProductTypeService {
 
     private boolean isSlugExits(final String slug) {
         return productTypeRepository.existsBySlug(slug);
+    }
+
+    private ProductType findProductTypeById(final String productId) {
+        return productTypeRepository.findProductTypeByIdAndEnabled(productId, true);
     }
 
     @Override
@@ -42,7 +45,12 @@ public class ProductTypeServiceImpl implements ProductTypeService {
         Logger.info("5ccc9722-6f72-476f-9f1b-78895a422e63", "Start validating variant attributes");
         ProductTypeHelper.validateAttributeItemPropertiesMap(updateProductTypeRequest.getVariantAttributes());
 
-        ProductType productType = productTypeRepository.findProductTypeByIdAndEnabled(updateProductTypeRequest.getId(), true);
+        ProductType productType = this.findProductTypeById(updateProductTypeRequest.getId());
+        if (productType == null || !productType.getId().equals(updateProductTypeRequest.getId())) {
+            Logger.error("a45fa66c-8fe5-4719-a785-e6d05c12f4ca", "Product type not found: {}", updateProductTypeRequest.getId());
+            throw new NotFoundException("Product-type not found");
+        }
+
         if (!updateProductTypeRequest.getName().isBlank()) {
             productType.setName(updateProductTypeRequest.getName());
         }
@@ -51,5 +59,19 @@ public class ProductTypeServiceImpl implements ProductTypeService {
 
         Logger.info("06cb9db2-f0a8-4a3d-a831-5a0e8e6095b0", "Saving Product type");
         return ProductTypeHelper.toUpdateProductTypeResponseFromProductType(productTypeRepository.save(productType));
+    }
+
+    @Override
+    public ProductTypeResponse getProductTypeById(final String id) {
+        if (id.isBlank()) {
+            Logger.error("6ae4d3ac-b32a-4c22-9579-4d3a17f12ea6", "Product-type id cannot be blank");
+            throw new BadRequestException("Invalid product-type id");
+        }
+        ProductType productType = this.findProductTypeById(id);
+        if (productType == null || !productType.getId().equals(id)) {
+            Logger.error("e01f88c6-53cf-47bf-a478-38a606670dcd", "Product type not found: {}", id);
+            throw new NotFoundException("Product-type not found");
+        }
+        return ProductTypeHelper.toProductTypeResponseFromProductType(productType);
     }
 }

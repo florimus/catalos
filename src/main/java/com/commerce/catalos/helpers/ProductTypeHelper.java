@@ -29,6 +29,12 @@ public class ProductTypeHelper {
         return response;
     }
 
+    public static ProductTypeResponse toProductTypeResponseFromProductType(final ProductType productType) {
+        ProductTypeResponse response = new ProductTypeResponse();
+        BeanUtils.copyProperties(productType, response);
+        return response;
+    }
+
 
     public static void validatePlaneAttributes(final AttributeItemProperties attributeItemProperties) {
         attributeItemProperties.setOptions(null);

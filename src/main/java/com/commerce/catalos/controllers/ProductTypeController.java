@@ -1,15 +1,12 @@
 package com.commerce.catalos.controllers;
 
-import com.commerce.catalos.models.productTypes.UpdateProductTypeRequest;
-import com.commerce.catalos.models.productTypes.UpdateProductTypeResponse;
+import com.commerce.catalos.models.productTypes.*;
 import com.commerce.catalos.services.ProductTypeService;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.ResponseEntity;
-import com.commerce.catalos.models.productTypes.CreateProductTypeRequest;
-import com.commerce.catalos.models.productTypes.CreateProductTypeResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +18,13 @@ import lombok.RequiredArgsConstructor;
 public class ProductTypeController {
 
     private final ProductTypeService productTypeService;
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<ProductTypeResponse> getProductTypeById(
+            @PathVariable final String id) {
+        Logger.info("4aef6bee-264e-4aff-a7f9-bc41be15550e", "Received request for get product-type with id: {}", id);
+        return new ResponseEntity<ProductTypeResponse>(productTypeService.getProductTypeById(id));
+    }
 
     @PostMapping()
     public ResponseEntity<CreateProductTypeResponse> createProductType(
