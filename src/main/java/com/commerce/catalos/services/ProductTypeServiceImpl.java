@@ -36,8 +36,20 @@ public class ProductTypeServiceImpl implements ProductTypeService {
 
     @Override
     public UpdateProductTypeResponse updateProductType(UpdateProductTypeRequest updateProductTypeRequest) {
+        Logger.info("658c9599-a80b-4f8c-adff-a63bf6a08d3c", "Start validating product attributes");
         ProductTypeHelper.validateAttributeItemPropertiesMap(updateProductTypeRequest.getProductAttributes());
-        System.out.println(updateProductTypeRequest);
-        return null;
+
+        Logger.info("5ccc9722-6f72-476f-9f1b-78895a422e63", "Start validating variant attributes");
+        ProductTypeHelper.validateAttributeItemPropertiesMap(updateProductTypeRequest.getVariantAttributes());
+
+        ProductType productType = productTypeRepository.findProductTypeByIdAndEnabled(updateProductTypeRequest.getId(), true);
+        if (!updateProductTypeRequest.getName().isBlank()) {
+            productType.setName(updateProductTypeRequest.getName());
+        }
+        productType.setProductAttributes(updateProductTypeRequest.getProductAttributes());
+        productType.setVariantAttributes(updateProductTypeRequest.getVariantAttributes());
+
+        Logger.info("06cb9db2-f0a8-4a3d-a831-5a0e8e6095b0", "Saving Product type");
+        return ProductTypeHelper.toUpdateProductTypeResponseFromProductType(productTypeRepository.save(productType));
     }
 }
