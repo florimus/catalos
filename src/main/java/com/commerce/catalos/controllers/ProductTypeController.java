@@ -34,6 +34,13 @@ public class ProductTypeController {
         return new ResponseEntity<CreateProductTypeResponse>(productTypeService.createProductType(createProductTypeRequest));
     }
 
+    @PutMapping("/id/{id}/status/{status}")
+    public ResponseEntity<ProductTypeStatusUpdateResponse> updateProductTypeStatus(
+            @PathVariable final String id, @PathVariable final boolean status) {
+        Logger.info("20feeee2-147c-4b56-8b79-ad4fc03e10b1", "Received request for update product-type status: {} with id: {}", status, id);
+        return new ResponseEntity<ProductTypeStatusUpdateResponse>(productTypeService.updateProductTypeStatus(id, status));
+    }
+
     @PutMapping()
     public ResponseEntity<UpdateProductTypeResponse> updateProductType(
             @RequestBody final @Valid UpdateProductTypeRequest updateProductTypeRequest) {

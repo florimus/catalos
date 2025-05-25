@@ -72,6 +72,28 @@ public class ProductTypeServiceImpl implements ProductTypeService {
             Logger.error("e01f88c6-53cf-47bf-a478-38a606670dcd", "Product type not found: {}", id);
             throw new NotFoundException("Product-type not found");
         }
+        Logger.info("7a8ecf2b-c389-4356-b492-90a6a2a6fb7e", "Updating product type by id: {}", id);
         return ProductTypeHelper.toProductTypeResponseFromProductType(productType);
+    }
+
+    @Override
+    public ProductTypeStatusUpdateResponse updateProductTypeStatus(final String id, final boolean status) {
+        if (id.isBlank()) {
+            Logger.error("90e2e167-3b60-48da-bff3-eb60b4223327", "Product-type id cannot be blank");
+            throw new BadRequestException("Invalid product-type id");
+        }
+        ProductType productType = this.findProductTypeById(id);
+        if (productType == null || !productType.getId().equals(id)) {
+            Logger.error("788276e7-da47-44ff-9b59-e38940289a69", "Product type not found: {}", id);
+            throw new NotFoundException("Product-type not found");
+        }
+        productType.setActive(status);
+        Logger.info(
+                "318e4c67-4c4c-4a08-bc33-b02b61ce7a6c", status ? "Activating the product-type {}" : "Deactivating the product-type {}", id);
+        productType = productTypeRepository.save(productType);
+        return ProductTypeStatusUpdateResponse.builder()
+                .status(productType.isActive())
+                .message(productType.isActive() ? "Activated the product-type" : "Deactivated the product-type")
+                .build();
     }
 }
