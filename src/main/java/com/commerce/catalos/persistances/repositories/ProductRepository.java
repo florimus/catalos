@@ -6,4 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public interface ProductRepository extends MongoRepository<Product, String> {
 
     boolean existsBySkuIdAndEnabled(final String skuId, final boolean enabled);
+
+    Product findProductByIdAndEnabled(final String id, final boolean enabled);
 }

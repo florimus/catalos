@@ -4,14 +4,13 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.models.products.CreateProductRequest;
 import com.commerce.catalos.models.products.CreateProductResponse;
+import com.commerce.catalos.models.products.ProductResponse;
 import com.commerce.catalos.services.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @EnableMethodSecurity
@@ -21,11 +20,20 @@ public class ProductController {
 
     private final ProductService productService;
 
+    @PreAuthorize("hasRole('PRD:NN')")
     @PostMapping()
     public ResponseEntity<CreateProductResponse> createProduct(
             @RequestBody final @Valid CreateProductRequest createProductRequest) {
         Logger.info("d9b50e9b-4b83-4f7f-9110-f26854960c14",
                 "Received request for creating product with name: {}", createProductRequest.getName());
         return new ResponseEntity<CreateProductResponse>(productService.createProduct(createProductRequest));
+    }
+
+
+    @PreAuthorize("hasRole('PRD:LS')")
+    @GetMapping("/id/{id}")
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable final String id) {
+        Logger.info("e31b69ab-750d-4077-b275-6f5e6a325127", "Received request for view product with id: {}", id);
+        return new ResponseEntity<ProductResponse>(productService.getProductById(id));
     }
 }
