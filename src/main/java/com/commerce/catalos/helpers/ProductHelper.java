@@ -3,6 +3,7 @@ package com.commerce.catalos.helpers;
 import com.commerce.catalos.models.products.CreateProductRequest;
 import com.commerce.catalos.models.products.CreateProductResponse;
 import com.commerce.catalos.models.products.ProductResponse;
+import com.commerce.catalos.models.products.UpdateProductResponse;
 import com.commerce.catalos.persistances.dtos.Product;
 import org.springframework.beans.BeanUtils;
 
@@ -22,6 +23,12 @@ public class ProductHelper {
 
     public static ProductResponse toProductResponseProduct(final Product product) {
         ProductResponse response = new ProductResponse();
+        BeanUtils.copyProperties(product, response);
+        return response;
+    }
+
+    public static UpdateProductResponse toUpdateProductResponseFromProduct(final Product product) {
+        UpdateProductResponse response = new UpdateProductResponse();
         BeanUtils.copyProperties(product, response);
         return response;
     }

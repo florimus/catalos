@@ -2,9 +2,7 @@ package com.commerce.catalos.controllers;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.ResponseEntity;
-import com.commerce.catalos.models.products.CreateProductRequest;
-import com.commerce.catalos.models.products.CreateProductResponse;
-import com.commerce.catalos.models.products.ProductResponse;
+import com.commerce.catalos.models.products.*;
 import com.commerce.catalos.services.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +33,13 @@ public class ProductController {
     public ResponseEntity<ProductResponse> getProductById(@PathVariable final String id) {
         Logger.info("e31b69ab-750d-4077-b275-6f5e6a325127", "Received request for view product with id: {}", id);
         return new ResponseEntity<ProductResponse>(productService.getProductById(id));
+    }
+
+    @PreAuthorize("hasRole('PRD:LS')")
+    @PutMapping("/id/{id}")
+    public ResponseEntity<UpdateProductResponse> updateProduct(
+            @PathVariable final String id, @RequestBody final UpdateProductRequest updateProductRequest) {
+        Logger.info("38ab6c57-9434-4dc3-a52d-4d762912734b", "Received request for update product with id: {}", id);
+        return new ResponseEntity<UpdateProductResponse>(productService.updateProduct(id, updateProductRequest));
     }
 }

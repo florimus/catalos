@@ -5,9 +5,7 @@ import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.ProductHelper;
-import com.commerce.catalos.models.products.CreateProductRequest;
-import com.commerce.catalos.models.products.CreateProductResponse;
-import com.commerce.catalos.models.products.ProductResponse;
+import com.commerce.catalos.models.products.*;
 import com.commerce.catalos.persistances.dtos.Product;
 import com.commerce.catalos.persistances.repositories.ProductRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -41,7 +39,7 @@ public class ProductServiceImpl implements ProductService {
             throw new ConflictException("Sku is already exits");
         }
         productTypeService.validateProductAttributeValues(createProductRequest.getProductTypeId(), createProductRequest.getAttributes());
-        Logger.info("4177f797-1ef2-4623-aa00-052e2f2366fa", "Product attribute validated successfully");
+        Logger.info("4177f797-1ef2-4623-aa00-052e2f2366fa", "Product attributes validated successfully");
 
         // TODO: Validate channel list
 
@@ -67,5 +65,34 @@ public class ProductServiceImpl implements ProductService {
         }
         Logger.info("442703ab-4410-4bfd-8d3c-a2f0975f193f", "Product {} found", product.getName());
         return ProductHelper.toProductResponseProduct(product);
+    }
+
+    @Override
+    public UpdateProductResponse updateProduct(String id, UpdateProductRequest updateProductRequest) {
+        if (id.isBlank()) {
+            Logger.error("699203ba-c2d3-4c01-b982-0384cad82c73", "Product id is mandatory");
+            throw new BadRequestException("Invalid product id");
+        }
+        Product product = this.findProductById(id);
+        if (product == null || product.getId().isBlank()){
+            Logger.error("050853e2-fccc-44af-9dcf-a3b1cfd48a9f", "Product not found with id: {}", id);
+            throw new NotFoundException("Product not found");
+        }
+        productTypeService.validateProductAttributeValues(product.getProductTypeId(), updateProductRequest.getAttributes());
+        Logger.info("2927b858-c0c2-42b7-a45d-a5c94891c5e0", "Product attributes validated successfully");
+        if (!updateProductRequest.getName().isBlank()) {
+            product.setName(updateProductRequest.getName());
+        }
+        product.setCategoryId(updateProductRequest.getCategoryId());
+        product.setBrandId(updateProductRequest.getBrandId());
+        product.setAttributes(updateProductRequest.getAttributes());
+
+        // TODO: Validate channel list
+
+        product.setPublishedChannels(updateProductRequest.getPublishedChannels());
+        product.setUpdatedAt(new Date());
+        product.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        Logger.info("9d4ed3e0-9368-4bf3-bda2-9a8826203beb", "Updating product");
+        return ProductHelper.toUpdateProductResponseFromProduct(productRepository.save(product));
     }
 }
