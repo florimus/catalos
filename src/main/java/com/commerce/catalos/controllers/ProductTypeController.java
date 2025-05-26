@@ -8,6 +8,7 @@ import com.commerce.catalos.services.ProductTypeService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ public class ProductTypeController {
 
     private final ProductTypeService productTypeService;
 
+    @PreAuthorize("hasRole('PTY:LS')")
     @GetMapping("/id/{id}")
     public ResponseEntity<ProductTypeResponse> getProductTypeById(
             @PathVariable final String id) {
@@ -32,6 +34,7 @@ public class ProductTypeController {
         return new ResponseEntity<ProductTypeResponse>(productTypeService.getProductTypeById(id));
     }
 
+    @PreAuthorize("hasRole('PTY:NN')")
     @PostMapping()
     public ResponseEntity<CreateProductTypeResponse> createProductType(
             @RequestBody final @Valid CreateProductTypeRequest createProductTypeRequest) {
@@ -40,6 +43,7 @@ public class ProductTypeController {
         return new ResponseEntity<CreateProductTypeResponse>(productTypeService.createProductType(createProductTypeRequest));
     }
 
+    @PreAuthorize("hasRole('PTY:NN')")
     @PutMapping("/id/{id}/status/{status}")
     public ResponseEntity<ProductTypeStatusUpdateResponse> updateProductTypeStatus(
             @PathVariable final String id, @PathVariable final boolean status) {
@@ -47,6 +51,7 @@ public class ProductTypeController {
         return new ResponseEntity<ProductTypeStatusUpdateResponse>(productTypeService.updateProductTypeStatus(id, status));
     }
 
+    @PreAuthorize("hasRole('PTY:NN')")
     @PutMapping()
     public ResponseEntity<UpdateProductTypeResponse> updateProductType(
             @RequestBody final @Valid UpdateProductTypeRequest updateProductTypeRequest) {
@@ -55,6 +60,7 @@ public class ProductTypeController {
         return new ResponseEntity<UpdateProductTypeResponse>(productTypeService.updateProductType(updateProductTypeRequest));
     }
 
+    @PreAuthorize("hasRole('PTY:LS')")
     @GetMapping("/search")
     public ResponseEntity<Page<ProductTypeListResponse>> listProductTypes(
             @RequestParam(required = false, defaultValue = "") String query,
@@ -63,6 +69,7 @@ public class ProductTypeController {
         return new ResponseEntity<Page<ProductTypeListResponse>>(productTypeService.listProductTypes(query, pageable));
     }
 
+    @PreAuthorize("hasRole('PTY:RM')")
     @DeleteMapping("/id/{id}")
     public ResponseEntity<ProductTypeDeleteResponse> deleteProductTypes(@PathVariable final String id) {
         Logger.info("4aabbc43-ef1b-4377-abc7-8ca9dd94eb1b", "Received request for deleting product-type: {}", id);

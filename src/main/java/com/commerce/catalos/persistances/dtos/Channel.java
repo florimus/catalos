@@ -18,4 +18,6 @@ public class Channel extends BaseDto {
     private String name;
 
     private String slug;
+
+    private String currency;
 }

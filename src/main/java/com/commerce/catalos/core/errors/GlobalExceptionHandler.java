@@ -3,6 +3,7 @@ package com.commerce.catalos.core.errors;
 import com.commerce.catalos.core.configurations.ErrorResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -83,6 +84,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseEntity> handleValidationException(MethodArgumentNotValidException ex) {
         List<String> errors = new ArrayList<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> errors.add(error.getDefaultMessage()));
+        return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(errors), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponseEntity> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+        List<String> errors = new ArrayList<>();
+        errors.add("You don't have permission to access this resource.");
         return new ResponseEntity<ErrorResponseEntity>(new ErrorResponseEntity(errors), HttpStatus.BAD_REQUEST);
     }
 

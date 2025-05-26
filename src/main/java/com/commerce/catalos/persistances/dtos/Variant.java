@@ -30,9 +30,9 @@ public class Variant extends BaseDto {
 
     private String url;
 
-    private String SeoTitle;
+    private String seoTitle;
 
-    private String SeoDescription;
+    private String seoDescription;
 
     private List<ProductMedia> medias;
 
