@@ -6,6 +6,8 @@ import com.commerce.catalos.models.users.GetUserInfoResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Map;
+
 public interface ProductTypeService {
 
     public CreateProductTypeResponse createProductType(final CreateProductTypeRequest createProductTypeRequest);
@@ -19,4 +21,6 @@ public interface ProductTypeService {
     public Page<ProductTypeListResponse> listProductTypes(final String query, final Pageable pageable);
 
     public ProductTypeDeleteResponse deleteProductTypes(final String id);
+
+    public void validateProductAttributeValues(final String productTypeId, final Map<String, AttributeItemProperties> attributes);
 }

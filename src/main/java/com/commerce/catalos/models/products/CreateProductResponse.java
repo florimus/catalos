@@ -1,22 +1,18 @@
-package com.commerce.catalos.persistances.dtos;
+package com.commerce.catalos.models.products;
 
 import com.commerce.catalos.models.productTypes.AttributeItemProperties;
-import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 
 @Data
-@Builder
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
 @AllArgsConstructor
-@Document("cat_product")
-public class Product extends BaseDto {
+@NoArgsConstructor
+public class CreateProductResponse {
 
-    @Id
     private String id;
 
     private String name;
@@ -32,4 +28,6 @@ public class Product extends BaseDto {
     private List<String> publishedChannels;
 
     private Map<String, AttributeItemProperties> attributes;
+
+    private boolean active;
 }

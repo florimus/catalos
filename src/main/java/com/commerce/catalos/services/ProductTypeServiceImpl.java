@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -155,5 +156,16 @@ public class ProductTypeServiceImpl implements ProductTypeService {
                 .ids(List.of(id))
                 .message("Product-type deleted successfully")
                 .build();
+    }
+
+    @Override
+    public void validateProductAttributeValues(String productTypeId, Map<String, AttributeItemProperties> attributes) {
+        ProductType productType = this.findProductTypeById(productTypeId);
+        if (productType == null || !productType.getId().equals(productTypeId)) {
+            Logger.error("7b038a33-8dda-423f-ac53-4d6333cb159a", "Product type not found: {}", productTypeId);
+            throw new NotFoundException("Product-type not found");
+        }
+        Logger.info("9f650cb0-8303-4eb5-bff0-5d00c1d1cf3f","Product-type found, validating the data");
+        ProductTypeHelper.validateAttribute(productType.getProductAttributes(), attributes);
     }
 }
