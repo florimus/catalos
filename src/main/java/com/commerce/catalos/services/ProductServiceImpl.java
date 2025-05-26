@@ -95,4 +95,27 @@ public class ProductServiceImpl implements ProductService {
         Logger.info("9d4ed3e0-9368-4bf3-bda2-9a8826203beb", "Updating product");
         return ProductHelper.toUpdateProductResponseFromProduct(productRepository.save(product));
     }
+
+    @Override
+    public ProductStatusUpdateResponse updateProductStatus(final String id, final boolean status) {
+        if (id.isBlank()) {
+            Logger.error("f061fb49-b52e-4697-ba04-c152fa470918", "Product id is mandatory");
+            throw new BadRequestException("Invalid product id");
+        }
+        Product product = this.findProductById(id);
+        if (product == null || product.getId().isBlank()){
+            Logger.error("cb6b44da-2a53-48b1-b19f-a7f411c64fa5", "Product not found with id: {}", id);
+            throw new NotFoundException("Product not found");
+        }
+        product.setActive(status);
+
+        // TODO: Disable the variants if product disables
+
+        Logger.info("667b88c4-3ce1-4bbf-83eb-e82c967c6880","Updating the status to {} for product: {}", status, product.getName());
+        product = productRepository.save(product);
+        return ProductStatusUpdateResponse.builder()
+                .status(product.isActive())
+                .message(product.isActive() ? "Product Activated": "Product Deactivated")
+                .build();
+    }
 }

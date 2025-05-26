@@ -44,7 +44,7 @@ public class ProductTypeController {
     }
 
     @PreAuthorize("hasRole('PTY:NN')")
-    @PutMapping("/id/{id}/status/{status}")
+    @PatchMapping("/id/{id}/status/{status}")
     public ResponseEntity<ProductTypeStatusUpdateResponse> updateProductTypeStatus(
             @PathVariable final String id, @PathVariable final boolean status) {
         Logger.info("20feeee2-147c-4b56-8b79-ad4fc03e10b1", "Received request for update product-type status: {} with id: {}", status, id);

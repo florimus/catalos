@@ -9,4 +9,6 @@ public interface ProductService {
     public ProductResponse getProductById(final String id);
 
     public UpdateProductResponse updateProduct(final String id, final UpdateProductRequest updateProductRequest);
+
+    public ProductStatusUpdateResponse updateProductStatus(final String id, final boolean status);
 }

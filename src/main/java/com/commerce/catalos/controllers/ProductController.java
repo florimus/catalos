@@ -35,11 +35,19 @@ public class ProductController {
         return new ResponseEntity<ProductResponse>(productService.getProductById(id));
     }
 
-    @PreAuthorize("hasRole('PRD:LS')")
+    @PreAuthorize("hasRole('PRD:NN')")
     @PutMapping("/id/{id}")
     public ResponseEntity<UpdateProductResponse> updateProduct(
             @PathVariable final String id, @RequestBody final UpdateProductRequest updateProductRequest) {
         Logger.info("38ab6c57-9434-4dc3-a52d-4d762912734b", "Received request for update product with id: {}", id);
         return new ResponseEntity<UpdateProductResponse>(productService.updateProduct(id, updateProductRequest));
+    }
+
+    @PreAuthorize("hasRole('PRD:NN')")
+    @PatchMapping("/id/{id}/status/{status}")
+    public ResponseEntity<ProductStatusUpdateResponse> updateProductStatus(
+            @PathVariable final String id, @PathVariable final boolean status) {
+        Logger.info("d4832a03-600b-45fd-8026-826a137fe0dd", "Received request for update product status with id: {}", id);
+        return new ResponseEntity<ProductStatusUpdateResponse>(productService.updateProductStatus(id, status));
     }
 }
