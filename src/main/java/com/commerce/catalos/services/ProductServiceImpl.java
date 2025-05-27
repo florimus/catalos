@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -131,5 +132,27 @@ public class ProductServiceImpl implements ProductService {
                 products.getCurrentPage(),
                 products.getPageSize()
         );
+    }
+
+    @Override
+    public ProductDeleteResponse deleteProducts(String id) {
+        if (id.isBlank()) {
+            Logger.error("", "Product id is mandatory");
+            throw new BadRequestException("Invalid product id");
+        }
+        Product product = this.findProductById(id);
+        if (product == null || product.getId().isBlank()){
+            Logger.error("", "Product not found with id: {}", id);
+            throw new NotFoundException("Product not found");
+        }
+        product.setActive(false);
+        product.setEnabled(false);
+        product.setUpdatedAt(new Date());
+        product.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        productRepository.save(product);
+        return ProductDeleteResponse.builder()
+                .ids(List.of(id))
+                .message("Product deleted successfully")
+                .build();
     }
 }

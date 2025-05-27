@@ -64,4 +64,11 @@ public class ProductController {
         Logger.info("", "Received request to list the product with query: {}", query);
         return new ResponseEntity<Page<ProductResponse>>(productService.listProducts(query, pageable));
     }
+
+    @PreAuthorize("hasRole('PRD:RM')")
+    @DeleteMapping("/id/{id}")
+    public ResponseEntity<ProductDeleteResponse> deleteProducts(@PathVariable final String id) {
+        Logger.info("", "Received request to delete the product with id: {}", id);
+        return new ResponseEntity<ProductDeleteResponse>(productService.deleteProducts(id));
+    }
 }
