@@ -7,6 +7,8 @@ import com.commerce.catalos.models.products.UpdateProductResponse;
 import com.commerce.catalos.persistances.dtos.Product;
 import org.springframework.beans.BeanUtils;
 
+import java.util.List;
+
 public class ProductHelper {
 
     public static Product toProductFromCreateProductRequest(final CreateProductRequest createProductRequest) {
@@ -31,5 +33,11 @@ public class ProductHelper {
         UpdateProductResponse response = new UpdateProductResponse();
         BeanUtils.copyProperties(product, response);
         return response;
+    }
+
+    public static List<ProductResponse> toProductResponsesFromProducts(final List<Product> products) {
+        return products.stream()
+                .map(ProductHelper::toProductResponseProduct)
+                .toList();
     }
 }

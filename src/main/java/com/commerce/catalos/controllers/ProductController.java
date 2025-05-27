@@ -1,11 +1,16 @@
 package com.commerce.catalos.controllers;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.configurations.ResponseEntity;
+import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.models.products.*;
 import com.commerce.catalos.services.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +54,14 @@ public class ProductController {
             @PathVariable final String id, @PathVariable final boolean status) {
         Logger.info("d4832a03-600b-45fd-8026-826a137fe0dd", "Received request for update product status with id: {}", id);
         return new ResponseEntity<ProductStatusUpdateResponse>(productService.updateProductStatus(id, status));
+    }
+
+    @PreAuthorize("hasRole('PRD:LS')")
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProductResponse>> listProducts(
+            @RequestParam(required = false, defaultValue = "") String query,
+            @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable){
+        Logger.info("", "Received request to list the product with query: {}", query);
+        return new ResponseEntity<Page<ProductResponse>>(productService.listProducts(query, pageable));
     }
 }

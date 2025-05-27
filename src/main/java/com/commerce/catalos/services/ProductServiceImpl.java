@@ -1,6 +1,7 @@
 package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
@@ -10,6 +11,7 @@ import com.commerce.catalos.persistances.dtos.Product;
 import com.commerce.catalos.persistances.repositories.ProductRepository;
 import com.commerce.catalos.security.AuthContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -117,5 +119,17 @@ public class ProductServiceImpl implements ProductService {
                 .status(product.isActive())
                 .message(product.isActive() ? "Product Activated": "Product Deactivated")
                 .build();
+    }
+
+    @Override
+    public Page<ProductResponse> listProducts(final String query, final Pageable pageable) {
+        Logger.info("", "Finding the products with query: {} and pagination: {}", query, pageable);
+        Page<Product> products = productRepository.searchProducts(query, pageable);
+        return new Page<ProductResponse>(
+                ProductHelper.toProductResponsesFromProducts(products.getHits()),
+                products.getTotalHitsCount(),
+                products.getCurrentPage(),
+                products.getPageSize()
+        );
     }
 }
