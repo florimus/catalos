@@ -3,7 +3,6 @@ package com.commerce.catalos.controllers;
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.models.productTypes.*;
-import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.services.ProductTypeService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -40,15 +39,18 @@ public class ProductTypeController {
             @RequestBody final @Valid CreateProductTypeRequest createProductTypeRequest) {
         Logger.info("b147ff3d-7fa9-4e9e-b990-05fee93e7a94", "Received request for creating product-type with name: {}",
                 createProductTypeRequest.getName());
-        return new ResponseEntity<CreateProductTypeResponse>(productTypeService.createProductType(createProductTypeRequest));
+        return new ResponseEntity<CreateProductTypeResponse>(
+                productTypeService.createProductType(createProductTypeRequest));
     }
 
     @PreAuthorize("hasRole('PTY:NN')")
     @PatchMapping("/id/{id}/status/{status}")
     public ResponseEntity<ProductTypeStatusUpdateResponse> updateProductTypeStatus(
             @PathVariable final String id, @PathVariable final boolean status) {
-        Logger.info("20feeee2-147c-4b56-8b79-ad4fc03e10b1", "Received request for update product-type status: {} with id: {}", status, id);
-        return new ResponseEntity<ProductTypeStatusUpdateResponse>(productTypeService.updateProductTypeStatus(id, status));
+        Logger.info("20feeee2-147c-4b56-8b79-ad4fc03e10b1",
+                "Received request for update product-type status: {} with id: {}", status, id);
+        return new ResponseEntity<ProductTypeStatusUpdateResponse>(
+                productTypeService.updateProductTypeStatus(id, status));
     }
 
     @PreAuthorize("hasRole('PTY:NN')")
@@ -57,7 +59,8 @@ public class ProductTypeController {
             @RequestBody final @Valid UpdateProductTypeRequest updateProductTypeRequest) {
         Logger.info("cfea675d-bd40-4eb3-bd22-11c9b3d76957", "Received request for updating product-type with id: {}",
                 updateProductTypeRequest.getId());
-        return new ResponseEntity<UpdateProductTypeResponse>(productTypeService.updateProductType(updateProductTypeRequest));
+        return new ResponseEntity<UpdateProductTypeResponse>(
+                productTypeService.updateProductType(updateProductTypeRequest));
     }
 
     @PreAuthorize("hasRole('PTY:LS')")

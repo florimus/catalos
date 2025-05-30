@@ -38,7 +38,8 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     @Override
     public CreateProductTypeResponse createProductType(CreateProductTypeRequest createProductTypeRequest) {
         if (this.isSlugExits(createProductTypeRequest.getSlug())) {
-            Logger.error("1519cbdb-7f13-40ca-92c3-d48fe1efeab4", "Slug: {} is already exits", createProductTypeRequest.getSlug());
+            Logger.error("1519cbdb-7f13-40ca-92c3-d48fe1efeab4", "Slug: {} is already exits",
+                    createProductTypeRequest.getSlug());
             throw new ConflictException("Slug is already exits");
         }
 
@@ -48,7 +49,8 @@ public class ProductTypeServiceImpl implements ProductTypeService {
         productType.setCreatedAt(new Date());
         productType.setCreatedBy(userInfo.getEmail());
         productType.setUpdatedBy(userInfo.getEmail());
-        Logger.info("a6c14689-7693-4027-ac54-babc9eb68059", "Creating product type {}", createProductTypeRequest.getName());
+        Logger.info("a6c14689-7693-4027-ac54-babc9eb68059", "Creating product type {}",
+                createProductTypeRequest.getName());
         return ProductTypeHelper.toCreateProductTypeResponseFromProductType(productTypeRepository.save(productType));
     }
 
@@ -62,7 +64,8 @@ public class ProductTypeServiceImpl implements ProductTypeService {
 
         ProductType productType = this.findProductTypeById(updateProductTypeRequest.getId());
         if (productType == null || !productType.getId().equals(updateProductTypeRequest.getId())) {
-            Logger.error("a45fa66c-8fe5-4719-a785-e6d05c12f4ca", "Product type not found: {}", updateProductTypeRequest.getId());
+            Logger.error("a45fa66c-8fe5-4719-a785-e6d05c12f4ca", "Product type not found: {}",
+                    updateProductTypeRequest.getId());
             throw new NotFoundException("Product-type not found");
         }
 
@@ -111,7 +114,8 @@ public class ProductTypeServiceImpl implements ProductTypeService {
         productType.setUpdatedAt(new Date());
         productType.setUpdatedBy(userInfo.getEmail());
         Logger.info(
-                "318e4c67-4c4c-4a08-bc33-b02b61ce7a6c", status ? "Activating the product-type {}" : "Deactivating the product-type {}", id);
+                "318e4c67-4c4c-4a08-bc33-b02b61ce7a6c",
+                status ? "Activating the product-type {}" : "Deactivating the product-type {}", id);
         productType = productTypeRepository.save(productType);
         return ProductTypeStatusUpdateResponse.builder()
                 .status(productType.isActive())
@@ -121,14 +125,14 @@ public class ProductTypeServiceImpl implements ProductTypeService {
 
     @Override
     public Page<ProductTypeListResponse> listProductTypes(final String query, final Pageable pageable) {
-        Logger.info("a7ff367d-1e60-4ab5-83e1-816a8a47c76b", "Finding product-types with query: {} and pageable: {}", query, pageable);
+        Logger.info("a7ff367d-1e60-4ab5-83e1-816a8a47c76b", "Finding product-types with query: {} and pageable: {}",
+                query, pageable);
         Page<ProductType> productTypes = productTypeRepository.searchProductTypes(query, pageable);
         return new Page<ProductTypeListResponse>(
                 ProductTypeHelper.toProductTypeListResponseFromProductTypes(productTypes.getHits()),
                 productTypes.getTotalHitsCount(),
                 productTypes.getCurrentPage(),
-                productTypes.getPageSize()
-        );
+                productTypes.getPageSize());
     }
 
     @Override
@@ -165,7 +169,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
             Logger.error("7b038a33-8dda-423f-ac53-4d6333cb159a", "Product type not found: {}", productTypeId);
             throw new NotFoundException("Product-type not found");
         }
-        Logger.info("9f650cb0-8303-4eb5-bff0-5d00c1d1cf3f","Product-type found, validating the data");
+        Logger.info("9f650cb0-8303-4eb5-bff0-5d00c1d1cf3f", "Product-type found, validating the data");
         ProductTypeHelper.validateAttribute(productType.getProductAttributes(), attributes);
     }
 }

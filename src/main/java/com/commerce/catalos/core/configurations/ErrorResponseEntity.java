@@ -13,7 +13,7 @@ public class ErrorResponseEntity {
 
     private List<String> message;
 
-    public ErrorResponseEntity(List<String> message){
+    public ErrorResponseEntity(List<String> message) {
         this.data = null;
         this.success = false;
         this.message = message;

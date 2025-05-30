@@ -32,7 +32,6 @@ public class ProductController {
         return new ResponseEntity<CreateProductResponse>(productService.createProduct(createProductRequest));
     }
 
-
     @PreAuthorize("hasRole('PRD:LS')")
     @GetMapping("/id/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable final String id) {
@@ -52,7 +51,8 @@ public class ProductController {
     @PatchMapping("/id/{id}/status/{status}")
     public ResponseEntity<ProductStatusUpdateResponse> updateProductStatus(
             @PathVariable final String id, @PathVariable final boolean status) {
-        Logger.info("d4832a03-600b-45fd-8026-826a137fe0dd", "Received request for update product status with id: {}", id);
+        Logger.info("d4832a03-600b-45fd-8026-826a137fe0dd", "Received request for update product status with id: {}",
+                id);
         return new ResponseEntity<ProductStatusUpdateResponse>(productService.updateProductStatus(id, status));
     }
 
@@ -60,7 +60,7 @@ public class ProductController {
     @GetMapping("/search")
     public ResponseEntity<Page<ProductResponse>> listProducts(
             @RequestParam(required = false, defaultValue = "") String query,
-            @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable){
+            @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable) {
         Logger.info("", "Received request to list the product with query: {}", query);
         return new ResponseEntity<Page<ProductResponse>>(productService.listProducts(query, pageable));
     }

@@ -25,6 +25,8 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductTypeService productTypeService;
 
+    private final ChannelService channelService;
+
     private final AuthContext authContext;
 
     private boolean isExitsWithSkuId(final String skuId) {
@@ -41,10 +43,11 @@ public class ProductServiceImpl implements ProductService {
             Logger.error("24ebdcf4-9a92-4d61-9462-0b8d40e15976", "Sku is already exits, cannot create new product");
             throw new ConflictException("Sku is already exits");
         }
-        productTypeService.validateProductAttributeValues(createProductRequest.getProductTypeId(), createProductRequest.getAttributes());
+        productTypeService.validateProductAttributeValues(createProductRequest.getProductTypeId(),
+                createProductRequest.getAttributes());
         Logger.info("4177f797-1ef2-4623-aa00-052e2f2366fa", "Product attributes validated successfully");
 
-        // TODO: Validate channel list
+        channelService.verifyChannels(createProductRequest.getPublishedChannels(), true);
 
         Product product = ProductHelper.toProductFromCreateProductRequest(createProductRequest);
         product.setActive(true);
@@ -62,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("Invalid product id");
         }
         Product product = this.findProductById(id);
-        if (product == null || product.getId().isBlank()){
+        if (product == null || product.getId().isBlank()) {
             Logger.error("36f3dfdf-9bc5-41af-b390-ac31004fe416", "Product not found with id: {}", id);
             throw new NotFoundException("Product not found");
         }
@@ -77,11 +80,12 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("Invalid product id");
         }
         Product product = this.findProductById(id);
-        if (product == null || product.getId().isBlank()){
+        if (product == null || product.getId().isBlank()) {
             Logger.error("050853e2-fccc-44af-9dcf-a3b1cfd48a9f", "Product not found with id: {}", id);
             throw new NotFoundException("Product not found");
         }
-        productTypeService.validateProductAttributeValues(product.getProductTypeId(), updateProductRequest.getAttributes());
+        productTypeService.validateProductAttributeValues(product.getProductTypeId(),
+                updateProductRequest.getAttributes());
         Logger.info("2927b858-c0c2-42b7-a45d-a5c94891c5e0", "Product attributes validated successfully");
         if (!updateProductRequest.getName().isBlank()) {
             product.setName(updateProductRequest.getName());
@@ -90,7 +94,9 @@ public class ProductServiceImpl implements ProductService {
         product.setBrandId(updateProductRequest.getBrandId());
         product.setAttributes(updateProductRequest.getAttributes());
 
-        // TODO: Validate channel list
+        Logger.info("dfb48017-29fd-46b1-bd2f-d4f4a45add38", "Start validating channels: {}",
+                updateProductRequest.getPublishedChannels());
+        channelService.verifyChannels(updateProductRequest.getPublishedChannels(), true);
 
         product.setPublishedChannels(updateProductRequest.getPublishedChannels());
         product.setUpdatedAt(new Date());
@@ -106,7 +112,7 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("Invalid product id");
         }
         Product product = this.findProductById(id);
-        if (product == null || product.getId().isBlank()){
+        if (product == null || product.getId().isBlank()) {
             Logger.error("cb6b44da-2a53-48b1-b19f-a7f411c64fa5", "Product not found with id: {}", id);
             throw new NotFoundException("Product not found");
         }
@@ -114,11 +120,12 @@ public class ProductServiceImpl implements ProductService {
 
         // TODO: Disable the variants if product disables
 
-        Logger.info("667b88c4-3ce1-4bbf-83eb-e82c967c6880","Updating the status to {} for product: {}", status, product.getName());
+        Logger.info("667b88c4-3ce1-4bbf-83eb-e82c967c6880", "Updating the status to {} for product: {}", status,
+                product.getName());
         product = productRepository.save(product);
         return ProductStatusUpdateResponse.builder()
                 .status(product.isActive())
-                .message(product.isActive() ? "Product Activated": "Product Deactivated")
+                .message(product.isActive() ? "Product Activated" : "Product Deactivated")
                 .build();
     }
 
@@ -130,8 +137,7 @@ public class ProductServiceImpl implements ProductService {
                 ProductHelper.toProductResponsesFromProducts(products.getHits()),
                 products.getTotalHitsCount(),
                 products.getCurrentPage(),
-                products.getPageSize()
-        );
+                products.getPageSize());
     }
 
     @Override
@@ -141,7 +147,7 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("Invalid product id");
         }
         Product product = this.findProductById(id);
-        if (product == null || product.getId().isBlank()){
+        if (product == null || product.getId().isBlank()) {
             Logger.error("", "Product not found with id: {}", id);
             throw new NotFoundException("Product not found");
         }

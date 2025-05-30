@@ -17,7 +17,8 @@ public class ProductTypeHelper {
         return response;
     }
 
-    public static ProductType toProductTypeFromCreateProductTypeRequest(final CreateProductTypeRequest createProductTypeRequest) {
+    public static ProductType toProductTypeFromCreateProductTypeRequest(
+            final CreateProductTypeRequest createProductTypeRequest) {
         ProductType productType = new ProductType();
         BeanUtils.copyProperties(createProductTypeRequest, productType);
         return productType;
@@ -35,7 +36,8 @@ public class ProductTypeHelper {
         return response;
     }
 
-    public static List<ProductTypeListResponse> toProductTypeListResponseFromProductTypes(final List<ProductType> productTypes) {
+    public static List<ProductTypeListResponse> toProductTypeListResponseFromProductTypes(
+            final List<ProductType> productTypes) {
         return productTypes.stream()
                 .map(productType -> ProductTypeListResponse.builder()
                         .id(productType.getId())
@@ -61,21 +63,23 @@ public class ProductTypeHelper {
         }
 
         if (options == null || options.isEmpty()) {
-            Logger.error("293563fb-06c2-4dfd-afd7-297616a83e0c", "Options cannot be empty, for type: {}", attributeItemProperties.getType());
+            Logger.error("293563fb-06c2-4dfd-afd7-297616a83e0c", "Options cannot be empty, for type: {}",
+                    attributeItemProperties.getType());
             throw new BadRequestException("Options are mandatory for type: " + attributeItemProperties.getType());
         }
 
         for (Map<String, String> option : options) {
             if (option.get("label") == null || option.get("label").isBlank()
                     || option.get("value") == null || option.get("value").isBlank()) {
-                Logger.error("ff4b8fe9-7d6f-44f8-b4c7-46595f82376a", "Label and Value should be defined for option: {}", option);
+                Logger.error("ff4b8fe9-7d6f-44f8-b4c7-46595f82376a", "Label and Value should be defined for option: {}",
+                        option);
                 throw new BadRequestException("Each option must have a non-blank label and value");
             }
         }
     }
 
     public static void validateAttributeItemPropertiesMap(
-            final Map<String, AttributeItemProperties> attributeItemPropertiesMap){
+            final Map<String, AttributeItemProperties> attributeItemPropertiesMap) {
         attributeItemPropertiesMap.forEach((key, value) -> {
             switch (value.getType()) {
                 case Text, Number, Boolean -> ProductTypeHelper.validatePlaneAttributes(value);
@@ -85,32 +89,33 @@ public class ProductTypeHelper {
         Logger.info("1792c6af-afe7-40a1-bf9b-cf5acdc8a730", "Attribute items properties validated.");
     }
 
-    public static void validateNumberAttributeValue(final String key, AttributeItemProperties values){
-        if (!(values.getValue() instanceof Number)){
+    public static void validateNumberAttributeValue(final String key, AttributeItemProperties values) {
+        if (!(values.getValue() instanceof Number)) {
             Logger.error("002b7609-4a36-40a9-b037-cf20ab37e10f", "{}: Value should be number type", key);
             throw new BadRequestException("Invalid value type for : " + key);
         }
         values.setOptions(null);
     }
 
-    public static void validateTextAttributeValue(final String key, final AttributeItemProperties values){
-        if (!(values.getValue() instanceof String)){
+    public static void validateTextAttributeValue(final String key, final AttributeItemProperties values) {
+        if (!(values.getValue() instanceof String)) {
             Logger.error("19857f1d-4046-4354-92f1-e96130e4092c", "{}: Value should be string type", key);
             throw new BadRequestException("Invalid value type for : " + key);
         }
         values.setOptions(null);
     }
 
-    public static void validateBooleanAttributeValue(final String key, final AttributeItemProperties values){
-        if (!(values.getValue() instanceof Boolean)){
+    public static void validateBooleanAttributeValue(final String key, final AttributeItemProperties values) {
+        if (!(values.getValue() instanceof Boolean)) {
             Logger.error("cba2526b-4cf7-4881-a848-0e856a08ff5a", "{}: Value should be boolean type", key);
-            throw new BadRequestException("Invalid value type for : "+ key);
+            throw new BadRequestException("Invalid value type for : " + key);
         }
         values.setOptions(null);
     }
 
     private static void validateSingleOptionAttribute(
-            final String key, final AttributeItemProperties attributeItemProperties, final AttributeItemProperties values) {
+            final String key, final AttributeItemProperties attributeItemProperties,
+            final AttributeItemProperties values) {
 
         List<Map<String, String>> options;
         Map<String, String> value;
@@ -124,26 +129,26 @@ public class ProductTypeHelper {
         }
 
         boolean matchFound = options.stream()
-                .anyMatch(option ->
-                        option.get("label").equals(value.get("label")) &&
-                                option.get("value").equals(value.get("value"))
-                );
+                .anyMatch(option -> option.get("label").equals(value.get("label")) &&
+                        option.get("value").equals(value.get("value")));
 
         if (!matchFound) {
-            Logger.error("f252c5ee-4763-4390-80cf-fb46f666d437", "{}: Provided value does not match any allowed options", key);
+            Logger.error("f252c5ee-4763-4390-80cf-fb46f666d437",
+                    "{}: Provided value does not match any allowed options", key);
             throw new BadRequestException("Provided value is not in the list of allowed options in " + key);
         }
     }
 
-
-    public static void validateAttribute (
-            final Map<String, AttributeItemProperties> attributeItemPropertiesMap, final Map<String, AttributeItemProperties> attributes) {
+    public static void validateAttribute(
+            final Map<String, AttributeItemProperties> attributeItemPropertiesMap,
+            final Map<String, AttributeItemProperties> attributes) {
         attributes.forEach((key, value) -> {
             switch (value.getType()) {
-                case Text-> ProductTypeHelper.validateTextAttributeValue(key, value);
+                case Text -> ProductTypeHelper.validateTextAttributeValue(key, value);
                 case Number -> ProductTypeHelper.validateNumberAttributeValue(key, value);
                 case Boolean -> ProductTypeHelper.validateBooleanAttributeValue(key, value);
-                case Select -> ProductTypeHelper.validateSingleOptionAttribute(key, attributeItemPropertiesMap.get(key), value);
+                case Select ->
+                    ProductTypeHelper.validateSingleOptionAttribute(key, attributeItemPropertiesMap.get(key), value);
             }
         });
     }

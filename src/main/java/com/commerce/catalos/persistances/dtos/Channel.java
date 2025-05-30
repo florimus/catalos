@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
-@Document("cat_variant")
+@Document("cat_channels")
 @EqualsAndHashCode(callSuper = true)
 public class Channel extends BaseDto {
 
@@ -17,7 +17,7 @@ public class Channel extends BaseDto {
 
     private String name;
 
-    private String slug;
+    private String locale;
 
     private String currency;
 }
