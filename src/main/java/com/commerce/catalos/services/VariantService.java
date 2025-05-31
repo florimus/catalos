@@ -9,6 +9,7 @@ import com.commerce.catalos.models.variants.UpdateVariantRequest;
 import com.commerce.catalos.models.variants.UpdateVariantResponse;
 import com.commerce.catalos.models.variants.VariantDeleteResponse;
 import com.commerce.catalos.models.variants.VariantListResponse;
+import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.models.variants.VariantStatusUpdateResponse;
 
 public interface VariantService {
@@ -17,7 +18,7 @@ public interface VariantService {
 
     public UpdateVariantResponse updateVariant(final UpdateVariantRequest updateVariantRequest);
 
-    public UpdateVariantResponse getVariantById(final String id);
+    public VariantResponse getVariantById(final String id);
 
     public Page<VariantListResponse> listVariants(final String productId, final String query, final Pageable pageable);
 

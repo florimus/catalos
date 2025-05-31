@@ -8,4 +8,6 @@ public interface VariantRepository extends MongoRepository<Variant, String> {
 
     boolean existsBySkuIdOrSlugAndEnabled(final String sku, final String slug, final boolean enabled);
 
+    Variant findVariantByIdAndEnabled(final String id, final boolean enabled);
+
 }

@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
+import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
+import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.VariantHelper;
 import com.commerce.catalos.models.products.ProductResponse;
 import com.commerce.catalos.models.variants.CreateVariantRequest;
@@ -16,6 +18,7 @@ import com.commerce.catalos.models.variants.UpdateVariantRequest;
 import com.commerce.catalos.models.variants.UpdateVariantResponse;
 import com.commerce.catalos.models.variants.VariantDeleteResponse;
 import com.commerce.catalos.models.variants.VariantListResponse;
+import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.models.variants.VariantStatusUpdateResponse;
 import com.commerce.catalos.persistence.dtos.Variant;
 import com.commerce.catalos.persistence.repositories.VariantRepository;
@@ -34,6 +37,10 @@ public class VariantServiceImpl implements VariantService {
     private final ProductTypeService productTypeService;
 
     private final AuthContext authContext;
+
+    private Variant findVariantById(final String id) {
+        return variantRepository.findVariantByIdAndEnabled(id, true);
+    }
 
     private boolean isExitsBySkuOrSlug(final String sku, final String slug) {
         return variantRepository.existsBySkuIdOrSlugAndEnabled(sku, slug, true);
@@ -88,8 +95,18 @@ public class VariantServiceImpl implements VariantService {
     }
 
     @Override
-    public UpdateVariantResponse getVariantById(final String id) {
-        return null;
+    public VariantResponse getVariantById(final String id) {
+        if (id.isBlank()) {
+            Logger.error("2cea4552-31e4-43f5-9bfa-f16e76003422d", "Variant ID cannot be blank");
+            throw new BadRequestException("Variant ID cannot be blank");
+        }
+        Variant variant = this.findVariantById(id);
+        if (variant == null) {
+            Logger.error("514f06bd-db7f-4eb5-a739-abec9b78573d", "Variant not found with ID: {}", id);
+            throw new NotFoundException("Variant not found");
+        }
+        Logger.info("118d104a-d5de-47a9-a95c-e8791fb2477a", "Retrieved variant with ID: {}", id);
+        return VariantHelper.toVariantResponseFromVariant(variant);
     }
 
     @Override

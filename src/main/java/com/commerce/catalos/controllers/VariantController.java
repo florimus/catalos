@@ -25,6 +25,7 @@ import com.commerce.catalos.models.variants.UpdateVariantRequest;
 import com.commerce.catalos.models.variants.UpdateVariantResponse;
 import com.commerce.catalos.models.variants.VariantDeleteResponse;
 import com.commerce.catalos.models.variants.VariantListResponse;
+import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.models.variants.VariantStatusUpdateResponse;
 import com.commerce.catalos.services.VariantService;
 
@@ -54,6 +55,13 @@ public class VariantController {
             @PathVariable final String id, @RequestBody final @Valid UpdateVariantRequest updateVariantRequest) {
         Logger.info("e29d1436-8784-4ee7-b6bc-a17959ae06a0", "Received request for updating variant with id: {}", id);
         return new ResponseEntity<UpdateVariantResponse>(variantService.updateVariant(updateVariantRequest));
+    }
+
+    @GetMapping("/id/{id}")
+    @PreAuthorize("hasRole('VAR:LS')")
+    public ResponseEntity<VariantResponse> getVariantById(@PathVariable final String id) {
+        Logger.info("e29d1436-8784-4ee7-b6bc-a17959ae06a0", "Received request for updating variant with id: {}", id);
+        return new ResponseEntity<VariantResponse>(variantService.getVariantById(id));
     }
 
     @GetMapping("/productId/{productId}/search")
