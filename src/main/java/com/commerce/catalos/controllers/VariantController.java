@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,9 @@ import com.commerce.catalos.models.variants.CreateVariantRequest;
 import com.commerce.catalos.models.variants.CreateVariantResponse;
 import com.commerce.catalos.models.variants.UpdateVariantRequest;
 import com.commerce.catalos.models.variants.UpdateVariantResponse;
+import com.commerce.catalos.models.variants.VariantDeleteResponse;
 import com.commerce.catalos.models.variants.VariantListResponse;
+import com.commerce.catalos.models.variants.VariantStatusUpdateResponse;
 import com.commerce.catalos.services.VariantService;
 
 import jakarta.validation.Valid;
@@ -53,7 +56,7 @@ public class VariantController {
         return new ResponseEntity<UpdateVariantResponse>(variantService.updateVariant(updateVariantRequest));
     }
 
-    @GetMapping("productId/{productId}/search")
+    @GetMapping("/productId/{productId}/search")
     @PreAuthorize("hasRole('VAR:LS')")
     public ResponseEntity<Page<VariantListResponse>> listVariants(
             @PathVariable final String productId,
@@ -62,5 +65,21 @@ public class VariantController {
         Logger.info("9daf03ba-531c-4552-854d-a83c7f2a5a82", "Received request for fetch variants of product id: {}",
                 productId);
         return new ResponseEntity<Page<VariantListResponse>>(variantService.listVariants(productId, query, pageable));
+    }
+
+    @GetMapping("/id/{id}/status/{status}")
+    @PreAuthorize("hasRole('VAR:NN')")
+    public ResponseEntity<VariantStatusUpdateResponse> updateVariantStatus(
+            @PathVariable final String id, @PathVariable final boolean status) {
+        Logger.info("a48c8fa0-43ca-4b4b-9ca6-c96f2eb70204", "Received request for update variants status of id: {}",
+                id);
+        return new ResponseEntity<VariantStatusUpdateResponse>(variantService.updateVariantStatus(id, status));
+    }
+
+    @DeleteMapping("/id/{id}")
+    @PreAuthorize("hasRole('VAR:RM')")
+    public ResponseEntity<VariantDeleteResponse> deleteVariant(@PathVariable final String id) {
+        Logger.info("31afddde-c030-472d-aa9c-10e99c232dfa", "Received request for delete variants with id: {}", id);
+        return new ResponseEntity<VariantDeleteResponse>(variantService.deleteVariant(id));
     }
 }
