@@ -111,7 +111,15 @@ public class VariantServiceImpl implements VariantService {
 
     @Override
     public Page<VariantListResponse> listVariants(final String productId, final String query, final Pageable pageable) {
-        return null;
+        Logger.info("8a7eff54-302c-4341-970f-c064a8e69e5f",
+                "Finding variants of product {} with query: {} and pageable: {}",
+                productId, query, pageable);
+        Page<Variant> variantsPage = variantRepository.searchProductVariants(productId, query, pageable);
+        return new Page<VariantListResponse>(
+                VariantHelper.toProductTypeListResponseFromVariants(variantsPage.getHits()),
+                variantsPage.getTotalHitsCount(),
+                variantsPage.getCurrentPage(),
+                variantsPage.getPageSize());
     }
 
     @Override
