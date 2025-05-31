@@ -61,14 +61,15 @@ public class ProductController {
     public ResponseEntity<Page<ProductResponse>> listProducts(
             @RequestParam(required = false, defaultValue = "") String query,
             @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable) {
-        Logger.info("", "Received request to list the product with query: {}", query);
+        Logger.info("dbd4d854-8d2b-42b0-a2f3-85b1f44adffb", "Received request to list the product with query: {}",
+                query);
         return new ResponseEntity<Page<ProductResponse>>(productService.listProducts(query, pageable));
     }
 
     @PreAuthorize("hasRole('PRD:RM')")
     @DeleteMapping("/id/{id}")
     public ResponseEntity<ProductDeleteResponse> deleteProducts(@PathVariable final String id) {
-        Logger.info("", "Received request to delete the product with id: {}", id);
+        Logger.info("b141891e-e1f0-491d-8457-babab45ac87f", "Received request to delete the product with id: {}", id);
         return new ResponseEntity<ProductDeleteResponse>(productService.deleteProducts(id));
     }
 }

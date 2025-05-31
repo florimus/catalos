@@ -131,7 +131,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductResponse> listProducts(final String query, final Pageable pageable) {
-        Logger.info("", "Finding the products with query: {} and pagination: {}", query, pageable);
+        Logger.info("07b20b95-bced-4a83-b946-e2e3cb9318b5", "Finding the products with query: {} and pagination: {}",
+                query, pageable);
         Page<Product> products = productRepository.searchProducts(query, pageable);
         return new Page<ProductResponse>(
                 ProductHelper.toProductResponsesFromProducts(products.getHits()),
@@ -143,12 +144,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDeleteResponse deleteProducts(String id) {
         if (id.isBlank()) {
-            Logger.error("", "Product id is mandatory");
+            Logger.error("534d92b2-6478-497e-bcb7-8b38e9f481fe", "Product id is mandatory");
             throw new BadRequestException("Invalid product id");
         }
         Product product = this.findProductById(id);
         if (product == null || product.getId().isBlank()) {
-            Logger.error("", "Product not found with id: {}", id);
+            Logger.error("e9df6268-3d1c-4c76-ab7d-46e4659f9720", "Product not found with id: {}", id);
             throw new NotFoundException("Product not found");
         }
         product.setActive(false);

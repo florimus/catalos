@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Data
 @Builder
-@Document("cat_variant")
+@Document("cat_variants")
 @EqualsAndHashCode(callSuper = true)
 public class Variant extends BaseDto {
 
