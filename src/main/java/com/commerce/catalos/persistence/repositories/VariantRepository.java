@@ -1,0 +1,11 @@
+package com.commerce.catalos.persistence.repositories;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import com.commerce.catalos.persistence.dtos.Variant;
+
+public interface VariantRepository extends MongoRepository<Variant, String> {
+
+    boolean existsBySkuIdOrSlugAndEnabled(final String sku, final String slug, final boolean enabled);
+
+}

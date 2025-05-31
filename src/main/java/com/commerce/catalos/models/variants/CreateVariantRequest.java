@@ -14,11 +14,9 @@ public class CreateVariantRequest {
 
     private String slug;
 
-    private String parentId;
+    private String productId;
 
     private String skuId;
-
-    private String productTypeId;
 
     private String seoTitle;
 

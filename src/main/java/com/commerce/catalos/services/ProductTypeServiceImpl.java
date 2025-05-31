@@ -136,7 +136,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     }
 
     @Override
-    public ProductTypeDeleteResponse deleteProductTypes(String id) {
+    public ProductTypeDeleteResponse deleteProductTypes(final String id) {
         if (id.isBlank()) {
             Logger.error("23057ef3-11a8-4463-ad0c-605870113abe", "Product-type id cannot be blank");
             throw new BadRequestException("Invalid product-type id");
@@ -163,13 +163,26 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     }
 
     @Override
-    public void validateProductAttributeValues(String productTypeId, Map<String, AttributeItemProperties> attributes) {
+    public void validateProductAttributeValues(final String productTypeId,
+            final Map<String, AttributeItemProperties> attributes) {
         ProductType productType = this.findProductTypeById(productTypeId);
         if (productType == null || !productType.getId().equals(productTypeId)) {
             Logger.error("7b038a33-8dda-423f-ac53-4d6333cb159a", "Product type not found: {}", productTypeId);
             throw new NotFoundException("Product-type not found");
         }
-        Logger.info("9f650cb0-8303-4eb5-bff0-5d00c1d1cf3f", "Product-type found, validating the data");
+        Logger.info("9f650cb0-8303-4eb5-bff0-5d00c1d1cf3f", "Product-type found, validating the product attributes");
         ProductTypeHelper.validateAttribute(productType.getProductAttributes(), attributes);
+    }
+
+    @Override
+    public void validateVariantAttributeValues(final String productTypeId,
+            final Map<String, AttributeItemProperties> attributes) {
+        ProductType productType = this.findProductTypeById(productTypeId);
+        if (productType == null || !productType.getId().equals(productTypeId)) {
+            Logger.error("98db48fb-d146-4524-83f3-0c3722fcb800", "Product type not found: {}", productTypeId);
+            throw new NotFoundException("Product-type not found");
+        }
+        Logger.info("e2491ede-0de0-4dfc-b6e8-68b311e291d3", "Product-type found, validating the variant attributes");
+        ProductTypeHelper.validateAttribute(productType.getVariantAttributes(), attributes);
     }
 }

@@ -2,8 +2,6 @@ package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.models.productTypes.*;
-import com.commerce.catalos.models.users.GetUserInfoResponse;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Map;
@@ -22,5 +20,9 @@ public interface ProductTypeService {
 
     public ProductTypeDeleteResponse deleteProductTypes(final String id);
 
-    public void validateProductAttributeValues(final String productTypeId, final Map<String, AttributeItemProperties> attributes);
+    public void validateProductAttributeValues(final String productTypeId,
+            final Map<String, AttributeItemProperties> attributes);
+
+    public void validateVariantAttributeValues(final String productTypeId,
+            final Map<String, AttributeItemProperties> attributes);
 }

@@ -22,7 +22,7 @@ public class CreateVariantResponse {
 
     private String slug;
 
-    private String parentId;
+    private String productId;
 
     private String skuId;
 
