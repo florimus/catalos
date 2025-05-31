@@ -1,9 +1,9 @@
-package com.commerce.catalos.persistances.repositories.custom;
+package com.commerce.catalos.persistence.repositories.custom;
 
 import org.springframework.data.domain.Pageable;
 
 import com.commerce.catalos.core.configurations.Page;
-import com.commerce.catalos.persistances.dtos.User;
+import com.commerce.catalos.persistence.dtos.User;
 
 public interface UserCustomRepository {
 

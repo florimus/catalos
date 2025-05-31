@@ -1,4 +1,4 @@
-package com.commerce.catalos.persistances.dtos;
+package com.commerce.catalos.persistence.dtos;
 
 import com.commerce.catalos.core.enums.GrandType;
 import lombok.*;

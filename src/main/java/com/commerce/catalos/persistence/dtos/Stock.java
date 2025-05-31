@@ -1,23 +1,23 @@
-package com.commerce.catalos.persistances.dtos;
+package com.commerce.catalos.persistence.dtos;
 
+import com.commerce.catalos.models.stocks.StockInfo;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Map;
+
 @Data
 @Builder
+@Document("cat_variant")
 @EqualsAndHashCode(callSuper = true)
-@Document("cat_brand")
-public class Brand extends BaseDto {
-
+public class Stock extends BaseDto {
     @Id
     private String id;
 
-    private String name;
+    private String variantId;
 
-    private String seoTitle;
-
-    private String seoDescription;
+    private Map<String, StockInfo> stockInfo;
 }

@@ -1,10 +1,14 @@
-package com.commerce.catalos.persistances.dtos;
+package com.commerce.catalos.persistence.dtos;
 
 import com.commerce.catalos.core.enums.DiscountMode;
 import com.commerce.catalos.core.enums.DiscountType;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,6 +17,8 @@ import java.util.List;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Document("cat_variant")
 @EqualsAndHashCode(callSuper = true)
 public class Discount extends BaseDto {
@@ -30,7 +36,10 @@ public class Discount extends BaseDto {
 
     private List<String> discountedProducts;
 
+    @Builder.Default
     private Integer minItemQuantity = 1;
+
+    private boolean allProducts;
 
     private List<String> targetedProductIds;
 

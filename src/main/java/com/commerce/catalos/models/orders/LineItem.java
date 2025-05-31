@@ -1,8 +1,9 @@
 package com.commerce.catalos.models.orders;
 
-import com.commerce.catalos.persistances.dtos.Discount;
-import com.commerce.catalos.persistances.dtos.Product;
-import com.commerce.catalos.persistances.dtos.Variant;
+import com.commerce.catalos.persistence.dtos.Discount;
+import com.commerce.catalos.persistence.dtos.Product;
+import com.commerce.catalos.persistence.dtos.Variant;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

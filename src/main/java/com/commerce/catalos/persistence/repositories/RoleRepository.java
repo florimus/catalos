@@ -1,10 +1,10 @@
-package com.commerce.catalos.persistances.repositories;
+package com.commerce.catalos.persistence.repositories;
 
 import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.commerce.catalos.persistances.dtos.Role;
+import com.commerce.catalos.persistence.dtos.Role;
 
 public interface RoleRepository extends MongoRepository<Role, String> {
 

@@ -4,7 +4,8 @@ import com.commerce.catalos.models.products.CreateProductRequest;
 import com.commerce.catalos.models.products.CreateProductResponse;
 import com.commerce.catalos.models.products.ProductResponse;
 import com.commerce.catalos.models.products.UpdateProductResponse;
-import com.commerce.catalos.persistances.dtos.Product;
+import com.commerce.catalos.persistence.dtos.Product;
+
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;

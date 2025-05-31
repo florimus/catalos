@@ -1,4 +1,4 @@
-package com.commerce.catalos.persistances.repositories.custom;
+package com.commerce.catalos.persistence.repositories.custom;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import com.commerce.catalos.core.configurations.Page;
-import com.commerce.catalos.persistances.dtos.User;
+import com.commerce.catalos.persistence.dtos.User;
 
 @Repository
 public class UserCustomRepositoryImpl implements UserCustomRepository {

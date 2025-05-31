@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.enums.DefaultRoles;
-import com.commerce.catalos.persistances.dtos.Role;
-import com.commerce.catalos.persistances.repositories.RoleRepository;
+import com.commerce.catalos.persistence.dtos.Role;
+import com.commerce.catalos.persistence.repositories.RoleRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -3,8 +3,9 @@ package com.commerce.catalos.services;
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.models.channels.ChannelVerificationResponse;
-import com.commerce.catalos.persistances.dtos.Channel;
-import com.commerce.catalos.persistances.repositories.ChannelRepository;
+import com.commerce.catalos.persistence.dtos.Channel;
+import com.commerce.catalos.persistence.repositories.ChannelRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

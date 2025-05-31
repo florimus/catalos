@@ -17,8 +17,8 @@ import com.commerce.catalos.models.users.TokenClaims;
 import com.commerce.catalos.models.users.UpdateUserInfoRequest;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
 import com.commerce.catalos.models.users.UserTokenResponse;
-import com.commerce.catalos.persistances.dtos.User;
-import com.commerce.catalos.persistances.repositories.UserRepository;
+import com.commerce.catalos.persistence.dtos.User;
+import com.commerce.catalos.persistence.repositories.UserRepository;
 import com.commerce.catalos.security.AuthContext;
 
 import lombok.RequiredArgsConstructor;

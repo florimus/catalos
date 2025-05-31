@@ -1,4 +1,4 @@
-package com.commerce.catalos.persistances.dtos;
+package com.commerce.catalos.persistence.dtos;
 
 import com.commerce.catalos.models.productTypes.AttributeItemProperties;
 import lombok.Builder;

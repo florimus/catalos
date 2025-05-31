@@ -1,4 +1,4 @@
-package com.commerce.catalos.persistances.dtos;
+package com.commerce.catalos.persistence.dtos;
 
 import lombok.Builder;
 import lombok.Data;
@@ -8,18 +8,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
+@Document("cat_channels")
 @EqualsAndHashCode(callSuper = true)
-@Document("cat_category")
-public class Category extends BaseDto {
+public class Channel extends BaseDto {
 
     @Id
     private String id;
 
     private String name;
 
-    private String parentId;
+    private String locale;
 
-    private String seoTitle;
-
-    private String seoDescription;
+    private String currency;
 }

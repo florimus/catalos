@@ -3,7 +3,8 @@ package com.commerce.catalos.helpers;
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.models.productTypes.*;
-import com.commerce.catalos.persistances.dtos.ProductType;
+import com.commerce.catalos.persistence.dtos.ProductType;
+
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;

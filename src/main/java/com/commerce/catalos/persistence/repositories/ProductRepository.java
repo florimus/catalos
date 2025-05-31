@@ -1,8 +1,9 @@
-package com.commerce.catalos.persistances.repositories;
+package com.commerce.catalos.persistence.repositories;
 
-import com.commerce.catalos.persistances.dtos.Product;
-import com.commerce.catalos.persistances.repositories.custom.ProductCustomRepository;
 import org.springframework.data.mongodb.repository.MongoRepository;
+
+import com.commerce.catalos.persistence.dtos.Product;
+import com.commerce.catalos.persistence.repositories.custom.ProductCustomRepository;
 
 public interface ProductRepository extends MongoRepository<Product, String>, ProductCustomRepository {
 
