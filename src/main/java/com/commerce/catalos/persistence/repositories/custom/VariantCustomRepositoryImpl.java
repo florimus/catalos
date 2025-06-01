@@ -40,6 +40,8 @@ public class VariantCustomRepositoryImpl implements VariantCustomRepository {
         }
 
         query.addCriteria(new Criteria("productId").is(productId));
+        query.addCriteria(new Criteria("enabled").is(true));
+
         long total = mongoTemplate.count(query, Variant.class);
         query.with(pageable);
         List<Variant> productTypes = mongoTemplate.find(query, Variant.class);

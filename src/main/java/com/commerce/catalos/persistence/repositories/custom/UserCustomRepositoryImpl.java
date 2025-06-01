@@ -45,6 +45,7 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
 
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
         }
+        query.addCriteria(new Criteria("enabled").is(true));
 
         long total = mongoTemplate.count(query, User.class);
         query.with(pageable);

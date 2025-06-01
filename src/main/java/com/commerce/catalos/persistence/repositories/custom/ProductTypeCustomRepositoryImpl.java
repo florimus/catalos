@@ -36,6 +36,7 @@ public class ProductTypeCustomRepositoryImpl implements ProductTypeCustomReposit
 
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
         }
+        query.addCriteria(new Criteria("enabled").is(true));
 
         long total = mongoTemplate.count(query, ProductType.class);
         query.with(pageable);

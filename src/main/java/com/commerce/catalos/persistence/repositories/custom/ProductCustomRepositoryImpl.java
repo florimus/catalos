@@ -37,7 +37,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
         }
-
+        query.addCriteria(new Criteria("enabled").is(true));
         long total = mongoTemplate.count(query, Product.class);
         query.with(pageable);
         List<Product> products = mongoTemplate.find(query, Product.class);

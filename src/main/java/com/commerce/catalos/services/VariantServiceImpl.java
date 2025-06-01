@@ -1,6 +1,7 @@
 package com.commerce.catalos.services;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -145,7 +146,26 @@ public class VariantServiceImpl implements VariantService {
 
     @Override
     public VariantDeleteResponse deleteVariant(final String id) {
-        return null;
+        if (id.isBlank()) {
+            Logger.error("82238df9-c337-4bb3-9412-23ecb16018a9", "Variant ID cannot be blank");
+            throw new BadRequestException("Variant ID cannot be blank");
+        }
+        Variant variant = this.findVariantById(id);
+        if (variant == null) {
+            Logger.error("77f535ca-ace2-461b-b1e3-3a3cc4d1d76e", "Variant not found with ID: {}", id);
+            throw new NotFoundException("Variant not found");
+        }
+        Logger.info("363b58ed-3bb7-42a3-a85a-368626d0fa4b",
+                "Deleting variant with ID: {}", id);
+        variant.setEnabled(false);
+        variant.setActive(false);
+        variant.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        variant.setUpdatedAt(new Date());
+        variantRepository.save(variant);
+        return VariantDeleteResponse.builder()
+                .message("Variant deleted successfully")
+                .ids(List.of(variant.getId()))
+                .build();
     }
 
 }
