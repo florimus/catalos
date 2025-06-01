@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.BeanUtils;
 
 import com.commerce.catalos.models.variants.CreateVariantResponse;
+import com.commerce.catalos.models.variants.UpdateVariantResponse;
 import com.commerce.catalos.models.variants.VariantListResponse;
 import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.persistence.dtos.Variant;
@@ -29,5 +30,11 @@ public class VariantHelper {
             BeanUtils.copyProperties(variant, response);
             return response;
         }).toList();
+    }
+
+    public static UpdateVariantResponse toUpdateVariantResponseFromVariant(final Variant variant) {
+        UpdateVariantResponse response = new UpdateVariantResponse();
+        BeanUtils.copyProperties(variant, response);
+        return response;
     }
 }

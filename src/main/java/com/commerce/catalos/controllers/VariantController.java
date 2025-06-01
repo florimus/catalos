@@ -55,7 +55,7 @@ public class VariantController {
     public ResponseEntity<UpdateVariantResponse> updateVariant(
             @PathVariable final String id, @RequestBody final @Valid UpdateVariantRequest updateVariantRequest) {
         Logger.info("e29d1436-8784-4ee7-b6bc-a17959ae06a0", "Received request for updating variant with id: {}", id);
-        return new ResponseEntity<UpdateVariantResponse>(variantService.updateVariant(updateVariantRequest));
+        return new ResponseEntity<UpdateVariantResponse>(variantService.updateVariant(id, updateVariantRequest));
     }
 
     @GetMapping("/id/{id}")

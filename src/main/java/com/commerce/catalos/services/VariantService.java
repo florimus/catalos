@@ -16,7 +16,7 @@ public interface VariantService {
 
     public CreateVariantResponse createVariant(final CreateVariantRequest createVariantRequest);
 
-    public UpdateVariantResponse updateVariant(final UpdateVariantRequest updateVariantRequest);
+    public UpdateVariantResponse updateVariant(final String id, final UpdateVariantRequest updateVariantRequest);
 
     public VariantResponse getVariantById(final String id);
 

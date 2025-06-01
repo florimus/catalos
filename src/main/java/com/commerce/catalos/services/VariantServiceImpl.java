@@ -91,8 +91,31 @@ public class VariantServiceImpl implements VariantService {
     }
 
     @Override
-    public UpdateVariantResponse updateVariant(final UpdateVariantRequest updateVariantRequest) {
-        return null;
+    public UpdateVariantResponse updateVariant(final String id, final UpdateVariantRequest updateVariantRequest) {
+        if (id.isBlank()) {
+            Logger.error("2cea4552-31e4-43f5-9bfa-f16e76003422d", "Variant ID cannot be blank");
+            throw new BadRequestException("Variant ID cannot be blank");
+        }
+        Variant variant = this.findVariantById(id);
+        if (variant == null) {
+            Logger.error("514f06bd-db7f-4eb5-a739-abec9b78573d", "Variant not found with ID: {}", id);
+            throw new NotFoundException("Variant not found");
+        }
+        productTypeService.validateVariantAttributeValues(variant.getProductTypeId(),
+                updateVariantRequest.getAttributes());
+        Logger.info("8197b62a-1236-45e3-a448-c70cca7a5210", "Variant attributes validated successfully");
+        if (updateVariantRequest.getName() != null && !updateVariantRequest.getName().isBlank()) {
+            variant.setName(updateVariantRequest.getName());
+        }
+        variant.setMedias(updateVariantRequest.getMedias());
+        variant.setAttributes(updateVariantRequest.getAttributes());
+        variant.setSeoTitle(updateVariantRequest.getSeoTitle());
+        variant.setSeoDescription(updateVariantRequest.getSeoDescription());
+        Logger.info("76e3ade8-bdfd-4351-a621-b9060e9ab53b",
+                "Updating variant with ID: {}, Name: {}, SKU: {}, Slug: {}", id,
+                updateVariantRequest.getName(), variant.getSkuId(), variant.getSlug());
+        return VariantHelper.toUpdateVariantResponseFromVariant(
+                variantRepository.save(variant));
     }
 
     @Override
