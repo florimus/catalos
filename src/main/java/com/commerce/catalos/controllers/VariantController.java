@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -75,7 +76,7 @@ public class VariantController {
         return new ResponseEntity<Page<VariantListResponse>>(variantService.listVariants(productId, query, pageable));
     }
 
-    @GetMapping("/id/{id}/status/{status}")
+    @PatchMapping("/id/{id}/status/{status}")
     @PreAuthorize("hasRole('VAR:NN')")
     public ResponseEntity<VariantStatusUpdateResponse> updateVariantStatus(
             @PathVariable final String id, @PathVariable final boolean status) {

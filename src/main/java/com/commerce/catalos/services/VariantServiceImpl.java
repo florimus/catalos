@@ -124,7 +124,23 @@ public class VariantServiceImpl implements VariantService {
 
     @Override
     public VariantStatusUpdateResponse updateVariantStatus(final String id, final boolean status) {
-        return null;
+        if (id.isBlank()) {
+            Logger.error("6908e929-6848-46fe-8e6f-f111dc044dec", "Variant ID cannot be blank");
+            throw new BadRequestException("Variant ID cannot be blank");
+        }
+        Variant variant = this.findVariantById(id);
+        if (variant == null) {
+            Logger.error("7b6c9625-03f8-422c-ab0a-a177bcfd47e1", "Variant not found with ID: {}", id);
+            throw new NotFoundException("Variant not found");
+        }
+        Logger.info("b0c8f1d2-3a4e-4c5b-9f6d-7c8e9f0a1b2c",
+                "Updating status of variant with ID: {} to {}", id, status);
+        variant.setActive(status);
+        variant.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        variant.setUpdatedAt(new Date());
+        variantRepository.save(variant);
+        return VariantStatusUpdateResponse.builder().status(status)
+                .message(status ? "Variant Activated" : "Variant Deactivated").build();
     }
 
     @Override
