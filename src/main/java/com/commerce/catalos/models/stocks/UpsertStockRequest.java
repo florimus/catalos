@@ -5,13 +5,9 @@ import lombok.Data;
 import java.util.Map;
 
 @Data
-public class UpdateStockResponse {
-
-    private String id;
+public class UpsertStockRequest {
 
     private String variantId;
 
     private Map<String, StockInfo> stockInfo;
-
-    private boolean active;
 }

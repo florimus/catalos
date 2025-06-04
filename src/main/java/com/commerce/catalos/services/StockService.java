@@ -4,9 +4,7 @@ import com.commerce.catalos.models.stocks.*;
 
 public interface StockService {
 
-    CreateStockResponse createStock(final CreateStockRequest createStockRequest);
-
-    UpdateStockResponse updateStock(final UpdateStockRequest updateStockRequest);
+    UpsertStockResponse upsertStock(final UpsertStockRequest upsertStockRequest);
 
     VariantStockResponse getStockByVariantId(final String variantId);
 }

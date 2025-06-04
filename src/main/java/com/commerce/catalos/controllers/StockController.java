@@ -21,18 +21,10 @@ public class StockController {
 
     @PreAuthorize("hasRole('STK:NN')")
     @PostMapping()
-    public ResponseEntity<CreateStockResponse> createStock(
-            @RequestBody final @Valid CreateStockRequest createStockRequest) {
-        Logger.info("uuid", "Received request for creating stock for variant : {}", createStockRequest.getVariantId());
-        return new ResponseEntity<CreateStockResponse>(stockService.createStock(createStockRequest));
-    }
-
-    @PreAuthorize("hasRole('STK:NN')")
-    @PostMapping()
-    public ResponseEntity<UpdateStockResponse> updateStock(
-            @RequestBody final @Valid UpdateStockRequest updateStockRequest) {
-        Logger.info("uuid", "Received request for updating stock for variant: {}", updateStockRequest.getVariantId());
-        return new ResponseEntity<UpdateStockResponse>(stockService.updateStock(updateStockRequest));
+    public ResponseEntity<UpsertStockResponse> upsertStock(
+            @RequestBody final @Valid UpsertStockRequest upsertStockRequest) {
+        Logger.info("uuid", "Received request for upserting stock for variant: {}", upsertStockRequest.getVariantId());
+        return new ResponseEntity<UpsertStockResponse>(stockService.upsertStock(upsertStockRequest));
     }
 
     @PreAuthorize("hasRole('STK:LS')")
