@@ -22,22 +22,24 @@ public class StockServiceImpl implements StockService {
     @Override
     public UpsertStockResponse upsertStock(final UpsertStockRequest upsertStockRequest) {
         Stock stock = this.findStockByVariantId(upsertStockRequest.getVariantId());
-        if(null == stock) {
-            Logger.info("uuid", "Stock not exits for the variant");
+        if (null == stock) {
+            Logger.info("2c241209-1d78-4048-af5c-1a9a4215f6dc", "Stock not exits for the variant");
+            stock = stockRepository.save(StockHelper.toStockFromUpsertStockRequest(upsertStockRequest));
         } else {
-            Logger.info("uuid", "Stock updating");
+            Logger.info("851615a2-b7a5-49f3-8d5a-8dadacfc2167", "Stock updating");
             stock.setStockInfo(upsertStockRequest.getStockInfo());
+            stock = stockRepository.save(stock);
         }
-        stock = stockRepository.save(StockHelper.toStockFromUpsertStockRequest(upsertStockRequest));
+
         return StockHelper.toUpsertStockResponseFromStock(stock);
     }
 
     @Override
     public VariantStockResponse getStockByVariantId(final String variantId) {
         Stock stock = this.findStockByVariantId(variantId);
-        if(null == stock) {
-            Logger.error("uuid", "Stock not exits for the variant");
-            throw new NotFoundException("Stock not exits for variant" + variantId);
+        if (null == stock) {
+            Logger.error("375a37ff-ec91-4899-b17d-a447850f6bda", "Stock not exits for the variant");
+            throw new NotFoundException("Stock not exits for variant " + variantId);
         }
         return StockHelper.toVariantStockResponseFromStock(stock);
     }

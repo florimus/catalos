@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Data
 @Builder
-@Document("cat_variant")
+@Document("cat_stocks")
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor

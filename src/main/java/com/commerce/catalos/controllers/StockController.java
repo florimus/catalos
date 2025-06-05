@@ -20,17 +20,19 @@ public class StockController {
     private final StockService stockService;
 
     @PreAuthorize("hasRole('STK:NN')")
-    @PostMapping()
+    @PutMapping()
     public ResponseEntity<UpsertStockResponse> upsertStock(
             @RequestBody final @Valid UpsertStockRequest upsertStockRequest) {
-        Logger.info("uuid", "Received request for upserting stock for variant: {}", upsertStockRequest.getVariantId());
+        Logger.info("667f867d-1db2-485d-9b2a-5ffb8bd790b1", "Received request for upserting stock for variant: {}",
+                upsertStockRequest.getVariantId());
         return new ResponseEntity<UpsertStockResponse>(stockService.upsertStock(upsertStockRequest));
     }
 
     @PreAuthorize("hasRole('STK:LS')")
     @GetMapping("/variantId/{variantId}")
-    public ResponseEntity<VariantStockResponse> getStockByVariantId (@PathVariable final String variantId) {
-        Logger.info("uuid", "Received request for fetching stock for variant: {}", variantId);
+    public ResponseEntity<VariantStockResponse> getStockByVariantId(@PathVariable final String variantId) {
+        Logger.info("6cddcd8e-e4af-4543-9e9e-59f2ba209c89", "Received request for fetching stock for variant: {}",
+                variantId);
         return new ResponseEntity<VariantStockResponse>(stockService.getStockByVariantId(variantId));
     }
 }
