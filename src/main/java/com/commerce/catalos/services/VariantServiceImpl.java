@@ -43,6 +43,10 @@ public class VariantServiceImpl implements VariantService {
         return variantRepository.findVariantByIdAndEnabled(id, true);
     }
 
+    private Variant findVariantBySkuId(final String skuId) {
+        return variantRepository.findVariantBySkuIdAndEnabled(skuId, true);
+    }
+
     private boolean isExitsBySkuOrSlug(final String sku, final String slug) {
         return variantRepository.existsBySkuIdOrSlugAndEnabled(sku, slug, true);
 
@@ -195,6 +199,15 @@ public class VariantServiceImpl implements VariantService {
     public List<VariantListResponse> getVariantsByIds(List<String> variantIds) {
         List<Variant> variants = variantRepository.findAllById(variantIds);
         return VariantHelper.toProductTypeListResponseFromVariants(variants);
+    }
+
+    @Override
+    public VariantResponse getVariantBySkuId(String skuId) {
+        if (skuId.isBlank()) {
+            Logger.error("0cc0a4de-b9d2-469f-bc61-e2c2ad5dcf7e", "SkuId cannot be blank");
+            throw new BadRequestException("SkuId cannot be blank");
+        }
+        return VariantHelper.toVariantResponseFromVariant(this.findVariantBySkuId(skuId));
     }
 
 }

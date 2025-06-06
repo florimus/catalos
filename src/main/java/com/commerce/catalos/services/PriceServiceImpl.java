@@ -1,5 +1,6 @@
 package com.commerce.catalos.services;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
@@ -11,6 +12,7 @@ import com.commerce.catalos.models.prices.UpsertPriceRequest;
 import com.commerce.catalos.models.prices.UpsertPriceResponse;
 import com.commerce.catalos.persistence.dtos.Price;
 import com.commerce.catalos.persistence.repositories.PriceRepository;
+import com.commerce.catalos.pricing.PricingService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +25,8 @@ public class PriceServiceImpl implements PriceService {
     private final VariantService variantService;
 
     private final ChannelService channelService;
+
+    private final PricingService pricingService;
 
     private Price findPriceBySkuId(final String skuId) {
         return priceRepository.findBySkuIdAndEnabled(skuId, true);
@@ -65,7 +69,7 @@ public class PriceServiceImpl implements PriceService {
 
     @Override
     public CalculatedPriceResponse getPriceOfSku(String skuId, String channelId) {
-        return null;
+        return pricingService.getPriceOfSku(skuId, channelId, this.getTablePriceBySku(skuId), 1, null);
     }
 
 }

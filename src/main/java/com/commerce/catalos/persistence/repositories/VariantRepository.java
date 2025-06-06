@@ -11,4 +11,6 @@ public interface VariantRepository extends MongoRepository<Variant, String>, Var
 
     Variant findVariantByIdAndEnabled(final String id, final boolean enabled);
 
+    Variant findVariantBySkuIdAndEnabled(String skuId, boolean enabled);
+
 }

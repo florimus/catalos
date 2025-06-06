@@ -140,4 +140,12 @@ public class PromotionServiceImpl implements PromotionService {
         return promotionRepository.save(discount);
     }
 
+    @Override
+    public List<Discount> getActiveDiscountsForVariant(final String variantId, final String channelId,
+            final Integer quantity, final String customerGroupId) {
+        Logger.info("e7367f24-ed2f-48e0-b8e1-c16b6073127f", "Fetching active discounts for variant: {} and channel: {}",
+                variantId, channelId);
+        return null;
+    }
+
 }
