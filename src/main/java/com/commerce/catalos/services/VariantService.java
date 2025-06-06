@@ -1,5 +1,8 @@
 package com.commerce.catalos.services;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 
 import com.commerce.catalos.core.configurations.Page;
@@ -25,5 +28,7 @@ public interface VariantService {
     public VariantStatusUpdateResponse updateVariantStatus(final String id, final boolean status);
 
     public VariantDeleteResponse deleteVariant(final String id);
+
+    public List<VariantListResponse> getVariantsByIds(final List<String> variantIds);
 
 }

@@ -162,4 +162,13 @@ public class ProductServiceImpl implements ProductService {
                 .message("Product deleted successfully")
                 .build();
     }
+
+    @Override
+    public List<ProductResponse> getProductsByIds(final List<String> ids) {
+        List<Product> products = productRepository.findAllById(ids);
+        return products.stream()
+                .filter(product -> product != null && product.getId() != null && !product.getId().isBlank())
+                .map(ProductHelper::toProductResponseProduct)
+                .toList();
+    }
 }

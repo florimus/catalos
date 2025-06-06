@@ -19,7 +19,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document("cat_variant")
+@Document("cat_discounts")
 @EqualsAndHashCode(callSuper = true)
 public class Discount extends BaseDto {
 
@@ -32,24 +32,32 @@ public class Discount extends BaseDto {
 
     private DiscountType discountType;
 
+    private Float discountValue;
+
     private Float maxDiscountPrice;
 
-    private List<String> discountedProducts;
+    @Builder.Default
+    private List<String> discountedProducts = List.of();
 
     @Builder.Default
     private Integer minItemQuantity = 1;
 
-    private boolean allProducts;
+    private boolean forAllProducts;
 
-    private List<String> targetedProductIds;
+    @Builder.Default
+    private List<String> targetedProductIds = List.of();
 
-    private List<String> targetedVariantIds;
+    @Builder.Default
+    private List<String> targetedVariantIds = List.of();
 
-    private List<String> targetedCategories;
+    @Builder.Default
+    private List<String> targetedCategories = List.of();
 
-    private List<String> targetedBrands;
+    @Builder.Default
+    private List<String> targetedBrands = List.of();
 
-    private List<String> targetedCollections;
+    @Builder.Default
+    private List<String> targetedCollections = List.of();
 
     private String targetedUserGroup;
 

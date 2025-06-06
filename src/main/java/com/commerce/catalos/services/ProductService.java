@@ -2,6 +2,9 @@ package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.models.products.*;
+
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
@@ -17,4 +20,6 @@ public interface ProductService {
     public Page<ProductResponse> listProducts(final String query, final Pageable pageable);
 
     public ProductDeleteResponse deleteProducts(final String id);
+
+    public List<ProductResponse> getProductsByIds(final List<String> ids);
 }

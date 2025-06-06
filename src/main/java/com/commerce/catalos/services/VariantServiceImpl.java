@@ -191,4 +191,10 @@ public class VariantServiceImpl implements VariantService {
                 .build();
     }
 
+    @Override
+    public List<VariantListResponse> getVariantsByIds(List<String> variantIds) {
+        List<Variant> variants = variantRepository.findAllById(variantIds);
+        return VariantHelper.toProductTypeListResponseFromVariants(variants);
+    }
+
 }
