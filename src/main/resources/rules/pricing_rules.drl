@@ -21,8 +21,11 @@ rule "Apply best PercentageOFF discount"
 
         for (Discount d : $discounts) {
             float discountAmount = basePrice * d.getDiscountValue() / 100;
+            if (d.getMaxDiscountPrice() > 0 && discountAmount > d.getMaxDiscountPrice()) {
+                discountAmount = d.getMaxDiscountPrice();
+            }
             float discountedPrice = basePrice - discountAmount;
-            if (discountedPrice < bestPrice) {
+            if (discountedPrice <= bestPrice) {
                 bestPrice = discountedPrice;
                 bestDiscount = d;
             }
