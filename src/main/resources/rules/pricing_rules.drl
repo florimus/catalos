@@ -1,0 +1,48 @@
+package com.commerce.catalos.rules;
+
+import com.commerce.catalos.models.prices.CalculatedPriceResponse;
+import com.commerce.catalos.models.prices.PriceInfo;
+import com.commerce.catalos.persistence.dtos.Discount;
+import com.commerce.catalos.core.enums.DiscountType;
+
+global CalculatedPriceResponse calculatedPriceResponse;
+
+dialect "mvel"
+
+rule "Apply best PercentageOFF discount"
+    when
+        $price: PriceInfo()
+        $quantity: Number()
+        $discounts: java.util.List() from collect(Discount(discountType == DiscountType.PercentageOFF))
+    then
+        float basePrice = $price.getSalesPrice() * $quantity.intValue();
+        float bestPrice = basePrice;
+        Discount bestDiscount = null;
+
+        for (Discount d : $discounts) {
+            float discountAmount = basePrice * d.getDiscountValue() / 100;
+            float discountedPrice = basePrice - discountAmount;
+            if (discountedPrice < bestPrice) {
+                bestPrice = discountedPrice;
+                bestDiscount = d;
+            }
+        }
+
+        if (bestDiscount != null) {
+            calculatedPriceResponse.setSalesPrice(basePrice);
+            calculatedPriceResponse.setDiscountedPrice(bestPrice);
+            calculatedPriceResponse.setDiscountPercentage(bestDiscount.getDiscountValue());
+            calculatedPriceResponse.setDiscountFlatPrice((float) basePrice - bestPrice);
+            calculatedPriceResponse.setDiscountName(bestDiscount.getName());
+            calculatedPriceResponse.setTaxPrice((float) 0.0);
+            calculatedPriceResponse.setFinalPrice(bestPrice);
+        } else {
+            calculatedPriceResponse.setSalesPrice(basePrice);
+            calculatedPriceResponse.setDiscountedPrice(basePrice);
+            calculatedPriceResponse.setDiscountPercentage((float) 0.0);
+            calculatedPriceResponse.setDiscountFlatPrice((float) 0.0);
+            calculatedPriceResponse.setDiscountName(null);
+            calculatedPriceResponse.setTaxPrice((float) 0.0);
+            calculatedPriceResponse.setFinalPrice(basePrice);
+        }
+end

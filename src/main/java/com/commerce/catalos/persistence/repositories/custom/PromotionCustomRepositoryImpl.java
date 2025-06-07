@@ -32,7 +32,7 @@ public class PromotionCustomRepositoryImpl implements PromotionCustomRepository 
         Date now = new Date();
         Criteria criteria = new Criteria();
 
-        criteria.and("minItemQuantity").gte(quantity);
+        criteria.and("minItemQuantity").lte(quantity);
         criteria.and("startDate").lte(now);
         criteria.and("expireDate").gte(now);
         criteria.and("availableChannel").is(channelId);

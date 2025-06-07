@@ -2,6 +2,8 @@ package com.commerce.catalos.pricing;
 
 import java.util.List;
 
+import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
 import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
@@ -27,6 +29,25 @@ public class PricingServiceImpl implements PricingService {
     private final ProductService productService;
 
     private final PromotionRepository promotionRepository;
+
+    private final KieContainer kieContainer;
+
+    private CalculatedPriceResponse calculatePrice(final PriceInfo priceInfo, final List<Discount> applicableDiscounts,
+            final Integer quantity) {
+
+        CalculatedPriceResponse calculatedPriceResponse = new CalculatedPriceResponse();
+        KieSession kieSession = kieContainer.newKieSession();
+        kieSession.setGlobal("calculatedPriceResponse", calculatedPriceResponse);
+
+        kieSession.insert(priceInfo);
+        kieSession.insert(quantity);
+        applicableDiscounts.forEach(kieSession::insert);
+
+        kieSession.fireAllRules();
+        kieSession.dispose();
+
+        return calculatedPriceResponse;
+    }
 
     private PriceInfo getTablePriceBySku(final SkuPriceResponse skuPriceResponse, final String channelId) {
         if (skuPriceResponse == null) {
@@ -72,8 +93,7 @@ public class PricingServiceImpl implements PricingService {
         List<Discount> allDiscounts = this.promotionRepository.getActiveDiscounts(variant.getId(), product.getId(),
                 channelId, quantity, customerGroupId, null, null, null);
 
-        System.out.println("Active Discounts: " + allDiscounts);
-        return null;
+        return this.calculatePrice(priceInfo, allDiscounts, quantity);
     }
 
 }
