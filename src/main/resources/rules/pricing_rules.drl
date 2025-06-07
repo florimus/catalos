@@ -4,48 +4,74 @@ import com.commerce.catalos.models.prices.CalculatedPriceResponse;
 import com.commerce.catalos.models.prices.PriceInfo;
 import com.commerce.catalos.persistence.dtos.Discount;
 import com.commerce.catalos.core.enums.DiscountType;
+import com.commerce.catalos.models.prices.BestDiscountHolder;
 
 global CalculatedPriceResponse calculatedPriceResponse;
+global BestDiscountHolder bestDiscountHolder;
 
 dialect "mvel"
 
-rule "Apply best PercentageOFF discount"
+rule "Find best PercentageOFF"
+    when
+        $discount: Discount(discountType == DiscountType.PercentageOFF)
+        $price: PriceInfo()
+        $quantity: Number()
+    then
+        float base = (float) ($price.getSalesPrice() * $quantity.intValue());
+        float percAmt = (float) (base * ((float) $discount.getDiscountValue()) / 100.0);
+        if ($discount.getMaxDiscountPrice() > 0 && percAmt > $discount.getMaxDiscountPrice()) {
+            percAmt = (float) $discount.getMaxDiscountPrice();
+        }
+        float finalPrice = base - percAmt;
+        bestDiscountHolder.checkAndUpdateBestDiscount($discount, finalPrice);
+end
+
+rule "Find best FlatOFF"
+    when
+        $discount: Discount(discountType == DiscountType.FlatOFF)
+        $price: PriceInfo()
+        $quantity: Number()
+    then
+        float base = (float) ($price.getSalesPrice() * $quantity.intValue());
+        float flatAmt = (float) $discount.getDiscountValue();
+        if ($discount.getMaxDiscountPrice() > 0 && flatAmt > $discount.getMaxDiscountPrice()) {
+            flatAmt = (float) $discount.getMaxDiscountPrice();
+        }
+        float finalPrice = base - flatAmt;
+        bestDiscountHolder.checkAndUpdateBestDiscount($discount, finalPrice);
+end
+
+rule "Apply no discount if no best discount"
+when
+    $price: PriceInfo()
+    $quantity: Number()
+    not Discount() from bestDiscountHolder.getBestDiscount()
+then
+    float basePrice = (float) ($price.getSalesPrice() * $quantity.intValue());
+
+    calculatedPriceResponse.setSalesPrice(basePrice);
+    calculatedPriceResponse.setDiscountedPrice(basePrice);
+    calculatedPriceResponse.setDiscountFlatPrice(0);
+    calculatedPriceResponse.setDiscountPercentage(0);
+    calculatedPriceResponse.setDiscountName(null);
+    calculatedPriceResponse.setFinalPrice(basePrice);
+end
+
+rule "Apply best discount"
     when
         $price: PriceInfo()
         $quantity: Number()
-        $discounts: java.util.List() from collect(Discount(discountType == DiscountType.PercentageOFF))
+        $best: Discount() from bestDiscountHolder.getBestDiscount()
     then
-        float basePrice = $price.getSalesPrice() * $quantity.intValue();
-        float bestPrice = basePrice;
-        Discount bestDiscount = null;
+        float basePrice = (float) ($price.getSalesPrice() * $quantity.intValue());
+        float bestPrice = bestDiscountHolder.getBestPrice();
+        float discountAmount = basePrice - bestPrice;
 
-        for (Discount d : $discounts) {
-            float discountAmount = basePrice * d.getDiscountValue() / 100;
-            if (d.getMaxDiscountPrice() > 0 && discountAmount > d.getMaxDiscountPrice()) {
-                discountAmount = d.getMaxDiscountPrice();
-            }
-            float discountedPrice = basePrice - discountAmount;
-            if (discountedPrice <= bestPrice) {
-                bestPrice = discountedPrice;
-                bestDiscount = d;
-            }
-        }
-
-        if (bestDiscount != null) {
-            calculatedPriceResponse.setSalesPrice(basePrice);
-            calculatedPriceResponse.setDiscountedPrice(bestPrice);
-            calculatedPriceResponse.setDiscountPercentage(bestDiscount.getDiscountValue());
-            calculatedPriceResponse.setDiscountFlatPrice((float) basePrice - bestPrice);
-            calculatedPriceResponse.setDiscountName(bestDiscount.getName());
-            calculatedPriceResponse.setTaxPrice((float) 0.0);
-            calculatedPriceResponse.setFinalPrice(bestPrice);
-        } else {
-            calculatedPriceResponse.setSalesPrice(basePrice);
-            calculatedPriceResponse.setDiscountedPrice(basePrice);
-            calculatedPriceResponse.setDiscountPercentage((float) 0.0);
-            calculatedPriceResponse.setDiscountFlatPrice((float) 0.0);
-            calculatedPriceResponse.setDiscountName(null);
-            calculatedPriceResponse.setTaxPrice((float) 0.0);
-            calculatedPriceResponse.setFinalPrice(basePrice);
-        }
+        calculatedPriceResponse.setSalesPrice(basePrice);
+        calculatedPriceResponse.setDiscountedPrice(bestPrice);
+        calculatedPriceResponse.setDiscountFlatPrice(discountAmount);
+        calculatedPriceResponse.setDiscountPercentage($best.getDiscountType() == DiscountType.PercentageOFF ? (
+            float) $best.getDiscountValue() : (float) Math.round((discountAmount / basePrice) * 10000)/ 100);
+        calculatedPriceResponse.setDiscountName($best.getName());
+        calculatedPriceResponse.setFinalPrice(bestPrice);
 end

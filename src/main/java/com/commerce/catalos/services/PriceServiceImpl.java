@@ -22,8 +22,6 @@ public class PriceServiceImpl implements PriceService {
 
     private final PriceRepository priceRepository;
 
-    private final VariantService variantService;
-
     private final ChannelService channelService;
 
     private final PricingService pricingService;
@@ -45,7 +43,6 @@ public class PriceServiceImpl implements PriceService {
 
     private Price createNewPrice(final UpsertPriceRequest upsertPriceRequest) {
         Logger.info("cfdfd20b-5371-4c39-a52b-d8663309d7d6", "Price not exits for the variant");
-        variantService.getVariantById(upsertPriceRequest.getSkuId());
         channelService.verifyChannels(upsertPriceRequest.getPriceInfo().keySet().stream().toList(), true);
         return priceRepository.save(PriceHelper.toPriceFromUpsertPriceRequest(upsertPriceRequest));
     }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.errors.NotFoundException;
+import com.commerce.catalos.models.prices.BestDiscountHolder;
 import com.commerce.catalos.models.prices.CalculatedPriceResponse;
 import com.commerce.catalos.models.prices.PriceInfo;
 import com.commerce.catalos.models.prices.SkuPriceResponse;
@@ -32,12 +33,35 @@ public class PricingServiceImpl implements PricingService {
 
     private final KieContainer kieContainer;
 
+    // private CalculatedPriceResponse calculatePrice(final PriceInfo priceInfo,
+    // final List<Discount> applicableDiscounts,
+    // final Integer quantity) {
+
+    // CalculatedPriceResponse calculatedPriceResponse = new
+    // CalculatedPriceResponse();
+    // KieSession kieSession = kieContainer.newKieSession();
+    // kieSession.setGlobal("calculatedPriceResponse", calculatedPriceResponse);
+
+    // kieSession.insert(priceInfo);
+    // kieSession.insert(quantity);
+    // applicableDiscounts.forEach(kieSession::insert);
+
+    // kieSession.fireAllRules();
+    // kieSession.dispose();
+
+    // return calculatedPriceResponse;
+    // }
+
     private CalculatedPriceResponse calculatePrice(final PriceInfo priceInfo, final List<Discount> applicableDiscounts,
             final Integer quantity) {
 
         CalculatedPriceResponse calculatedPriceResponse = new CalculatedPriceResponse();
+        BestDiscountHolder bestDiscountHolder = new BestDiscountHolder();
+
         KieSession kieSession = kieContainer.newKieSession();
+
         kieSession.setGlobal("calculatedPriceResponse", calculatedPriceResponse);
+        kieSession.setGlobal("bestDiscountHolder", bestDiscountHolder);
 
         kieSession.insert(priceInfo);
         kieSession.insert(quantity);
