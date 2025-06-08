@@ -11,6 +11,7 @@ import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
 import com.commerce.catalos.models.users.UpdateUserInfoRequest;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
+import com.commerce.catalos.models.users.UserInfoResponse;
 import com.commerce.catalos.models.users.UserTokenResponse;
 import com.commerce.catalos.services.UserService;
 import jakarta.validation.Valid;
@@ -111,5 +112,11 @@ public class UserController {
             @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Direction.DESC) Pageable pageable) {
         Logger.info("01d3047d-314b-44ec-b7e0-3bbd88dc676e", "Received request for list users");
         return new ResponseEntity<Page<GetUserInfoResponse>>(userService.listUsers(query, pageable));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserInfoResponse> myInfo() {
+        Logger.info("4c56dcab-2b6e-4f7f-8a78-b9ba49f78d44", "Received request for my info");
+        return new ResponseEntity<UserInfoResponse>(userService.myInfo());
     }
 }

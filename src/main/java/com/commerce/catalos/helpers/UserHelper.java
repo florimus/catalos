@@ -4,6 +4,7 @@ import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
+import com.commerce.catalos.models.users.UserInfoResponse;
 import com.commerce.catalos.persistence.dtos.User;
 
 import java.util.List;
@@ -101,9 +102,15 @@ public class UserHelper {
      * @return a list of GetUserInfoResponse objects with the properties copied from
      *         the given users
      */
-    public static List<GetUserInfoResponse> toGetUserInfoResponseFromUsers(List<User> users) {
+    public static List<GetUserInfoResponse> toGetUserInfoResponseFromUsers(final List<User> users) {
         return users.stream()
                 .map(user -> UserHelper.toGetUserInfoResponseFromUser(user))
                 .collect(Collectors.toList());
+    }
+
+    public static UserInfoResponse toUserInfoResponseFromUser(final User user) {
+        UserInfoResponse response = new UserInfoResponse();
+        BeanUtils.copyProperties(user, response);
+        return response;
     }
 }

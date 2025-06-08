@@ -16,6 +16,7 @@ import com.commerce.catalos.models.users.RegisterUserResponse;
 import com.commerce.catalos.models.users.TokenClaims;
 import com.commerce.catalos.models.users.UpdateUserInfoRequest;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
+import com.commerce.catalos.models.users.UserInfoResponse;
 import com.commerce.catalos.models.users.UserTokenResponse;
 import com.commerce.catalos.persistence.dtos.User;
 import com.commerce.catalos.persistence.repositories.UserRepository;
@@ -35,6 +36,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     private final AuthContext authContext;
+
+    private final RoleService roleService;
 
     /**
      * Check if user email exists in the database
@@ -193,5 +196,24 @@ public class UserServiceImpl implements UserService {
         Page<User> users = userRepository.searchUsers(query, pageable);
         return new Page<GetUserInfoResponse>(UserHelper.toGetUserInfoResponseFromUsers(users.getHits()),
                 users.getTotalHitsCount(), users.getCurrentPage(), users.getPageSize());
+    }
+
+    @Override
+    public UserInfoResponse myInfo() {
+        GetUserInfoResponse userInfo = authContext.getCurrentUser();
+        if (userInfo == null) {
+            Logger.error("992d11f4-8362-4b4f-ba91-fd19c825dc61", "User not found");
+            throw new NotFoundException("User not found");
+        }
+
+        UserInfoResponse userInfoResponse = UserHelper
+                .toUserInfoResponseFromUser(this.getUserByEmail(userInfo.getEmail()));
+
+        if (userInfoResponse.getRoleId() != null) {
+            Logger.info("73c13036-d477-4cf3-8dfe-912632155380", "Fetching permissions for role: {}",
+                    userInfoResponse.getRoleId());
+            userInfoResponse.setPermissions(roleService.getRoleById(userInfoResponse.getRoleId()));
+        }
+        return userInfoResponse;
     }
 }
