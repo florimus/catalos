@@ -39,7 +39,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CreateCategoryResponse createCategory(final CreateCategoryRequest createCategoryRequest) {
         Category parentCategory = new Category();
 
-        if (createCategoryRequest.getParentId() != null || !createCategoryRequest.getParentId().isBlank()) {
+        if (createCategoryRequest.getParentId() != null && !createCategoryRequest.getParentId().isBlank()) {
             Logger.info("3eaadb1e-6abc-40cc-8b45-ebcf016609aa", "Finding parent category id: {}",
                     createCategoryRequest.getParentId());
             parentCategory = getCategoryById(createCategoryRequest.getParentId());
@@ -69,7 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw new NotFoundException("Category not found");
         }
 
-        if (updateCategoryRequest.getParentId() != null || !updateCategoryRequest.getParentId().isBlank()) {
+        if (updateCategoryRequest.getParentId() != null && !updateCategoryRequest.getParentId().isBlank()) {
             Logger.info("f7f80e2d-e4b9-4e4c-8f5d-df58bbf02a49", "Finding parent category id: {}",
                     updateCategoryRequest.getParentId());
             Category parentCategory = getCategoryById(updateCategoryRequest.getParentId());
