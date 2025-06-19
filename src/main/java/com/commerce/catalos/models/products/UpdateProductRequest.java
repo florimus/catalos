@@ -1,7 +1,6 @@
 package com.commerce.catalos.models.products;
 
 import com.commerce.catalos.models.productTypes.AttributeItemProperties;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.List;
