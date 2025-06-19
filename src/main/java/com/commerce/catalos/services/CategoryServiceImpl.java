@@ -8,6 +8,7 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.CategoryHelper;
+import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.categories.CreateCategoryRequest;
 import com.commerce.catalos.models.categories.CreateCategoryResponse;
 import com.commerce.catalos.models.categories.UpdateCategoryRequest;
@@ -57,7 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public UpdateCategoryResponse updateCategory(String id, UpdateCategoryRequest updateCategoryRequest) {
+    public UpdateCategoryResponse updateCategory(final String id, final UpdateCategoryRequest updateCategoryRequest) {
         Category category = getCategoryById(id);
         if (null == category) {
             Logger.error("74684318-4438-4956-8b62-b50b3b923cb0", "Category not found with id: {}", id);
@@ -94,6 +95,17 @@ public class CategoryServiceImpl implements CategoryService {
         }
         Logger.info("0cc20e57-d915-459a-a13c-3cea72c76ffe", "Category updated with id: {}", category.getId());
         return CategoryHelper.toUpdateCategoryResponseFromCategory(categoryRepository.save(category));
+    }
+
+    @Override
+    public CategoryResponse getCategory(final String id) {
+        Category category = this.getCategoryById(id);
+        if (category == null) {
+            Logger.error("c6361f8e-7bcb-489e-a6ad-cbcdda700bb7", "Category not found");
+            throw new NotFoundException("Category not found");
+        }
+        Logger.info("db646900-e073-4567-aac7-660dedb8d42f", "Category found with id: {}", category.getId());
+        return CategoryHelper.toCategoryResponseFromCategory(category);
     }
 
 }

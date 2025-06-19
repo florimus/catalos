@@ -2,6 +2,7 @@ package com.commerce.catalos.helpers;
 
 import org.springframework.beans.BeanUtils;
 
+import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.categories.CreateCategoryRequest;
 import com.commerce.catalos.models.categories.CreateCategoryResponse;
 import com.commerce.catalos.models.categories.UpdateCategoryResponse;
@@ -26,6 +27,12 @@ public class CategoryHelper {
 
     public static UpdateCategoryResponse toUpdateCategoryResponseFromCategory(final Category category) {
         UpdateCategoryResponse response = new UpdateCategoryResponse();
+        BeanUtils.copyProperties(category, response);
+        return response;
+    }
+
+    public static CategoryResponse toCategoryResponseFromCategory(final Category category) {
+        CategoryResponse response = new CategoryResponse();
         BeanUtils.copyProperties(category, response);
         return response;
     }

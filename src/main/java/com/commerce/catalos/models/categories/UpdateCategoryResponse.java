@@ -22,4 +22,6 @@ public class UpdateCategoryResponse {
     private String seoTitle;
 
     private String seoDescription;
+
+    private boolean active;
 }

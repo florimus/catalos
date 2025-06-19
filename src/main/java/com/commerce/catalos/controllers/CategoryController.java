@@ -2,6 +2,7 @@ package com.commerce.catalos.controllers;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.ResponseEntity;
+import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.categories.CreateCategoryRequest;
 import com.commerce.catalos.models.categories.CreateCategoryResponse;
 import com.commerce.catalos.models.categories.UpdateCategoryRequest;
@@ -44,5 +46,13 @@ public class CategoryController {
         Logger.info("3da6c518-963f-4ecb-8d02-573c2f750b08",
                 "Received request for updating category : {}", id);
         return new ResponseEntity<UpdateCategoryResponse>(categoryService.updateCategory(id, updateCategoryRequest));
+    }
+
+    @GetMapping("/id/{id}")
+    @PreAuthorize("hasRole('CAT:LS')")
+    public ResponseEntity<CategoryResponse> getCategory(@PathVariable final String id) {
+        Logger.info("a7cd4cbb-5afa-446e-8d64-adf921347a23",
+                "Received request for fetch category : {}", id);
+        return new ResponseEntity<CategoryResponse>(categoryService.getCategory(id));
     }
 }
