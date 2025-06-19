@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
+import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.CategoryHelper;
 import com.commerce.catalos.models.categories.CategoryResponse;
+import com.commerce.catalos.models.categories.CategoryStatusUpdateResponse;
 import com.commerce.catalos.models.categories.CreateCategoryRequest;
 import com.commerce.catalos.models.categories.CreateCategoryResponse;
 import com.commerce.catalos.models.categories.UpdateCategoryRequest;
@@ -121,6 +123,28 @@ public class CategoryServiceImpl implements CategoryService {
                 categories.getTotalHitsCount(),
                 categories.getCurrentPage(),
                 categories.getPageSize());
+    }
+
+    @Override
+    public CategoryStatusUpdateResponse updateCategoryStatus(String id, boolean status) {
+        if (id.isBlank()) {
+            Logger.error("d71553fd-13c3-468b-a178-dae172c5c865", "Category id is mandatory");
+            throw new BadRequestException("Invalid category id");
+        }
+        Category category = this.getCategoryById(id);
+        if (category == null) {
+            Logger.error("b7eeff0c-ecba-4090-ad87-39d855ead4d6", "Category not found");
+            throw new NotFoundException("Category not found");
+        }
+        category.setActive(status);
+        category.setUpdatedAt(new Date());
+        category.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        category = categoryRepository.save(category);
+        Logger.info("09bce99f-b267-40dc-bfd8-58de58e4635a", "Category updated with id: {}", category.getId());
+        return CategoryStatusUpdateResponse.builder()
+                .status(category.isActive())
+                .message(category.isActive() ? "Category Activated" : "Category Deactivated")
+                .build();
     }
 
 }
