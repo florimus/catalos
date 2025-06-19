@@ -71,7 +71,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('CAT:LS')")
     public ResponseEntity<Page<CategoryResponse>> listCategories(
             @RequestParam(required = false, defaultValue = "") String query,
-            @RequestParam(required = false, defaultValue = SortConstants.ROOT) String parent,
+            @RequestParam(required = false, defaultValue = SortConstants.ALL) String parent,
             @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable) {
         Logger.info("a5851c0e-1b0d-4a69-8a53-eed00b62fd68",
                 "Received request to list the categories with query: {} and parent: {}",

@@ -35,9 +35,11 @@ public class CategoryCustomRepositoryImpl implements CategoryCustomRepository {
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
         }
 
-        query.addCriteria(new Criteria("parentId").is(parent.equals(SortConstants.ROOT) ? null : parent));
-        query.addCriteria(new Criteria("enabled").is(true));
+        if (!parent.equals(SortConstants.ALL)) {
+            query.addCriteria(new Criteria("parentId").is(parent.equals(SortConstants.ROOT) ? null : parent));
+        }
 
+        query.addCriteria(new Criteria("enabled").is(true));
         long total = mongoTemplate.count(query, Category.class);
         query.with(pageable);
         List<Category> categories = mongoTemplate.find(query, Category.class);
