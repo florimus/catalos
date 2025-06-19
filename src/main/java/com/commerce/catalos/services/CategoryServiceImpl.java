@@ -2,9 +2,11 @@ package com.commerce.catalos.services;
 
 import java.util.Date;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.CategoryHelper;
@@ -106,6 +108,19 @@ public class CategoryServiceImpl implements CategoryService {
         }
         Logger.info("db646900-e073-4567-aac7-660dedb8d42f", "Category found with id: {}", category.getId());
         return CategoryHelper.toCategoryResponseFromCategory(category);
+    }
+
+    @Override
+    public Page<CategoryResponse> listCategories(final String query, final String parent, Pageable pageable) {
+        Logger.info("5541cdbc-2b41-40c0-a142-2f583f781872",
+                "Finding the categories with query: {}, parent: {} and pagination: {}",
+                query, parent, pageable);
+        Page<Category> categories = categoryRepository.searchCategories(query, parent, pageable);
+        return new Page<CategoryResponse>(
+                CategoryHelper.toCategoryResponseFromCategories(categories.getHits()),
+                categories.getTotalHitsCount(),
+                categories.getCurrentPage(),
+                categories.getPageSize());
     }
 
 }

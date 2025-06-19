@@ -1,5 +1,7 @@
 package com.commerce.catalos.helpers;
 
+import java.util.List;
+
 import org.springframework.beans.BeanUtils;
 
 import com.commerce.catalos.models.categories.CategoryResponse;
@@ -35,5 +37,9 @@ public class CategoryHelper {
         CategoryResponse response = new CategoryResponse();
         BeanUtils.copyProperties(category, response);
         return response;
+    }
+
+    public static List<CategoryResponse> toCategoryResponseFromCategories(final List<Category> categories) {
+        return categories.stream().map(CategoryHelper::toCategoryResponseFromCategory).toList();
     }
 }

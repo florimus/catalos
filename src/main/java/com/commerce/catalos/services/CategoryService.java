@@ -1,5 +1,8 @@
 package com.commerce.catalos.services;
 
+import org.springframework.data.domain.Pageable;
+
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.categories.CreateCategoryRequest;
 import com.commerce.catalos.models.categories.CreateCategoryResponse;
@@ -13,5 +16,7 @@ public interface CategoryService {
     UpdateCategoryResponse updateCategory(final String id, final UpdateCategoryRequest updateCategoryRequest);
 
     CategoryResponse getCategory(final String id);
+
+    Page<CategoryResponse> listCategories(final String query, final String parent, final Pageable pageable);
 
 }

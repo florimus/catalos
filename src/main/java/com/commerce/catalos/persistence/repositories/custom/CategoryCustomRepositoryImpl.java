@@ -1,7 +1,7 @@
 package com.commerce.catalos.persistence.repositories.custom;
 
-import com.commerce.catalos.core.configurations.Page;
-import com.commerce.catalos.persistence.dtos.Product;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,19 +11,19 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.commerce.catalos.core.configurations.Page;
+import com.commerce.catalos.core.constants.SortConstants;
+import com.commerce.catalos.persistence.dtos.Category;
 
 @Repository
-public class ProductCustomRepositoryImpl implements ProductCustomRepository {
+public class CategoryCustomRepositoryImpl implements CategoryCustomRepository {
 
     @Autowired
     private MongoTemplate mongoTemplate;
 
     @Override
-    public Page<Product> searchProducts(String search, Pageable pageable) {
+    public Page<Category> searchCategories(final String search, final String parent, final Pageable pageable) {
         Query query = new Query();
-
         if (search != null && !search.isEmpty()) {
             List<Criteria> criteriaList = new ArrayList<Criteria>();
 
@@ -32,14 +32,16 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             }
 
             criteriaList.add(Criteria.where("name").regex(search, "i"));
-            criteriaList.add(Criteria.where("skuId").regex(search, "i"));
-
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
         }
+
+        query.addCriteria(new Criteria("parentId").is(parent.equals(SortConstants.ROOT) ? null : parent));
         query.addCriteria(new Criteria("enabled").is(true));
-        long total = mongoTemplate.count(query, Product.class);
+
+        long total = mongoTemplate.count(query, Category.class);
         query.with(pageable);
-        List<Product> products = mongoTemplate.find(query, Product.class);
-        return new Page<Product>(products, total, pageable.getPageNumber(), pageable.getPageSize());
+        List<Category> categories = mongoTemplate.find(query, Category.class);
+        return new Page<Category>(categories, total, pageable.getPageNumber(), pageable.getPageSize());
     }
+
 }
