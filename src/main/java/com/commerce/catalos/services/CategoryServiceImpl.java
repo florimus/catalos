@@ -5,9 +5,13 @@ import java.util.Date;
 import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.errors.ConflictException;
+import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.CategoryHelper;
 import com.commerce.catalos.models.categories.CreateCategoryRequest;
 import com.commerce.catalos.models.categories.CreateCategoryResponse;
+import com.commerce.catalos.models.categories.UpdateCategoryRequest;
+import com.commerce.catalos.models.categories.UpdateCategoryResponse;
 import com.commerce.catalos.persistence.dtos.Category;
 import com.commerce.catalos.persistence.repositories.CategoryRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -28,21 +32,68 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CreateCategoryResponse createCategory(final CreateCategoryRequest createCategoryRequest) {
-        Category parenCategory = new Category();
+        Category parentCategory = new Category();
+
         if (createCategoryRequest.getParentId() != null || !createCategoryRequest.getParentId().isBlank()) {
             Logger.info("3eaadb1e-6abc-40cc-8b45-ebcf016609aa", "Finding parent category id: {}",
                     createCategoryRequest.getParentId());
-            parenCategory = getCategoryById(createCategoryRequest.getParentId());
+            parentCategory = getCategoryById(createCategoryRequest.getParentId());
+            if (parentCategory.getId() == null) {
+                Logger.error("b1832042-e63a-475f-a9e5-37dc5bad2e15", "Parent category not found");
+                throw new NotFoundException("Parent category not found");
+            }
         }
-        Logger.info("̦607360db-536c-4260-9d59-47d8eb18eec5", "Parent Category is: {}", parenCategory.getName());
-        Category category = CategoryHelper.toCategoryFromCreateCategoryRequest(createCategoryRequest, parenCategory);
+
+        Logger.info("̦607360db-536c-4260-9d59-47d8eb18eec5", "Parent Category is: {}", parentCategory.getName());
+        Category category = CategoryHelper.toCategoryFromCreateCategoryRequest(createCategoryRequest, parentCategory);
         category.setActive(true);
         category.setEnabled(true);
         category.setCreatedAt(new Date());
         category.setCreatedBy(authContext.getCurrentUser().getEmail());
         category = categoryRepository.save(category);
+
         Logger.info("6787a804-5018-4dd7-aa68-9ce0db1d097e", "Category created with id: {}", category.getId());
         return CategoryHelper.toCreateCategoryResponseFromCategory(category);
+    }
+
+    @Override
+    public UpdateCategoryResponse updateCategory(String id, UpdateCategoryRequest updateCategoryRequest) {
+        Category category = getCategoryById(id);
+        if (null == category) {
+            Logger.error("74684318-4438-4956-8b62-b50b3b923cb0", "Category not found with id: {}", id);
+            throw new NotFoundException("Category not found");
+        }
+
+        if (updateCategoryRequest.getParentId() != null || !updateCategoryRequest.getParentId().isBlank()) {
+            Logger.info("f7f80e2d-e4b9-4e4c-8f5d-df58bbf02a49", "Finding parent category id: {}",
+                    updateCategoryRequest.getParentId());
+            Category parentCategory = getCategoryById(updateCategoryRequest.getParentId());
+            parentCategory = getCategoryById(updateCategoryRequest.getParentId());
+
+            if (parentCategory.getId() == null) {
+                Logger.error("b1832042-e63a-475f-a9e5-37dc5bad2e15", "Parent category not found");
+                throw new NotFoundException("Parent category not found");
+            }
+
+            if (parentCategory.getId() == category.getId()) {
+                Logger.error("c14c974c-7494-40b0-b970-a2b39ca13c82", "Parent category cannot be itself");
+                throw new ConflictException("Parent category cannot be itself");
+            }
+            category.setParentName(parentCategory.getName());
+            category.setParentId(parentCategory.getId());
+        }
+
+        if (updateCategoryRequest.getName() != null || !updateCategoryRequest.getName().isBlank()) {
+            category.setName(updateCategoryRequest.getName());
+        }
+        if (updateCategoryRequest.getSeoTitle() != null || !updateCategoryRequest.getSeoTitle().isBlank()) {
+            category.setSeoTitle(updateCategoryRequest.getSeoTitle());
+        }
+        if (updateCategoryRequest.getSeoDescription() != null || !updateCategoryRequest.getSeoDescription().isBlank()) {
+            category.setSeoDescription(updateCategoryRequest.getSeoDescription());
+        }
+        Logger.info("0cc20e57-d915-459a-a13c-3cea72c76ffe", "Category updated with id: {}", category.getId());
+        return CategoryHelper.toUpdateCategoryResponseFromCategory(categoryRepository.save(category));
     }
 
 }
