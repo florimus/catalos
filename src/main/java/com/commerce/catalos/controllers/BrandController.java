@@ -6,6 +6,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,6 +20,7 @@ import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.models.brands.BrandResponse;
+import com.commerce.catalos.models.brands.BrandStatusUpdateResponse;
 import com.commerce.catalos.models.brands.CreateBrandRequest;
 import com.commerce.catalos.models.brands.CreateBrandResponse;
 import com.commerce.catalos.models.brands.UpdateBrandRequest;
@@ -73,6 +75,17 @@ public class BrandController {
                 "Received request for updating brand : {}", id);
         return new ResponseEntity<UpdateBrandResponse>(
                 brandService.updateBrand(id, updateBrandRequest));
+    }
+
+    @PreAuthorize("hasRole('BRD:NN')")
+    @PatchMapping("/id/{id}/status/{status}")
+    public ResponseEntity<BrandStatusUpdateResponse> updateBrandStatus(
+            @PathVariable final String id, @PathVariable final boolean status) {
+        Logger.info("3d4e4cf3-285c-4e4c-b7f3-c81d702d4514",
+                "Received request for update category status with id: {}",
+                id);
+        return new ResponseEntity<BrandStatusUpdateResponse>(
+                brandService.updateBrandStatus(id, status));
     }
 
 }

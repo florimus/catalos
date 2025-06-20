@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.models.brands.BrandResponse;
+import com.commerce.catalos.models.brands.BrandStatusUpdateResponse;
 import com.commerce.catalos.models.brands.CreateBrandRequest;
 import com.commerce.catalos.models.brands.CreateBrandResponse;
 import com.commerce.catalos.models.brands.UpdateBrandRequest;
@@ -18,5 +19,7 @@ public interface BrandService {
     Page<BrandResponse> listBrands(final String query, final Pageable pageable);
 
     UpdateBrandResponse updateBrand(final String id, final UpdateBrandRequest updateBrandRequest);
+
+    BrandStatusUpdateResponse updateBrandStatus(final String id, final boolean status);
 
 }

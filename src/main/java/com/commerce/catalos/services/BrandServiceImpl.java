@@ -10,6 +10,7 @@ import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.helpers.BrandHelper;
 import com.commerce.catalos.models.brands.BrandResponse;
+import com.commerce.catalos.models.brands.BrandStatusUpdateResponse;
 import com.commerce.catalos.models.brands.CreateBrandRequest;
 import com.commerce.catalos.models.brands.CreateBrandResponse;
 import com.commerce.catalos.models.brands.UpdateBrandRequest;
@@ -99,6 +100,27 @@ public class BrandServiceImpl implements BrandService {
         brand = brandRepository.save(brand);
         Logger.info("da6c44a1-76ad-4575-b8ef-fabccdcffe67", "Updated brand with id: {}", id);
         return BrandHelper.toUpdateBrandResponseFromBrand(brand);
+    }
+
+    @Override
+    public BrandStatusUpdateResponse updateBrandStatus(final String id, final boolean status) {
+        if (id == null || id.isBlank()) {
+            Logger.error("9a112f15-2e28-4ef5-a9d1-63d99cec0bea", "Brand id is mandatory");
+            throw new BadRequestException("Invalid brand id");
+        }
+        Brand brand = this.findBrandById(id);
+        if (brand == null || brand.getId().isBlank()) {
+            Logger.error("d722e169-1f7d-4fe8-bcea-d0a6225d1a42", "Brand not found with id: {}", id);
+            throw new BadRequestException("Brand not found");
+        }
+        Logger.info("618b2ebf-6932-4952-9351-6c5828e636ed", "Finding brand with id: {}", id);
+        brand.setActive(status);
+        brand.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        brand.setUpdatedAt(new Date());
+        brand = brandRepository.save(brand);
+        Logger.info("e1e5ca8e-3761-4a7e-a33b-61696006c21a", "Updated brand with id: {}", id);
+        return BrandStatusUpdateResponse.builder().message(status ? "Brand Activated" : "Brand Deactivated")
+                .status(status).build();
     }
 
 }
