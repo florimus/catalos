@@ -2,6 +2,8 @@ package com.commerce.catalos.controllers;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.ResponseEntity;
+import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.brands.CreateBrandRequest;
 import com.commerce.catalos.models.brands.CreateBrandResponse;
 import com.commerce.catalos.services.BrandService;
@@ -33,4 +36,13 @@ public class BrandController {
         return new ResponseEntity<CreateBrandResponse>(
                 brandService.createBrand(createBrandRequest));
     }
+
+    @GetMapping("/id/{id}")
+    @PreAuthorize("hasRole('BRD:LS')")
+    public ResponseEntity<BrandResponse> getBrandById(@PathVariable final String id) {
+        Logger.info("10d40930-8c62-4f37-a7dd-620db03100cc",
+                "Received request for fetching brand by id: {}", id);
+        return new ResponseEntity<BrandResponse>(brandService.getBrandById(id));
+    }
+
 }

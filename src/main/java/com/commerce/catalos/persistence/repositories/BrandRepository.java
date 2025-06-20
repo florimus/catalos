@@ -6,4 +6,6 @@ import com.commerce.catalos.persistence.dtos.Brand;
 
 public interface BrandRepository extends MongoRepository<Brand, String> {
 
+    Brand findBrandByIdAndEnabled(final String id, final boolean enabled);
+
 }

@@ -2,6 +2,7 @@ package com.commerce.catalos.helpers;
 
 import org.springframework.beans.BeanUtils;
 
+import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.brands.CreateBrandRequest;
 import com.commerce.catalos.models.brands.CreateBrandResponse;
 import com.commerce.catalos.persistence.dtos.Brand;
@@ -16,6 +17,12 @@ public class BrandHelper {
 
     public static CreateBrandResponse toCreateBrandResponseFromBrand(final Brand brand) {
         CreateBrandResponse response = new CreateBrandResponse();
+        BeanUtils.copyProperties(brand, response);
+        return response;
+    }
+
+    public static BrandResponse toBrandResponseFromBrand(final Brand brand) {
+        BrandResponse response = new BrandResponse();
         BeanUtils.copyProperties(brand, response);
         return response;
     }
