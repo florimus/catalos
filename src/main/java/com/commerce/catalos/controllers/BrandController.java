@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +21,8 @@ import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.brands.CreateBrandRequest;
 import com.commerce.catalos.models.brands.CreateBrandResponse;
+import com.commerce.catalos.models.brands.UpdateBrandRequest;
+import com.commerce.catalos.models.brands.UpdateBrandResponse;
 import com.commerce.catalos.services.BrandService;
 
 import jakarta.validation.Valid;
@@ -59,6 +62,17 @@ public class BrandController {
         Logger.info("a9c65522-1a8e-48c3-aaeb-9e184a486b02",
                 "Received request for listing brands by query: {}", query);
         return new ResponseEntity<Page<BrandResponse>>(brandService.listBrands(query, pageable));
+    }
+
+    @PutMapping("/id/{id}")
+    @PreAuthorize("hasRole('BRD:NN')")
+    public ResponseEntity<UpdateBrandResponse> updateBrand(
+            @PathVariable final String id,
+            @RequestBody final @Valid UpdateBrandRequest updateBrandRequest) {
+        Logger.info("a412617f-82b8-4284-bf58-6b721918a867",
+                "Received request for updating brand : {}", id);
+        return new ResponseEntity<UpdateBrandResponse>(
+                brandService.updateBrand(id, updateBrandRequest));
     }
 
 }

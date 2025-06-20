@@ -12,6 +12,8 @@ import com.commerce.catalos.helpers.BrandHelper;
 import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.brands.CreateBrandRequest;
 import com.commerce.catalos.models.brands.CreateBrandResponse;
+import com.commerce.catalos.models.brands.UpdateBrandRequest;
+import com.commerce.catalos.models.brands.UpdateBrandResponse;
 import com.commerce.catalos.persistence.dtos.Brand;
 import com.commerce.catalos.persistence.repositories.BrandRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -45,7 +47,7 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public BrandResponse getBrandById(final String id) {
         if (id == null || id.isBlank()) {
-            Logger.error("̦85d98bac-1140-4530-8aa9-1f92ee497090", "Brand id is mandatory");
+            Logger.error("85d98bac-1140-4530-8aa9-1f92ee497090", "Brand id is mandatory");
             throw new BadRequestException("Invalid brand id");
         }
         Brand brand = this.findBrandById(id);
@@ -66,6 +68,37 @@ public class BrandServiceImpl implements BrandService {
                 brands.getTotalHitsCount(),
                 brands.getCurrentPage(),
                 brands.getPageSize());
+    }
+
+    @Override
+    public UpdateBrandResponse updateBrand(String id, UpdateBrandRequest updateBrandRequest) {
+        if (id == null || id.isBlank()) {
+            Logger.error("f12c49fa-afe6-45a7-be87-556bbc93e3a7", "Brand id is mandatory");
+            throw new BadRequestException("Invalid brand id");
+        }
+        Brand brand = this.findBrandById(id);
+        if (brand == null || brand.getId().isBlank()) {
+            Logger.error("f4a8cccf-bc05-42ac-8fa0-f2a7c44d9df4", "Brand not found with id: {}", id);
+            throw new BadRequestException("Brand not found");
+        }
+        Logger.info("47dba53e-f44c-4bca-a7c4-0f7f2d92052e4", "Finding brand with id: {}", id);
+        if (updateBrandRequest.getName() != null) {
+            brand.setName(updateBrandRequest.getName());
+        }
+        if (updateBrandRequest.getAvatar() != null) {
+            brand.setAvatar(updateBrandRequest.getAvatar());
+        }
+        if (updateBrandRequest.getSeoTitle() != null) {
+            brand.setSeoTitle(updateBrandRequest.getSeoTitle());
+        }
+        if (updateBrandRequest.getSeoDescription() != null) {
+            brand.setSeoDescription(updateBrandRequest.getSeoDescription());
+        }
+        brand.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        brand.setUpdatedAt(new Date());
+        brand = brandRepository.save(brand);
+        Logger.info("da6c44a1-76ad-4575-b8ef-fabccdcffe67", "Updated brand with id: {}", id);
+        return BrandHelper.toUpdateBrandResponseFromBrand(brand);
     }
 
 }

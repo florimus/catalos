@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.brands.CreateBrandRequest;
 import com.commerce.catalos.models.brands.CreateBrandResponse;
+import com.commerce.catalos.models.brands.UpdateBrandResponse;
 import com.commerce.catalos.persistence.dtos.Brand;
 
 public class BrandHelper {
@@ -31,5 +32,11 @@ public class BrandHelper {
 
     public static List<BrandResponse> toBrandListResponseFromBrands(final List<Brand> brands) {
         return brands.stream().map(BrandHelper::toBrandResponseFromBrand).toList();
+    }
+
+    public static UpdateBrandResponse toUpdateBrandResponseFromBrand(final Brand brand) {
+        UpdateBrandResponse response = new UpdateBrandResponse();
+        BeanUtils.copyProperties(brand, response);
+        return response;
     }
 }
