@@ -6,6 +6,7 @@ import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.ProductHelper;
+import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.products.*;
 import com.commerce.catalos.persistence.dtos.Product;
 import com.commerce.catalos.persistence.repositories.ProductRepository;
@@ -26,6 +27,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductTypeService productTypeService;
 
     private final ChannelService channelService;
+
+    private final CategoryService categoryService;
 
     private final AuthContext authContext;
 
@@ -90,7 +93,23 @@ public class ProductServiceImpl implements ProductService {
         if (!updateProductRequest.getName().isBlank()) {
             product.setName(updateProductRequest.getName());
         }
-        product.setCategoryId(updateProductRequest.getCategoryId());
+
+        if (updateProductRequest.getCategoryId() != null && !updateProductRequest.getCategoryId().isBlank()) {
+            CategoryResponse category = categoryService.getCategory(updateProductRequest.getCategoryId());
+            if (category == null) {
+                Logger.error("6268383e-8489-44bd-97a8-8704119a0a68", "Category not found with id: {}",
+                        updateProductRequest.getCategoryId());
+                throw new NotFoundException("Category not found");
+            }
+            if (!category.isActive()) {
+                Logger.error("f54ea0db-6aa0-47db-af1f-1fa7c15dbaf7", "Category is not active with id: {}",
+                        updateProductRequest.getCategoryId());
+                throw new ConflictException("Category is not active");
+            }
+            product.setCategoryName(category.getName());
+            product.setCategoryId(category.getId());
+        }
+
         product.setBrandId(updateProductRequest.getBrandId());
         product.setAttributes(updateProductRequest.getAttributes());
 

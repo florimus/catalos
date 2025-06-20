@@ -19,6 +19,8 @@ public class UpdateProductResponse {
 
     private String skuId;
 
+    private String categoryName;
+
     private String categoryId;
 
     private String brandId;

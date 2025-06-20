@@ -19,6 +19,8 @@ public class ProductResponse {
 
     private String skuId;
 
+    private String categoryName;
+
     private String categoryId;
 
     private String brandId;
