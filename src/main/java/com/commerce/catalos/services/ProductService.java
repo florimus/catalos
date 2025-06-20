@@ -22,4 +22,7 @@ public interface ProductService {
     public ProductDeleteResponse deleteProducts(final String id);
 
     public List<ProductResponse> getProductsByIds(final List<String> ids);
+
+    public Page<ProductResponse> getProductsByVariantId(final String categoryId, final String query,
+            final Pageable pageable);
 }

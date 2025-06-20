@@ -190,4 +190,18 @@ public class ProductServiceImpl implements ProductService {
                 .map(ProductHelper::toProductResponseProduct)
                 .toList();
     }
+
+    @Override
+    public Page<ProductResponse> getProductsByVariantId(final String categoryId, final String query,
+            final Pageable pageable) {
+        Logger.info("54e26fbc-564a-42a0-a78e-f32cb632b695",
+                "Finding the products with category: {}, query: {} and pagination: {}",
+                categoryId, query, pageable);
+        Page<Product> products = productRepository.searchProductsWithCategory(categoryId, query, pageable);
+        return new Page<ProductResponse>(
+                ProductHelper.toProductResponsesFromProducts(products.getHits()),
+                products.getTotalHitsCount(),
+                products.getCurrentPage(),
+                products.getPageSize());
+    }
 }

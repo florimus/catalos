@@ -66,6 +66,18 @@ public class ProductController {
         return new ResponseEntity<Page<ProductResponse>>(productService.listProducts(query, pageable));
     }
 
+    @PreAuthorize("hasRole('PRD:LS')")
+    @GetMapping("/category/{categoryId}/search")
+    public ResponseEntity<Page<ProductResponse>> getProductsByVariantId(
+            @PathVariable final String categoryId,
+            @RequestParam(required = false, defaultValue = "") String query,
+            @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable) {
+        Logger.info("1f3869e6-b649-42bf-a649-eba83ba9aaa2", "Received request to list the products with category: {}",
+                categoryId);
+        return new ResponseEntity<Page<ProductResponse>>(
+                productService.getProductsByVariantId(categoryId, query, pageable));
+    }
+
     @PreAuthorize("hasRole('PRD:RM')")
     @DeleteMapping("/id/{id}")
     public ResponseEntity<ProductDeleteResponse> deleteProducts(@PathVariable final String id) {
