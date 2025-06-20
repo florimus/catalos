@@ -2,9 +2,11 @@ package com.commerce.catalos.services;
 
 import java.util.Date;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.helpers.BrandHelper;
 import com.commerce.catalos.models.brands.BrandResponse;
@@ -52,6 +54,18 @@ public class BrandServiceImpl implements BrandService {
             throw new BadRequestException("Brand not found");
         }
         return BrandHelper.toBrandResponseFromBrand(brand);
+    }
+
+    @Override
+    public Page<BrandResponse> listBrands(String query, Pageable pageable) {
+        Logger.info("fea267e4-8a32-4101-9cdb-2936b1539da4", "Finding brands with query: {} and pageable: {}",
+                query, pageable);
+        Page<Brand> brands = brandRepository.searchBrands(query, pageable);
+        return new Page<BrandResponse>(
+                BrandHelper.toBrandListResponseFromBrands(brands.getHits()),
+                brands.getTotalHitsCount(),
+                brands.getCurrentPage(),
+                brands.getPageSize());
     }
 
 }

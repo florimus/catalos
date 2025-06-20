@@ -1,5 +1,7 @@
 package com.commerce.catalos.helpers;
 
+import java.util.List;
+
 import org.springframework.beans.BeanUtils;
 
 import com.commerce.catalos.models.brands.BrandResponse;
@@ -25,5 +27,9 @@ public class BrandHelper {
         BrandResponse response = new BrandResponse();
         BeanUtils.copyProperties(brand, response);
         return response;
+    }
+
+    public static List<BrandResponse> toBrandListResponseFromBrands(final List<Brand> brands) {
+        return brands.stream().map(BrandHelper::toBrandResponseFromBrand).toList();
     }
 }

@@ -1,5 +1,8 @@
 package com.commerce.catalos.controllers;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,10 +10,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.configurations.ResponseEntity;
+import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.brands.CreateBrandRequest;
 import com.commerce.catalos.models.brands.CreateBrandResponse;
@@ -43,6 +49,16 @@ public class BrandController {
         Logger.info("10d40930-8c62-4f37-a7dd-620db03100cc",
                 "Received request for fetching brand by id: {}", id);
         return new ResponseEntity<BrandResponse>(brandService.getBrandById(id));
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('BRD:LS')")
+    public ResponseEntity<Page<BrandResponse>> listBrands(
+            @RequestParam(required = false, defaultValue = "") String query,
+            @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable) {
+        Logger.info("a9c65522-1a8e-48c3-aaeb-9e184a486b02",
+                "Received request for listing brands by query: {}", query);
+        return new ResponseEntity<Page<BrandResponse>>(brandService.listBrands(query, pageable));
     }
 
 }
