@@ -10,4 +10,6 @@ public interface ProductCustomRepository {
     Page<Product> searchProducts(final String search, final Pageable pageable);
 
     Page<Product> searchProductsWithCategory(final String categoryId, final String search, final Pageable pageable);
+
+    Page<Product> searchProductsWithBrand(final String brandId, final String search, final Pageable pageable);
 }

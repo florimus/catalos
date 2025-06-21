@@ -78,6 +78,18 @@ public class ProductController {
                 productService.getProductsByVariantId(categoryId, query, pageable));
     }
 
+    @PreAuthorize("hasRole('PRD:LS')")
+    @GetMapping("/brand/{brandId}/search")
+    public ResponseEntity<Page<ProductResponse>> getProductsByBrandId(
+            @PathVariable final String brandId,
+            @RequestParam(required = false, defaultValue = "") String query,
+            @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable) {
+        Logger.info("8f6909ea-84ef-4e87-87fc-df1694f72e66", "Received request to list the products with brand: {}",
+                brandId);
+        return new ResponseEntity<Page<ProductResponse>>(
+                productService.getProductsByBrandId(brandId, query, pageable));
+    }
+
     @PreAuthorize("hasRole('PRD:RM')")
     @DeleteMapping("/id/{id}")
     public ResponseEntity<ProductDeleteResponse> deleteProducts(@PathVariable final String id) {

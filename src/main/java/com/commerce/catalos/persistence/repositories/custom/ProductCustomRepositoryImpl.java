@@ -66,4 +66,29 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
         List<Product> products = mongoTemplate.find(query, Product.class);
         return new Page<Product>(products, total, pageable.getPageNumber(), pageable.getPageSize());
     }
+
+    @Override
+    public Page<Product> searchProductsWithBrand(String brandId, String search, Pageable pageable) {
+        Query query = new Query();
+
+        if (search != null && !search.isEmpty()) {
+            List<Criteria> criteriaList = new ArrayList<Criteria>();
+
+            if (ObjectId.isValid(search)) {
+                criteriaList.add(Criteria.where("id").is(new ObjectId(search)));
+            }
+
+            criteriaList.add(Criteria.where("name").regex(search, "i"));
+            criteriaList.add(Criteria.where("skuId").regex(search, "i"));
+
+            query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
+        }
+        query.addCriteria(new Criteria("brandId").is(brandId));
+        query.addCriteria(new Criteria("enabled").is(true));
+        long total = mongoTemplate.count(query, Product.class);
+        query.with(pageable);
+        List<Product> products = mongoTemplate.find(query, Product.class);
+        return new Page<Product>(products, total, pageable.getPageNumber(), pageable.getPageSize());
+    }
+
 }

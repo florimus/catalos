@@ -25,4 +25,7 @@ public interface ProductService {
 
     public Page<ProductResponse> getProductsByVariantId(final String categoryId, final String query,
             final Pageable pageable);
+
+    public Page<ProductResponse> getProductsByBrandId(final String brandId, final String query,
+            final Pageable pageable);
 }

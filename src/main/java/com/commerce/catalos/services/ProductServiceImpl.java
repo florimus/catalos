@@ -256,4 +256,17 @@ public class ProductServiceImpl implements ProductService {
                 products.getCurrentPage(),
                 products.getPageSize());
     }
+
+    @Override
+    public Page<ProductResponse> getProductsByBrandId(String brandId, String query, Pageable pageable) {
+        Logger.info("57f3c0a1-df2f-4356-b7b1-2b6d872726db",
+                "Finding the products with brand: {}, query: {} and pagination: {}",
+                brandId, query, pageable);
+        Page<Product> products = productRepository.searchProductsWithBrand(brandId, query, pageable);
+        return new Page<ProductResponse>(
+                ProductHelper.toProductResponsesFromProducts(products.getHits()),
+                products.getTotalHitsCount(),
+                products.getCurrentPage(),
+                products.getPageSize());
+    }
 }
