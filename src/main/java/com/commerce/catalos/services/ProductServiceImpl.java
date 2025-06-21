@@ -6,6 +6,7 @@ import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.ProductHelper;
+import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.products.*;
 import com.commerce.catalos.persistence.dtos.Product;
@@ -30,6 +31,8 @@ public class ProductServiceImpl implements ProductService {
 
     private final CategoryService categoryService;
 
+    private final BrandService brandService;
+
     private final AuthContext authContext;
 
     private boolean isExitsWithSkuId(final String skuId) {
@@ -53,6 +56,39 @@ public class ProductServiceImpl implements ProductService {
         channelService.verifyChannels(createProductRequest.getPublishedChannels(), true);
 
         Product product = ProductHelper.toProductFromCreateProductRequest(createProductRequest);
+
+        if (createProductRequest.getCategoryId() != null && !createProductRequest.getCategoryId().isBlank()) {
+            CategoryResponse category = categoryService.getCategory(createProductRequest.getCategoryId());
+            if (category == null) {
+                Logger.error("5fcdcbad-ac3b-4960-aa32-c6114e02b3e0", "Category not found with id: {}",
+                        createProductRequest.getCategoryId());
+                throw new NotFoundException("Category not found");
+            }
+            if (!category.isActive()) {
+                Logger.error("991b59dc-93e0-43a2-a4ae-bdfa703d28cb", "Category is not active with id: {}",
+                        createProductRequest.getCategoryId());
+                throw new ConflictException("Category is not active");
+            }
+            product.setCategoryName(category.getName());
+            product.setCategoryId(category.getId());
+        }
+
+        if (createProductRequest.getBrandId() != null && !createProductRequest.getBrandId().isBlank()) {
+            BrandResponse brand = brandService.getBrandById(createProductRequest.getBrandId());
+            if (brand == null) {
+                Logger.error("3174a3c7-5aac-48cb-9ceb-3a0033aad0ac", "Brand not found with id: {}",
+                        createProductRequest.getBrandId());
+                throw new NotFoundException("Brand not found");
+            }
+            if (!brand.isActive()) {
+                Logger.error("b7e015e5-b9bc-4240-bdbb-82d9cd73d325", "Brand is not active with id: {}",
+                        createProductRequest.getBrandId());
+                throw new ConflictException("Brand is not active");
+            }
+            product.setBrandId(brand.getId());
+            product.setBrandName(brand.getName());
+        }
+
         product.setActive(true);
         product.setEnabled(true);
         product.setCreatedAt(new Date());
@@ -90,6 +126,9 @@ public class ProductServiceImpl implements ProductService {
         productTypeService.validateProductAttributeValues(product.getProductTypeId(),
                 updateProductRequest.getAttributes());
         Logger.info("2927b858-c0c2-42b7-a45d-a5c94891c5e0", "Product attributes validated successfully");
+
+        product.setAttributes(updateProductRequest.getAttributes());
+
         if (!updateProductRequest.getName().isBlank()) {
             product.setName(updateProductRequest.getName());
         }
@@ -110,8 +149,21 @@ public class ProductServiceImpl implements ProductService {
             product.setCategoryId(category.getId());
         }
 
-        product.setBrandId(updateProductRequest.getBrandId());
-        product.setAttributes(updateProductRequest.getAttributes());
+        if (updateProductRequest.getBrandId() != null && !updateProductRequest.getBrandId().isBlank()) {
+            BrandResponse brand = brandService.getBrandById(updateProductRequest.getBrandId());
+            if (brand == null) {
+                Logger.error("4ef8583f-45a7-40df-89e4-c4683b7196a3", "Brand not found with id: {}",
+                        updateProductRequest.getBrandId());
+                throw new NotFoundException("Brand not found");
+            }
+            if (!brand.isActive()) {
+                Logger.error("1323ae62-07b0-47d0-95ca-f7651990daab", "Brand is not active with id: {}",
+                        updateProductRequest.getBrandId());
+                throw new ConflictException("Brand is not active");
+            }
+            product.setBrandId(brand.getId());
+            product.setBrandName(brand.getName());
+        }
 
         Logger.info("dfb48017-29fd-46b1-bd2f-d4f4a45add38", "Start validating channels: {}",
                 updateProductRequest.getPublishedChannels());

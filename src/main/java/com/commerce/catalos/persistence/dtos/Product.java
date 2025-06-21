@@ -27,6 +27,8 @@ public class Product extends BaseDto {
 
     private String categoryId;
 
+    private String brandName;
+
     private String brandId;
 
     private String productTypeId;

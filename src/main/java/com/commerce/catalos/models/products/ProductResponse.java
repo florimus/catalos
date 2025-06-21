@@ -23,6 +23,8 @@ public class ProductResponse {
 
     private String categoryId;
 
+    private String brandName;
+
     private String brandId;
 
     private String productTypeId;
