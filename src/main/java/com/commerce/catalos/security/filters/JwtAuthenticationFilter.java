@@ -40,6 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/users/login");
     private static final List<String> PUT_SKIP_PATHS = List.of("/users/refresh");
 
+    private static final List<String> SKIP_PATHS = List.of("/api");
+
     /**
      * Verifies the JWT token in the Authorization header and authenticates the
      * user. If the token is invalid, throws an UnAuthorizedException.
@@ -63,6 +65,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (request.getMethod().equals("PUT") && PUT_SKIP_PATHS.contains(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (SKIP_PATHS.stream().anyMatch(path::startsWith)) {
             filterChain.doFilter(request, response);
             return;
         }

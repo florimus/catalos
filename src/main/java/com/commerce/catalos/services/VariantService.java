@@ -13,6 +13,7 @@ import com.commerce.catalos.models.variants.VariantDeleteResponse;
 import com.commerce.catalos.models.variants.VariantListResponse;
 import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.models.variants.VariantStatusUpdateResponse;
+import com.commerce.catalos.models.variants.VariantURLResponse;
 
 public interface VariantService {
 
@@ -31,5 +32,7 @@ public interface VariantService {
     public VariantDeleteResponse deleteVariant(final String id);
 
     public List<VariantListResponse> getVariantsByIds(final List<String> variantIds);
+
+    public VariantURLResponse getVariantByURL(final String url);
 
 }

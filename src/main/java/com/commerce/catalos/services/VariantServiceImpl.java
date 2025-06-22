@@ -2,7 +2,10 @@ package com.commerce.catalos.services;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +15,8 @@ import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.VariantHelper;
+import com.commerce.catalos.models.prices.CalculatedPriceResponse;
+import com.commerce.catalos.models.productTypes.ProductTypeResponse;
 import com.commerce.catalos.models.products.ProductResponse;
 import com.commerce.catalos.models.variants.CreateVariantRequest;
 import com.commerce.catalos.models.variants.CreateVariantResponse;
@@ -21,6 +26,7 @@ import com.commerce.catalos.models.variants.VariantDeleteResponse;
 import com.commerce.catalos.models.variants.VariantListResponse;
 import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.models.variants.VariantStatusUpdateResponse;
+import com.commerce.catalos.models.variants.VariantURLResponse;
 import com.commerce.catalos.persistence.dtos.Variant;
 import com.commerce.catalos.persistence.repositories.VariantRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -37,6 +43,10 @@ public class VariantServiceImpl implements VariantService {
 
     private final ProductTypeService productTypeService;
 
+    @Lazy
+    @Autowired
+    private PriceService priceService;
+
     private final AuthContext authContext;
 
     private Variant findVariantById(final String id) {
@@ -47,9 +57,12 @@ public class VariantServiceImpl implements VariantService {
         return variantRepository.findVariantBySkuIdAndEnabled(skuId, true);
     }
 
+    private Variant findVariantByUrl(final String url) {
+        return variantRepository.findVariantByUrlAndEnabled(url, true);
+    }
+
     private boolean isExitsBySkuOrSlug(final String sku, final String slug) {
         return variantRepository.existsBySkuIdOrSlugAndEnabled(sku, slug, true);
-
     }
 
     private String createUrl(final String productId, final String slug) {
@@ -208,6 +221,30 @@ public class VariantServiceImpl implements VariantService {
             throw new BadRequestException("SkuId cannot be blank");
         }
         return VariantHelper.toVariantResponseFromVariant(this.findVariantBySkuId(skuId));
+    }
+
+    @Override
+    public VariantURLResponse getVariantByURL(final String url) {
+        Variant variant = this.findVariantByUrl(url);
+        if (variant == null) {
+            Logger.error("cf4af9ad-6d7e-4be4-b9f7-78cef2a033e0", "Variant not found with URL: {}", url);
+            throw new NotFoundException("Variant not found");
+        }
+        CompletableFuture<ProductResponse> productFuture = CompletableFuture
+                .supplyAsync(() -> productService.getProductById(variant.getProductId()));
+        CompletableFuture<ProductTypeResponse> productTypeFuture = CompletableFuture
+                .supplyAsync(() -> productTypeService.getProductTypeById(variant.getProductTypeId()));
+
+        CompletableFuture<CalculatedPriceResponse> pricesFuture = CompletableFuture
+                .supplyAsync(() -> priceService.getPriceOfSku(variant.getSkuId(), "68374ac320d736a89de249a0"));
+
+        ProductResponse product = productFuture.join();
+        ProductTypeResponse productType = productTypeFuture.join();
+        productType.setProductAttributes(null);
+        productType.setVariantAttributes(null);
+        CalculatedPriceResponse prices = pricesFuture.join();
+
+        return VariantHelper.toVariantURLResponseFromVariant(variant, product, productType, prices);
     }
 
 }
