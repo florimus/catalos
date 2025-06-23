@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +20,7 @@ import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.models.roles.CreateRoleRequest;
 import com.commerce.catalos.models.roles.RoleResponse;
+import com.commerce.catalos.models.roles.UpdateRoleRequest;
 import com.commerce.catalos.services.RoleService;
 
 import jakarta.validation.Valid;
@@ -52,9 +54,17 @@ public class RolesControllers {
     @PostMapping()
     @PreAuthorize("hasRole('ROL:NN')")
     public ResponseEntity<RoleResponse> createRole(@RequestBody final @Valid CreateRoleRequest createRoleRequest) {
-        Logger.info("028157e5-6fa5-48df-bda1-581de1ce6fd2", "Received request to create role by uniqueId: {}",
+        Logger.info("5f8f1ce6-de82-4293-b1d3-5b26431f5bbe", "Received request to create role by uniqueId: {}",
                 createRoleRequest.getUniqueId());
         return new ResponseEntity<RoleResponse>(roleService.createRole(createRoleRequest));
     }
 
+    @PutMapping("/id/{uniqueId}")
+    @PreAuthorize("hasRole('ROL:NN')")
+    public ResponseEntity<RoleResponse> updateRole(@PathVariable final String uniqueId,
+            @RequestBody final UpdateRoleRequest updateRoleRequest) {
+        Logger.info("6d827eab-f71d-41f1-8aa0-763321a2b96c", "Received request to update role by uniqueId: {}",
+                uniqueId);
+        return new ResponseEntity<RoleResponse>(roleService.updateRole(uniqueId, updateRoleRequest));
+    }
 }

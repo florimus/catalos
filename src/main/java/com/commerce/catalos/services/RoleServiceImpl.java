@@ -14,6 +14,7 @@ import com.commerce.catalos.core.utils.RoleUtils;
 import com.commerce.catalos.helpers.RoleHelper;
 import com.commerce.catalos.models.roles.CreateRoleRequest;
 import com.commerce.catalos.models.roles.RoleResponse;
+import com.commerce.catalos.models.roles.UpdateRoleRequest;
 import com.commerce.catalos.persistence.dtos.Role;
 import com.commerce.catalos.persistence.repositories.RoleRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -92,6 +93,29 @@ public class RoleServiceImpl implements RoleService {
         role.setCreatedBy(authContext.getCurrentUser().getEmail());
         Logger.info("7d5e7e1c-4a6d-4f5f-9e7c-3d6f4c5e3d2c", "Role creating with uniqueId: {}",
                 createRoleRequest.getUniqueId());
+        return RoleHelper.toRoleResponseFromRole(this.roleRepository.save(role));
+    }
+
+    @Override
+    public RoleResponse updateRole(final String uniqueId, final UpdateRoleRequest updateRoleRequest) {
+        Role role = this.findRoleByUniqueId(uniqueId);
+        if (null == role) {
+            Logger.error("e373cc35-216b-4196-afd7-a490342e97b5", "Role not found with uniqueId: {}", uniqueId);
+            throw new NotFoundException("Role not found");
+        }
+        if (role.isDefault()) {
+            Logger.warn("cf39eaee-c1e6-4912-9959-027cb3ca484c", "Cannot update default role with uniqueId: {}",
+                    uniqueId);
+            throw new ConflictException("Cannot update default role");
+        }
+        String permissions = RoleUtils.generatePermissionStringFromMap(updateRoleRequest.getPermissionList());
+        role.setName(updateRoleRequest.getName());
+        role.setDescription(updateRoleRequest.getDescription());
+        role.setPermissionList(updateRoleRequest.getPermissionList());
+        role.setPermissions(permissions);
+        role.setUpdatedAt(new Date());
+        role.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        Logger.info("01c8031e-0949-4245-a8c7-161f42bb71c3", "Role updating with uniqueId: {}", uniqueId);
         return RoleHelper.toRoleResponseFromRole(this.roleRepository.save(role));
     }
 
