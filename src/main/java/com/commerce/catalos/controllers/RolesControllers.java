@@ -6,6 +6,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,6 +21,7 @@ import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.models.roles.CreateRoleRequest;
 import com.commerce.catalos.models.roles.RoleResponse;
+import com.commerce.catalos.models.roles.RoleStatusUpdateResponse;
 import com.commerce.catalos.models.roles.UpdateRoleRequest;
 import com.commerce.catalos.services.RoleService;
 
@@ -66,5 +68,14 @@ public class RolesControllers {
         Logger.info("6d827eab-f71d-41f1-8aa0-763321a2b96c", "Received request to update role by uniqueId: {}",
                 uniqueId);
         return new ResponseEntity<RoleResponse>(roleService.updateRole(uniqueId, updateRoleRequest));
+    }
+
+    @PreAuthorize("hasRole('ROL:NN')")
+    @PatchMapping("/id/{id}/status/{status}")
+    public ResponseEntity<RoleStatusUpdateResponse> updateRoleStatus(
+            @PathVariable final String id, @PathVariable final boolean status) {
+        Logger.info("16aabd5c-1ff1-41bb-bac6-ac56a3fde50b",
+                "Received request for update role status with id: {}", id);
+        return new ResponseEntity<RoleStatusUpdateResponse>(roleService.updateRoleStatus(id, status));
     }
 }

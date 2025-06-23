@@ -11,13 +11,11 @@ import com.commerce.catalos.core.enums.DefaultRoles;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.core.utils.RoleUtils;
-import com.commerce.catalos.helpers.BrandHelper;
 import com.commerce.catalos.helpers.RoleHelper;
-import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.roles.CreateRoleRequest;
 import com.commerce.catalos.models.roles.RoleResponse;
+import com.commerce.catalos.models.roles.RoleStatusUpdateResponse;
 import com.commerce.catalos.models.roles.UpdateRoleRequest;
-import com.commerce.catalos.persistence.dtos.Brand;
 import com.commerce.catalos.persistence.dtos.Role;
 import com.commerce.catalos.persistence.repositories.RoleRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -34,6 +32,10 @@ public class RoleServiceImpl implements RoleService {
 
     private Role findRoleByUniqueId(final String uniqueId) {
         return this.roleRepository.findByUniqueIdAndEnabled(uniqueId, true);
+    }
+
+    private Role findRoleById(final String id) {
+        return this.roleRepository.findByIdAndEnabled(id, true);
     }
 
     /**
@@ -127,6 +129,27 @@ public class RoleServiceImpl implements RoleService {
         role.setUpdatedBy(authContext.getCurrentUser().getEmail());
         Logger.info("01c8031e-0949-4245-a8c7-161f42bb71c3", "Role updating with uniqueId: {}", uniqueId);
         return RoleHelper.toRoleResponseFromRole(this.roleRepository.save(role));
+    }
+
+    @Override
+    public RoleStatusUpdateResponse updateRoleStatus(final String id, final boolean status) {
+        Role role = this.findRoleById(id);
+        if (null == role) {
+            Logger.error("d9db38e1-5364-46d5-9f3d-89fecc90b876", "Role not found with id: {}", id);
+            throw new NotFoundException("Role not found");
+        }
+        if (role.isDefault()) {
+            Logger.warn("df685ef0-0168-433a-94e8-c00740142e7a", "Cannot update default role with uniqueId: {}",
+                    role.getUniqueId());
+            throw new ConflictException("Cannot update default role");
+        }
+        role.setActive(status);
+        role.setUpdatedAt(new Date());
+        role.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        Logger.info("606c8e99-1c75-4f47-9248-3775b26e3b4a", "Role updating with uniqueId: {}", role.getUniqueId());
+        role = this.roleRepository.save(role);
+        return RoleStatusUpdateResponse.builder().status(role.isActive())
+                .message(role.isActive() ? "Role Activated" : "Role Deactivated").build();
     }
 
 }

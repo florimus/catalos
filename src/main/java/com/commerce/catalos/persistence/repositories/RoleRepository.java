@@ -12,4 +12,6 @@ public interface RoleRepository extends MongoRepository<Role, String>, RoleCusto
     Optional<Role> findByUniqueId(final String uniqueId);
 
     Role findByUniqueIdAndEnabled(final String uniqueId, final boolean enabled);
+
+    Role findByIdAndEnabled(final String id, final boolean enabled);
 }
