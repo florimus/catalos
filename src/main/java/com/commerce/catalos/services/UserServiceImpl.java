@@ -196,6 +196,7 @@ public class UserServiceImpl implements UserService {
         }
         user.setLastName(updateUserInfoRequest.getLastName());
         user.setUserGroupId(updateUserInfoRequest.getUserGroupId());
+        user.setAvatar(updateUserInfoRequest.getAvatar());
         user.setUpdatedAt(new Date());
         return UserHelper.toUpdateUserInfoResponseFromUser(
                 userRepository.save(user));
@@ -260,17 +261,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UpdateStaffInfoResponse updateStaffInfo(UpdateStaffInfoRequest updateUserInfoRequest) {
-        User user = this.getUserById(updateUserInfoRequest.getId());
+    public UpdateStaffInfoResponse updateStaffInfo(final UpdateStaffInfoRequest updateStaffInfoRequest) {
+        User user = this.getUserById(updateStaffInfoRequest.getId());
         if (user == null) {
             Logger.error("1871fe80-c682-415b-98d7-8534047ba8b2", "User not found with id: {}",
-                    updateUserInfoRequest.getId());
+                    updateStaffInfoRequest.getId());
             throw new NotFoundException("User not found");
         }
-        user.setFirstName(updateUserInfoRequest.getFirstName());
-        user.setLastName(updateUserInfoRequest.getLastName());
-        user.setUserGroupId(updateUserInfoRequest.getUserGroupId());
-        user.setRoleId(updateUserInfoRequest.getRoleId()); // TODO: need to validate later
+        user.setFirstName(updateStaffInfoRequest.getFirstName());
+        user.setLastName(updateStaffInfoRequest.getLastName());
+        user.setUserGroupId(updateStaffInfoRequest.getUserGroupId());
+        user.setAvatar(updateStaffInfoRequest.getAvatar());
+        user.setRoleId(updateStaffInfoRequest.getRoleId()); // TODO: need to validate later
         user.setUpdatedAt(new Date());
         user.setUpdatedBy(authContext.getCurrentUser().getEmail());
         return UserHelper.toUpdateStaffStatusResponseFromUser(userRepository.save(user));

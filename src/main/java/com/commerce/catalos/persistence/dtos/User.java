@@ -24,6 +24,8 @@ public class User extends BaseDto {
 
     private String email;
 
+    private String avatar;
+
     private String password;
 
     private GrandType grandType;

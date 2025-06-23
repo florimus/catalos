@@ -22,6 +22,8 @@ public class GetUserInfoResponse {
 
     private String email;
 
+    private String avatar;
+
     private GrandType grandType;
 
     private String roleId;

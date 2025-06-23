@@ -20,6 +20,8 @@ public class UpdateUserInfoResponse {
 
     private String email;
 
+    private String avatar;
+
     private GrandType grandType;
 
     private String roleId;

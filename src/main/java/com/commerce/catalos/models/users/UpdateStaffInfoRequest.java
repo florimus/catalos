@@ -20,4 +20,6 @@ public class UpdateStaffInfoRequest {
     private String lastName;
 
     private String roleId;
+
+    private String avatar;
 }
