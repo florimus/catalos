@@ -11,10 +11,13 @@ import com.commerce.catalos.core.enums.DefaultRoles;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.core.utils.RoleUtils;
+import com.commerce.catalos.helpers.BrandHelper;
 import com.commerce.catalos.helpers.RoleHelper;
+import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.roles.CreateRoleRequest;
 import com.commerce.catalos.models.roles.RoleResponse;
 import com.commerce.catalos.models.roles.UpdateRoleRequest;
+import com.commerce.catalos.persistence.dtos.Brand;
 import com.commerce.catalos.persistence.dtos.Role;
 import com.commerce.catalos.persistence.repositories.RoleRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -62,7 +65,14 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Page<RoleResponse> listRoles(String query, Pageable pageable) {
-        throw new UnsupportedOperationException("Unimplemented method 'listRoles'");
+        Logger.info("8952fefd-8935-4b1d-a1e2-21ec90d34658", "Finding roles with query: {} and pageable: {}",
+                query, pageable);
+        Page<Role> roles = roleRepository.searchRoles(query, pageable);
+        return new Page<RoleResponse>(
+                RoleHelper.toRoleListResponseFromRoles(roles.getHits()),
+                roles.getTotalHitsCount(),
+                roles.getCurrentPage(),
+                roles.getPageSize());
     }
 
     @Override

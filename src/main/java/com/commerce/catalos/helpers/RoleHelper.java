@@ -1,5 +1,7 @@
 package com.commerce.catalos.helpers;
 
+import java.util.List;
+
 import org.springframework.beans.BeanUtils;
 
 import com.commerce.catalos.models.roles.CreateRoleRequest;
@@ -17,5 +19,9 @@ public class RoleHelper {
         Role role = new Role();
         BeanUtils.copyProperties(createRoleRequest, role);
         return role;
+    }
+
+    public static List<RoleResponse> toRoleListResponseFromRoles(final List<Role> roles) {
+        return roles.stream().map(RoleHelper::toRoleResponseFromRole).toList();
     }
 }
