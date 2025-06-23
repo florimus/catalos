@@ -9,6 +9,8 @@ import com.commerce.catalos.models.users.LoginUserRequest;
 import com.commerce.catalos.models.users.RefreshTokenRequest;
 import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
+import com.commerce.catalos.models.users.UpdateStaffInfoRequest;
+import com.commerce.catalos.models.users.UpdateStaffInfoResponse;
 import com.commerce.catalos.models.users.UpdateUserInfoRequest;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
 import com.commerce.catalos.models.users.UpdateUserStatusResponse;
@@ -101,6 +103,15 @@ public class UserController {
                 userService.updateUserInfo(updateUserInfoRequest));
     }
 
+    @PutMapping("/staff")
+    @PreAuthorize("hasRole('USR:NN')")
+    public ResponseEntity<UpdateStaffInfoResponse> updateStaffInfo(
+            @RequestBody final @Valid UpdateStaffInfoRequest updateUserInfoRequest) {
+        Logger.info("a85d6445-7fec-4a3a-8572-9acc7687c8b2", "Received request for update staff info");
+        return new ResponseEntity<UpdateStaffInfoResponse>(
+                userService.updateStaffInfo(updateUserInfoRequest));
+    }
+
     /**
      * Lists all users in the system. This endpoint is secured with the role
      * {@code USR:LS}.
@@ -112,9 +123,10 @@ public class UserController {
     @PreAuthorize("hasRole('USR:LS')")
     public ResponseEntity<Page<GetUserInfoResponse>> listUsers(
             @RequestParam(required = false, defaultValue = "") String query,
+            @RequestParam(required = false, defaultValue = SortConstants.USER) String role,
             @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Direction.DESC) Pageable pageable) {
         Logger.info("01d3047d-314b-44ec-b7e0-3bbd88dc676e", "Received request for list users");
-        return new ResponseEntity<Page<GetUserInfoResponse>>(userService.listUsers(query, pageable));
+        return new ResponseEntity<Page<GetUserInfoResponse>>(userService.listUsers(query, role, pageable));
     }
 
     @GetMapping("/id/{id}")

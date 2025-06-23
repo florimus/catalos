@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import com.commerce.catalos.core.configurations.Page;
+import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.persistence.dtos.User;
 
 @Repository
@@ -30,7 +31,7 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
      * @return a page of users
      */
     @Override
-    public Page<User> searchUsers(String search, Pageable pageable) {
+    public Page<User> searchUsers(String search, final String role, Pageable pageable) {
         Query query = new Query();
 
         if (search != null && !search.isEmpty()) {
@@ -45,6 +46,13 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
 
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
         }
+
+        if (role.equals(SortConstants.USER)) {
+            query.addCriteria(new Criteria("roleId").is("User"));
+        } else {
+            query.addCriteria(new Criteria("roleId").ne("User"));
+        }
+
         query.addCriteria(new Criteria("enabled").is(true));
 
         long total = mongoTemplate.count(query, User.class);

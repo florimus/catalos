@@ -14,6 +14,8 @@ import com.commerce.catalos.models.users.LoginUserRequest;
 import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
 import com.commerce.catalos.models.users.TokenClaims;
+import com.commerce.catalos.models.users.UpdateStaffInfoRequest;
+import com.commerce.catalos.models.users.UpdateStaffInfoResponse;
 import com.commerce.catalos.models.users.UpdateUserInfoRequest;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
 import com.commerce.catalos.models.users.UpdateUserStatusResponse;
@@ -206,10 +208,10 @@ public class UserServiceImpl implements UserService {
      * @return a page of users
      */
     @Override
-    public Page<GetUserInfoResponse> listUsers(final String query, final Pageable pageable) {
-        Logger.info("ad6cc059-42b2-432d-aa92-d8ae96e4b801", "Finding users with query: {} and pageable: {}", query,
-                pageable);
-        Page<User> users = userRepository.searchUsers(query, pageable);
+    public Page<GetUserInfoResponse> listUsers(final String query, final String role, final Pageable pageable) {
+        Logger.info("ad6cc059-42b2-432d-aa92-d8ae96e4b801", "Finding users with query: {}, role: {} and pageable: {}",
+                query, role, pageable);
+        Page<User> users = userRepository.searchUsers(query, role, pageable);
         return new Page<GetUserInfoResponse>(UserHelper.toGetUserInfoResponseFromUsers(users.getHits()),
                 users.getTotalHitsCount(), users.getCurrentPage(), users.getPageSize());
     }
@@ -255,5 +257,22 @@ public class UserServiceImpl implements UserService {
         user.setUpdatedAt(new Date());
         user.setUpdatedBy(authContext.getCurrentUser().getEmail());
         return UserHelper.toUpdateUserStatusResponseFromUser(userRepository.save(user));
+    }
+
+    @Override
+    public UpdateStaffInfoResponse updateStaffInfo(UpdateStaffInfoRequest updateUserInfoRequest) {
+        User user = this.getUserById(updateUserInfoRequest.getId());
+        if (user == null) {
+            Logger.error("1871fe80-c682-415b-98d7-8534047ba8b2", "User not found with id: {}",
+                    updateUserInfoRequest.getId());
+            throw new NotFoundException("User not found");
+        }
+        user.setFirstName(updateUserInfoRequest.getFirstName());
+        user.setLastName(updateUserInfoRequest.getLastName());
+        user.setUserGroupId(updateUserInfoRequest.getUserGroupId());
+        user.setRoleId(updateUserInfoRequest.getRoleId()); // TODO: need to validate later
+        user.setUpdatedAt(new Date());
+        user.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        return UserHelper.toUpdateStaffStatusResponseFromUser(userRepository.save(user));
     }
 }

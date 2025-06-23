@@ -11,4 +11,6 @@ public class SortConstants {
     public static final String ALL = "all";
 
     public static final String ROOT = "root";
+
+    public static final String USER = "User";
 }

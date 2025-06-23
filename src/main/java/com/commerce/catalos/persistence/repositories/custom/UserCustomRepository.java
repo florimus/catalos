@@ -7,5 +7,5 @@ import com.commerce.catalos.persistence.dtos.User;
 
 public interface UserCustomRepository {
 
-    Page<User> searchUsers(String search, Pageable pageable);
+    Page<User> searchUsers(String search, final String role, Pageable pageable);
 }

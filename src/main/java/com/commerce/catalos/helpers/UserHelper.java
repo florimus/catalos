@@ -3,6 +3,7 @@ package com.commerce.catalos.helpers;
 import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
+import com.commerce.catalos.models.users.UpdateStaffInfoResponse;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
 import com.commerce.catalos.models.users.UpdateUserStatusResponse;
 import com.commerce.catalos.models.users.UserInfoResponse;
@@ -117,6 +118,12 @@ public class UserHelper {
 
     public static UpdateUserStatusResponse toUpdateUserStatusResponseFromUser(final User save) {
         UpdateUserStatusResponse response = new UpdateUserStatusResponse();
+        BeanUtils.copyProperties(save, response);
+        return response;
+    }
+
+    public static UpdateStaffInfoResponse toUpdateStaffStatusResponseFromUser(User save) {
+        UpdateStaffInfoResponse response = new UpdateStaffInfoResponse();
         BeanUtils.copyProperties(save, response);
         return response;
     }
