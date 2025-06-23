@@ -1,6 +1,5 @@
 package com.commerce.catalos.models.orders;
 
-import com.commerce.catalos.persistence.dtos.Discount;
 import com.commerce.catalos.persistence.dtos.Product;
 import com.commerce.catalos.persistence.dtos.Variant;
 

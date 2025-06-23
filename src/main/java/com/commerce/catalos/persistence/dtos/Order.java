@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 @Builder
 @EqualsAndHashCode(callSuper = true)
-@Document("cat_order")
+@Document("cat_orders")
 public class Order extends BaseDto {
 
     @Id
