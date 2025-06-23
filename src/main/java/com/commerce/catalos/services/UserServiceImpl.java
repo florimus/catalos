@@ -16,6 +16,7 @@ import com.commerce.catalos.models.users.RegisterUserResponse;
 import com.commerce.catalos.models.users.TokenClaims;
 import com.commerce.catalos.models.users.UpdateUserInfoRequest;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
+import com.commerce.catalos.models.users.UpdateUserStatusResponse;
 import com.commerce.catalos.models.users.UserInfoResponse;
 import com.commerce.catalos.models.users.UserTokenResponse;
 import com.commerce.catalos.persistence.dtos.User;
@@ -57,6 +58,16 @@ public class UserServiceImpl implements UserService {
      */
     private User getUserByEmail(final String email) {
         return userRepository.findByEmail(email).orElse(null);
+    }
+
+    /**
+     * Retrieves a user by its ID.
+     * 
+     * @param id ID of the user to be retrieved.
+     * @return A user if found, null otherwise.
+     */
+    private User getUserById(final String id) {
+        return userRepository.findUserByIdAndEnabled(id, true);
     }
 
     /**
@@ -112,10 +123,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserTokenResponse loginUser(final LoginUserRequest loginUserRequest) {
         User user = this.getUserByEmail(loginUserRequest.getEmail());
-        if (user == null || !user.isActive()) {
+        if (user == null) {
             Logger.error("9ba10ef3-a5d3-496d-a496-1044baf35b5c", "Account not exits with email: {}",
                     loginUserRequest.getEmail());
             throw new ConflictException("Account not exits");
+        }
+        if (!user.isActive()) {
+            Logger.error("73565d67-9a11-461e-bc4d-48cbfc7f9532", "Account not active with email: {}",
+                    loginUserRequest.getEmail());
+            throw new ConflictException("Account is inactive, Please contact Admin");
         }
         Logger.info("f8810c98-d766-4b71-a275-29a6a5e29a92", "Account found with email: {}", user.getEmail());
         if (!PasswordUtil.matches(loginUserRequest.getPassword(), user.getPassword())) {
@@ -215,5 +231,29 @@ public class UserServiceImpl implements UserService {
             userInfoResponse.setPermissions(roleService.getRoleById(userInfoResponse.getRoleId()));
         }
         return userInfoResponse;
+    }
+
+    @Override
+    public GetUserInfoResponse getUserInfoById(final String id) {
+        User user = this.getUserById(id);
+        if (user == null) {
+            Logger.error("52f9c7b6-4843-4744-8c00-ed7f40f4d4fd", "User not found with id: {}", id);
+            throw new NotFoundException("User not found");
+        }
+        Logger.info("88f76817-c0e6-4ba8-add6-7f1be5215e20", "User: {} found with id: {}", user.getFirstName(), id);
+        return UserHelper.toGetUserInfoResponseFromUser(user);
+    }
+
+    @Override
+    public UpdateUserStatusResponse updateUserStatus(final String id, final boolean status) {
+        User user = this.getUserById(id);
+        if (user == null) {
+            Logger.error("1871fe80-c682-415b-98d7-8534047ba8b2", "User not found with id: {}", id);
+            throw new NotFoundException("User not found");
+        }
+        user.setActive(status);
+        user.setUpdatedAt(new Date());
+        user.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        return UserHelper.toUpdateUserStatusResponseFromUser(userRepository.save(user));
     }
 }

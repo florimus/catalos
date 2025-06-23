@@ -9,6 +9,7 @@ import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
 import com.commerce.catalos.models.users.UpdateUserInfoRequest;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
+import com.commerce.catalos.models.users.UpdateUserStatusResponse;
 import com.commerce.catalos.models.users.UserInfoResponse;
 import com.commerce.catalos.models.users.UserTokenResponse;
 
@@ -27,4 +28,8 @@ public interface UserService {
 	public Page<GetUserInfoResponse> listUsers(String query, Pageable pageable);
 
 	public UserInfoResponse myInfo();
+
+	public GetUserInfoResponse getUserInfoById(final String id);
+
+	public UpdateUserStatusResponse updateUserStatus(final String id, final boolean status);
 }

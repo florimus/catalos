@@ -101,6 +101,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     FilterUtils.populateAuthorities(StringUtils.populateArrayFromString(permissions)));
         } else {
             GetUserInfoResponse userInfo = userService.getUserInfoByEmail(tokenClaims.getEmail());
+            if (!userInfo.isActive()) {
+                Logger.error("feb2bb73d-bdc6-4874-b77a-ec48a5cc1966", "User not active");
+                throw new UnAuthorizedException("Inactive user token");
+            }
             String permissions = roleService.getRoleById(userInfo.getRoleId());
             authentication = new UsernamePasswordAuthenticationToken(
                     userInfo,

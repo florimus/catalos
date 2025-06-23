@@ -11,6 +11,7 @@ import com.commerce.catalos.models.users.RegisterUserRequest;
 import com.commerce.catalos.models.users.RegisterUserResponse;
 import com.commerce.catalos.models.users.UpdateUserInfoRequest;
 import com.commerce.catalos.models.users.UpdateUserInfoResponse;
+import com.commerce.catalos.models.users.UpdateUserStatusResponse;
 import com.commerce.catalos.models.users.UserInfoResponse;
 import com.commerce.catalos.models.users.UserTokenResponse;
 import com.commerce.catalos.services.UserService;
@@ -23,6 +24,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -89,8 +92,8 @@ public class UserController {
      * @param updateUserInfoRequest the details of the user to be updated
      * @return a response containing the updated user
      */
-    @PreAuthorize("hasRole('USR:NN')")
     @PutMapping()
+    @PreAuthorize("hasRole('USR:NN')")
     public ResponseEntity<UpdateUserInfoResponse> updateUserInfo(
             @RequestBody final @Valid UpdateUserInfoRequest updateUserInfoRequest) {
         Logger.info("f3995061-d51b-48f5-80be-2d896e8e6394", "Received request for update user info");
@@ -105,8 +108,8 @@ public class UserController {
      * @param pageable the pagination details
      * @return a response containing the list of users
      */
-    @PreAuthorize("hasRole('USR:LS')")
     @GetMapping("/search")
+    @PreAuthorize("hasRole('USR:LS')")
     public ResponseEntity<Page<GetUserInfoResponse>> listUsers(
             @RequestParam(required = false, defaultValue = "") String query,
             @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Direction.DESC) Pageable pageable) {
@@ -114,9 +117,24 @@ public class UserController {
         return new ResponseEntity<Page<GetUserInfoResponse>>(userService.listUsers(query, pageable));
     }
 
+    @GetMapping("/id/{id}")
+    @PreAuthorize("hasRole('USR:LS')")
+    public ResponseEntity<GetUserInfoResponse> getUserInfoById(@PathVariable final String id) {
+        Logger.info("4c56dcab-2b6e-4f7f-8a78-b9ba49f78d44", "Received request for user info by id: {}", id);
+        return new ResponseEntity<GetUserInfoResponse>(userService.getUserInfoById(id));
+    }
+
+    @PatchMapping("/id/{id}/status/{status}")
+    @PreAuthorize("hasRole('USR:LS')")
+    public ResponseEntity<UpdateUserStatusResponse> updateUserStatus(@PathVariable final String id,
+            @PathVariable final boolean status) {
+        Logger.info("f39f4bdb-9844-4f58-9983-ca60cfba7dac", "Received request for update user status by id: {}", id);
+        return new ResponseEntity<UpdateUserStatusResponse>(userService.updateUserStatus(id, status));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UserInfoResponse> myInfo() {
-        Logger.info("4c56dcab-2b6e-4f7f-8a78-b9ba49f78d44", "Received request for my info");
+        Logger.info("f800aa36-d660-415e-b7ff-24641e962ee9", "Received request for my info");
         return new ResponseEntity<UserInfoResponse>(userService.myInfo());
     }
 }
