@@ -8,5 +8,7 @@ import com.commerce.catalos.persistence.dtos.Role;
 
 public interface RoleRepository extends MongoRepository<Role, String> {
 
-    Optional<Role> findByUniqueId(String uniqueId);
+    Optional<Role> findByUniqueId(final String uniqueId);
+
+    Role findByUniqueIdAndEnabled(final String uniqueId, final boolean enabled);
 }
