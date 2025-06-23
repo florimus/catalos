@@ -33,6 +33,6 @@ public interface VariantService {
 
     public List<VariantListResponse> getVariantsByIds(final List<String> variantIds);
 
-    public VariantURLResponse getVariantByURL(final String url);
+    public VariantURLResponse getVariantByURL(final String url, final String channel);
 
 }

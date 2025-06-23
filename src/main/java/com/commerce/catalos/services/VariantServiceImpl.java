@@ -224,7 +224,7 @@ public class VariantServiceImpl implements VariantService {
     }
 
     @Override
-    public VariantURLResponse getVariantByURL(final String url) {
+    public VariantURLResponse getVariantByURL(final String url, final String channel) {
         Variant variant = this.findVariantByUrl(url);
         if (variant == null) {
             Logger.error("cf4af9ad-6d7e-4be4-b9f7-78cef2a033e0", "Variant not found with URL: {}", url);
@@ -236,7 +236,7 @@ public class VariantServiceImpl implements VariantService {
                 .supplyAsync(() -> productTypeService.getProductTypeById(variant.getProductTypeId()));
 
         CompletableFuture<CalculatedPriceResponse> pricesFuture = CompletableFuture
-                .supplyAsync(() -> priceService.getPriceOfSku(variant.getSkuId(), "68374ac320d736a89de249a0"));
+                .supplyAsync(() -> priceService.getPriceOfSku(variant.getSkuId(), channel));
 
         ProductResponse product = productFuture.join();
         ProductTypeResponse productType = productTypeFuture.join();
