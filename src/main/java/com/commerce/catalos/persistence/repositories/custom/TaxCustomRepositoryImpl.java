@@ -21,7 +21,7 @@ public class TaxCustomRepositoryImpl implements TaxCustomRepository {
     private MongoTemplate mongoTemplate;
 
     @Override
-    public Page<Tax> searchTaxes(final String search, final Pageable pageable) {
+    public Page<Tax> searchTaxes(final String search, final String channel, final Pageable pageable) {
         Query query = new Query();
         if (search != null && !search.isEmpty()) {
             List<Criteria> criteriaList = new ArrayList<Criteria>();
@@ -32,6 +32,10 @@ public class TaxCustomRepositoryImpl implements TaxCustomRepository {
 
             criteriaList.add(Criteria.where("name").regex(search, "i"));
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
+        }
+
+        if (channel != null && !channel.isEmpty()) {
+            query.addCriteria(new Criteria("applicableChannels").in(channel));
         }
 
         query.addCriteria(new Criteria("enabled").is(true));

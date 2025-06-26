@@ -69,10 +69,10 @@ public class TaxServiceImpl implements TaxService {
     }
 
     @Override
-    public Page<TaxResponse> listTaxes(final String query, final Pageable pageable) {
+    public Page<TaxResponse> listTaxes(final String query, final String channel, final Pageable pageable) {
         Logger.info("e01793d1-a0a9-43a9-990c-9a6ad04068ef", "Finding taxes with query: {} and pageable: {}",
                 query, pageable);
-        Page<Tax> taxes = taxRepository.searchTaxes(query, pageable);
+        Page<Tax> taxes = taxRepository.searchTaxes(query, channel, pageable);
         return new Page<TaxResponse>(
                 TaxHelper.toTaxListResponseFromTaxes(taxes.getHits()),
                 taxes.getTotalHitsCount(),

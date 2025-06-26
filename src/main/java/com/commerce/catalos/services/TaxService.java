@@ -16,7 +16,7 @@ public interface TaxService {
 
     TaxResponse getTaxById(final String id);
 
-    Page<TaxResponse> listTaxes(final String query, final Pageable pageable);
+    Page<TaxResponse> listTaxes(final String query, final String channel, final Pageable pageable);
 
     TaxStatusUpdateResponse updateTaxStatus(final String id, final boolean status);
 
