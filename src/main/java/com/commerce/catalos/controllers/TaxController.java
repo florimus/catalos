@@ -2,6 +2,7 @@ package com.commerce.catalos.controllers;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,5 +45,14 @@ public class TaxController {
         Logger.info("20137d3b-766a-4454-87d6-97cf06831c7c", "Received request for update tax by id: {}",
                 id);
         return new ResponseEntity<CreateTaxResponse>(taxService.updateTax(id, updateTaxRequest));
+    }
+
+    @GetMapping("/id/{id}")
+    @PreAuthorize("hasRole('TAX:LS')")
+    public ResponseEntity<CreateTaxResponse> getTaxById(
+            @PathVariable final String id) {
+        Logger.info("ea1c39be-93f9-4aa2-b33e-463b39fd0a78", "Received request for fetch tax by id: {}",
+                id);
+        return new ResponseEntity<CreateTaxResponse>(taxService.getTaxById(id));
     }
 }

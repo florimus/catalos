@@ -10,4 +10,6 @@ public interface TaxService {
 
     CreateTaxResponse updateTax(final String id, final UpdateTaxRequest updateTaxRequest);
 
+    CreateTaxResponse getTaxById(final String id);
+
 }

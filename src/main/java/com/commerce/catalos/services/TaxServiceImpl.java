@@ -50,4 +50,14 @@ public class TaxServiceImpl implements TaxService {
         return TaxHelper.toCreateTaxResponseFromTax(tax);
     }
 
+    @Override
+    public CreateTaxResponse getTaxById(final String id) {
+        Tax tax = findTaxById(id);
+        if (null == tax) {
+            Logger.error("7756637c-e74c-4aa2-89a6-be5efe2e4d02", "Tax not found with ID: {}", id);
+            throw new NotFoundException("Tax not found");
+        }
+        return TaxHelper.toCreateTaxResponseFromTax(tax);
+    }
+
 }
