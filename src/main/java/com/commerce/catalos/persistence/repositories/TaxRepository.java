@@ -6,4 +6,6 @@ import com.commerce.catalos.persistence.dtos.Tax;
 
 public interface TaxRepository extends MongoRepository<Tax, String> {
 
+    Tax findTaxByIdAndEnabled(final String id, final boolean enabled);
+
 }
