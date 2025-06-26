@@ -1,5 +1,7 @@
 package com.commerce.catalos.persistence.dtos;
 
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -25,4 +27,6 @@ public class Tax extends BaseDto {
     private boolean isFixed;
 
     private Float rate;
+
+    private List<String> applicableChannels;
 }
