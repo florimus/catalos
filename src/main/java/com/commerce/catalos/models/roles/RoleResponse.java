@@ -23,4 +23,6 @@ public class RoleResponse {
     private Map<String, List<String>> permissionList;
 
     private boolean isDefault;
+
+    private boolean active;
 }

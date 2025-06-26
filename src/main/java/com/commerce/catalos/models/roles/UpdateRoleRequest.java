@@ -13,4 +13,6 @@ public class UpdateRoleRequest {
     private String description;
 
     private Map<String, List<String>> permissionList;
+
+    private boolean active;
 }
