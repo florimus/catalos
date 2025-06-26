@@ -1,5 +1,7 @@
 package com.commerce.catalos.services;
 
+import java.util.Date;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,9 +13,11 @@ import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.TaxHelper;
 import com.commerce.catalos.models.taxes.CreateTaxRequest;
 import com.commerce.catalos.models.taxes.TaxResponse;
+import com.commerce.catalos.models.taxes.TaxStatusUpdateResponse;
 import com.commerce.catalos.models.taxes.UpdateTaxRequest;
 import com.commerce.catalos.persistence.dtos.Tax;
 import com.commerce.catalos.persistence.repositories.TaxRepository;
+import com.commerce.catalos.security.AuthContext;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class TaxServiceImpl implements TaxService {
 
     private final TaxRepository taxRepository;
+
+    private final AuthContext authContext;
 
     private Tax findTaxById(final String id) {
         return taxRepository.findTaxByIdAndEnabled(id, true);
@@ -44,7 +50,7 @@ public class TaxServiceImpl implements TaxService {
     public TaxResponse updateTax(final String id, final UpdateTaxRequest updateTaxRequest) {
         Tax tax = findTaxById(id);
         if (null == tax) {
-            Logger.error("7756637c-e74c-4aa2-89a6-be5efe2e4d02", "Tax not found with ID: {}", id);
+            Logger.error("abacb984-16a1-4290-b7b3-e4c97f361bc5", "Tax not found with ID: {}", id);
             throw new NotFoundException("Tax not found");
         }
         BeanUtils.copyProperties(updateTaxRequest, tax);
@@ -56,7 +62,7 @@ public class TaxServiceImpl implements TaxService {
     public TaxResponse getTaxById(final String id) {
         Tax tax = findTaxById(id);
         if (null == tax) {
-            Logger.error("7756637c-e74c-4aa2-89a6-be5efe2e4d02", "Tax not found with ID: {}", id);
+            Logger.error("27580be7-69c7-43f9-abe2-fbc43ea04c0b", "Tax not found with ID: {}", id);
             throw new NotFoundException("Tax not found");
         }
         return TaxHelper.toTaxResponseFromTax(tax);
@@ -72,6 +78,21 @@ public class TaxServiceImpl implements TaxService {
                 taxes.getTotalHitsCount(),
                 taxes.getCurrentPage(),
                 taxes.getPageSize());
+    }
+
+    @Override
+    public TaxStatusUpdateResponse updateTaxStatus(String id, boolean status) {
+        Tax tax = findTaxById(id);
+        if (null == tax) {
+            Logger.error("30dedae3-b40a-481c-88ff-51ece72da250", "Tax not found with ID: {}", id);
+            throw new NotFoundException("Tax not found");
+        }
+        tax.setActive(status);
+        tax.setUpdatedAt(new Date());
+        tax.setUpdatedBy(authContext.getCurrentUser().getEmail());
+        tax = taxRepository.save(tax);
+        return TaxStatusUpdateResponse.builder().message(tax.isActive() ? "Tax Activated" : "Tax Deactivated")
+                .status(tax.isActive()).build();
     }
 
 }

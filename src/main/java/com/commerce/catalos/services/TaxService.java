@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.models.taxes.CreateTaxRequest;
 import com.commerce.catalos.models.taxes.TaxResponse;
+import com.commerce.catalos.models.taxes.TaxStatusUpdateResponse;
 import com.commerce.catalos.models.taxes.UpdateTaxRequest;
 
 public interface TaxService {
@@ -16,5 +17,7 @@ public interface TaxService {
     TaxResponse getTaxById(final String id);
 
     Page<TaxResponse> listTaxes(final String query, final Pageable pageable);
+
+    TaxStatusUpdateResponse updateTaxStatus(final String id, final boolean status);
 
 }

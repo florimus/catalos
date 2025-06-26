@@ -6,6 +6,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,6 +21,7 @@ import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.models.taxes.CreateTaxRequest;
 import com.commerce.catalos.models.taxes.TaxResponse;
+import com.commerce.catalos.models.taxes.TaxStatusUpdateResponse;
 import com.commerce.catalos.models.taxes.UpdateTaxRequest;
 import com.commerce.catalos.services.TaxService;
 
@@ -55,8 +57,7 @@ public class TaxController {
 
     @GetMapping("/id/{id}")
     @PreAuthorize("hasRole('TAX:LS')")
-    public ResponseEntity<TaxResponse> getTaxById(
-            @PathVariable final String id) {
+    public ResponseEntity<TaxResponse> getTaxById(@PathVariable final String id) {
         Logger.info("ea1c39be-93f9-4aa2-b33e-463b39fd0a78", "Received request for fetch tax by id: {}",
                 id);
         return new ResponseEntity<TaxResponse>(taxService.getTaxById(id));
@@ -71,4 +72,14 @@ public class TaxController {
                 query);
         return new ResponseEntity<Page<TaxResponse>>(taxService.listTaxes(query, pageable));
     }
+
+    @PatchMapping("/id/{id}/status/{status}")
+    @PreAuthorize("hasRole('TAX:LS')")
+    public ResponseEntity<TaxStatusUpdateResponse> updateTaxStatus(@PathVariable final String id,
+            @PathVariable final boolean status) {
+        Logger.info("dc25cc30-5df3-4f40-b2c8-59edf978fe4a", "Received request for update tax status by id: {}",
+                id);
+        return new ResponseEntity<TaxStatusUpdateResponse>(taxService.updateTaxStatus(id, status));
+    }
+
 }
