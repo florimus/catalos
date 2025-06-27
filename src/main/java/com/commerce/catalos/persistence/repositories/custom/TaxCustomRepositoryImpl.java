@@ -1,7 +1,9 @@
 package com.commerce.catalos.persistence.repositories.custom;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,7 @@ public class TaxCustomRepositoryImpl implements TaxCustomRepository {
     private MongoTemplate mongoTemplate;
 
     @Override
-    public Page<Tax> searchTaxes(final String search, final String channel, final Pageable pageable) {
+    public Page<Tax> searchTaxes(final String search, final String channels, final Pageable pageable) {
         Query query = new Query();
         if (search != null && !search.isEmpty()) {
             List<Criteria> criteriaList = new ArrayList<Criteria>();
@@ -34,8 +36,15 @@ public class TaxCustomRepositoryImpl implements TaxCustomRepository {
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
         }
 
-        if (channel != null && !channel.isEmpty()) {
-            query.addCriteria(new Criteria("applicableChannels").in(channel));
+        if (channels != null && !channels.trim().isEmpty()) {
+            List<String> channelList = Arrays.stream(channels.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+
+            if (!channelList.isEmpty()) {
+                query.addCriteria(Criteria.where("applicableChannels").in(channelList));
+            }
         }
 
         query.addCriteria(new Criteria("enabled").is(true));

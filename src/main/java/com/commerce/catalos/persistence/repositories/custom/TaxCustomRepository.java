@@ -7,5 +7,5 @@ import com.commerce.catalos.persistence.dtos.Tax;
 
 public interface TaxCustomRepository {
 
-    Page<Tax> searchTaxes(final String search, final String channel, final Pageable pageable);
+    Page<Tax> searchTaxes(final String search, final String channels, final Pageable pageable);
 }

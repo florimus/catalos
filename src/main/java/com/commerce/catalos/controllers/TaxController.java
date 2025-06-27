@@ -67,15 +67,15 @@ public class TaxController {
     @PreAuthorize("hasRole('TAX:LS')")
     public ResponseEntity<Page<TaxResponse>> listTaxes(
             @RequestParam(required = false, defaultValue = "") String query,
-            @RequestParam(required = false, defaultValue = "") String channel,
+            @RequestParam(required = false, defaultValue = "") String channels,
             @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Sort.Direction.DESC) Pageable pageable) {
         Logger.info("6d7a48fd-de51-479e-895e-422470a3f3df", "Received request for fetch tax by query: {}",
                 query);
-        return new ResponseEntity<Page<TaxResponse>>(taxService.listTaxes(query, channel, pageable));
+        return new ResponseEntity<Page<TaxResponse>>(taxService.listTaxes(query, channels, pageable));
     }
 
     @PatchMapping("/id/{id}/status/{status}")
-    @PreAuthorize("hasRole('TAX:LS')")
+    @PreAuthorize("hasRole('TAX:NN')")
     public ResponseEntity<TaxStatusUpdateResponse> updateTaxStatus(@PathVariable final String id,
             @PathVariable final boolean status) {
         Logger.info("dc25cc30-5df3-4f40-b2c8-59edf978fe4a", "Received request for update tax status by id: {}",
