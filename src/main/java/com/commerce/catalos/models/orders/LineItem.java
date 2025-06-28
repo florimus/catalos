@@ -1,7 +1,7 @@
 package com.commerce.catalos.models.orders;
 
-import com.commerce.catalos.persistence.dtos.Product;
-import com.commerce.catalos.persistence.dtos.Variant;
+import com.commerce.catalos.models.products.ProductResponse;
+import com.commerce.catalos.models.variants.VariantResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,9 +14,9 @@ public class LineItem {
 
     private String id;
 
-    private Product product;
+    private ProductResponse product;
 
-    private Variant variant;
+    private VariantResponse variant;
 
     private Integer quantity;
 

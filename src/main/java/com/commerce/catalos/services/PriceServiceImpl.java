@@ -64,8 +64,8 @@ public class PriceServiceImpl implements PriceService {
     }
 
     @Override
-    public CalculatedPriceResponse getPriceOfSku(String skuId, String channelId) {
-        return pricingService.getPriceOfSku(skuId, channelId, this.getTablePriceBySku(skuId), 1, null);
+    public CalculatedPriceResponse getPriceOfSku(final String skuId, final String channelId, final Integer quantity) {
+        return pricingService.getPriceOfSku(skuId, channelId, this.getTablePriceBySku(skuId), quantity, null);
     }
 
 }

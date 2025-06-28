@@ -11,6 +11,6 @@ public interface PriceService {
 
     SkuPriceResponse getTablePriceBySku(final String skuId);
 
-    CalculatedPriceResponse getPriceOfSku(final String skuId, final String channelId);
+    CalculatedPriceResponse getPriceOfSku(final String skuId, final String channelId, final Integer quantity);
 
 }

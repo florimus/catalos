@@ -51,6 +51,6 @@ public class PriceController {
             @PathVariable final String channelId) {
         Logger.info("a10e5896-5986-4410-89c1-47fa1ed8c823",
                 "Received request for fetching price for sku: {} and channel: {}", skuId, channelId);
-        return new ResponseEntity<CalculatedPriceResponse>(priceService.getPriceOfSku(skuId, channelId));
+        return new ResponseEntity<CalculatedPriceResponse>(priceService.getPriceOfSku(skuId, channelId, 1));
     }
 }

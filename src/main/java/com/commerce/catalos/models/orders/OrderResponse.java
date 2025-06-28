@@ -1,30 +1,19 @@
-package com.commerce.catalos.persistence.dtos;
-
-import com.commerce.catalos.core.enums.OrderStatus;
-import com.commerce.catalos.models.orders.LineItem;
-import com.commerce.catalos.models.orders.OrderPrice;
-import com.commerce.catalos.models.orders.PaymentInfo;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+package com.commerce.catalos.models.orders;
 
 import java.util.List;
 
+import com.commerce.catalos.core.enums.OrderStatus;
+import com.commerce.catalos.persistence.dtos.Address;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @Data
-@Builder
-@EqualsAndHashCode(callSuper = true)
-@Document("cat_orders")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Order extends BaseDto {
+public class OrderResponse {
 
-    @Id
     private String id;
 
     private OrderStatus status;

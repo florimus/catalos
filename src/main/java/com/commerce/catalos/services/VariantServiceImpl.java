@@ -236,7 +236,7 @@ public class VariantServiceImpl implements VariantService {
                 .supplyAsync(() -> productTypeService.getProductTypeById(variant.getProductTypeId()));
 
         CompletableFuture<CalculatedPriceResponse> pricesFuture = CompletableFuture
-                .supplyAsync(() -> priceService.getPriceOfSku(variant.getSkuId(), channel));
+                .supplyAsync(() -> priceService.getPriceOfSku(variant.getSkuId(), channel, 1));
 
         ProductResponse product = productFuture.join();
         ProductTypeResponse productType = productTypeFuture.join();
