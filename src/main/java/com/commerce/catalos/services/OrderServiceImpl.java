@@ -20,6 +20,7 @@ import com.commerce.catalos.core.enums.OrderStatus;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.OrderHelper;
 import com.commerce.catalos.models.orders.CreateOrderRequest;
+import com.commerce.catalos.models.orders.DeleteOrderLineItemRequest;
 import com.commerce.catalos.models.orders.LineItem;
 import com.commerce.catalos.models.orders.LineItemPrice;
 import com.commerce.catalos.models.orders.OrderPrice;
@@ -209,6 +210,29 @@ public class OrderServiceImpl implements OrderService {
         order.setLineItems(finalLineItems);
 
         if (!finalLineItems.isEmpty()) {
+            order.setPrice(calculateOrderPrice(finalLineItems));
+        }
+
+        orderRepository.save(order);
+        return OrderHelper.toOrderResponseFromOrder(order);
+    }
+
+    @Override
+    public OrderResponse deleteOrderLineItems(String orderId, DeleteOrderLineItemRequest deleteOrderLineItemRequest) {
+        Order order = this.findOrderById(orderId);
+        if (null == order) {
+            Logger.error("29c85472-7d42-4f43-8d78-bf05b3a54c38", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+        order.getLineItems().removeIf(
+                lineItem -> deleteOrderLineItemRequest.getLineItems().contains(lineItem.getId()));
+
+        Map<String, Integer> variantQuantityMap = prepareVariantQuantityMap(order, List.of());
+
+        List<LineItem> finalLineItems = buildLineItems(variantQuantityMap, order.getChannelId());
+        order.setLineItems(finalLineItems);
+
+        if (null != finalLineItems) {
             order.setPrice(calculateOrderPrice(finalLineItems));
         }
 
