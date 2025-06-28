@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.enums.OrderStatus;
+import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.OrderHelper;
 import com.commerce.catalos.models.orders.CreateOrderRequest;
 import com.commerce.catalos.models.orders.LineItem;
@@ -24,6 +25,7 @@ import com.commerce.catalos.models.orders.LineItemPrice;
 import com.commerce.catalos.models.orders.OrderPrice;
 import com.commerce.catalos.models.orders.OrderRequestLineItem;
 import com.commerce.catalos.models.orders.OrderResponse;
+import com.commerce.catalos.models.orders.UpdateOrderLineItemRequest;
 import com.commerce.catalos.models.prices.CalculatedPriceResponse;
 import com.commerce.catalos.models.products.ProductResponse;
 import com.commerce.catalos.models.users.GetUserInfoResponse;
@@ -60,44 +62,8 @@ public class OrderServiceImpl implements OrderService {
                 userId, channelId, OrderStatus.InProgress, true, true);
     }
 
-    @Override
-    public OrderResponse createOrder(final CreateOrderRequest request) {
-        String userId = request.getUserId();
-        String channelId = request.getChannelId();
-
-        Order order = null;
-
-        if (null == userId || userId.isBlank()) {
-            userId = java.util.UUID.randomUUID().toString();
-        } else {
-            order = findRunningOrderByUserIdAndChannelId(userId, channelId);
-            try {
-                GetUserInfoResponse userInfo = userService.getUserInfoById(userId);
-                if (null != userInfo && null != order) {
-                    order.setUserId(userId);
-                    order.setEmail(userInfo.getEmail());
-                }
-            } catch (Exception e) {
-                Logger.info("5218203d-d7d1-4a55-934d-1a7a66d18b7b", "Creating order for guest user: {}",
-                        userId);
-            }
-        }
-
-        if (order == null) {
-            order = initializeNewOrder(userId, channelId);
-        }
-
-        Map<String, Integer> variantQuantityMap = prepareVariantQuantityMap(order, request.getLineItems());
-
-        List<LineItem> finalLineItems = buildLineItems(variantQuantityMap, channelId);
-        order.setLineItems(finalLineItems);
-
-        if (!finalLineItems.isEmpty()) {
-            order.setPrice(calculateOrderPrice(finalLineItems));
-        }
-
-        orderRepository.save(order);
-        return OrderHelper.toOrderResponseFromOrder(order);
+    private Order findOrderById(final String orderId) {
+        return this.orderRepository.findOrderByIdAndEnabled(orderId, true);
     }
 
     private Order initializeNewOrder(String userId, String channelId) {
@@ -187,6 +153,67 @@ public class OrderServiceImpl implements OrderService {
         orderPrice.setGrandTotalPrice(subtotal + tax - discount);
 
         return orderPrice;
+    }
+
+    @Override
+    public OrderResponse createOrder(final CreateOrderRequest request) {
+        String userId = request.getUserId();
+        String channelId = request.getChannelId();
+
+        Order order = null;
+
+        if (null == userId || userId.isBlank()) {
+            userId = java.util.UUID.randomUUID().toString();
+        } else {
+            order = findRunningOrderByUserIdAndChannelId(userId, channelId);
+            try {
+                GetUserInfoResponse userInfo = userService.getUserInfoById(userId);
+                if (null != userInfo && null != order) {
+                    order.setUserId(userId);
+                    order.setEmail(userInfo.getEmail());
+                }
+            } catch (Exception e) {
+                Logger.info("5218203d-d7d1-4a55-934d-1a7a66d18b7b", "Creating order for guest user: {}",
+                        userId);
+            }
+        }
+
+        if (order == null) {
+            order = initializeNewOrder(userId, channelId);
+        }
+
+        Map<String, Integer> variantQuantityMap = prepareVariantQuantityMap(order, request.getLineItems());
+
+        List<LineItem> finalLineItems = buildLineItems(variantQuantityMap, channelId);
+        order.setLineItems(finalLineItems);
+
+        if (!finalLineItems.isEmpty()) {
+            order.setPrice(calculateOrderPrice(finalLineItems));
+        }
+
+        orderRepository.save(order);
+        return OrderHelper.toOrderResponseFromOrder(order);
+    }
+
+    @Override
+    public OrderResponse updateOrderLineItems(String orderId, UpdateOrderLineItemRequest updateOrderLineItemRequest) {
+        Order order = this.findOrderById(orderId);
+        if (null == order) {
+            Logger.error("bf157555-c712-4bc6-8609-986e6dbeaa45", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+        Map<String, Integer> variantQuantityMap = prepareVariantQuantityMap(order,
+                updateOrderLineItemRequest.getLineItems());
+
+        List<LineItem> finalLineItems = buildLineItems(variantQuantityMap, order.getChannelId());
+        order.setLineItems(finalLineItems);
+
+        if (!finalLineItems.isEmpty()) {
+            order.setPrice(calculateOrderPrice(finalLineItems));
+        }
+
+        orderRepository.save(order);
+        return OrderHelper.toOrderResponseFromOrder(order);
     }
 
 }
