@@ -33,6 +33,7 @@ import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.persistence.dtos.Order;
 import com.commerce.catalos.persistence.repositories.OrderRepository;
+import com.commerce.catalos.security.AuthContext;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,6 +42,8 @@ import lombok.RequiredArgsConstructor;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+
+    private final AuthContext authContext;
 
     @Lazy
     @Autowired
@@ -77,7 +80,11 @@ public class OrderServiceImpl implements OrderService {
         order.setActive(true);
         order.setEnabled(true);
         order.setCreatedAt(new Date());
-        order.setCreatedBy(null);
+
+        if (null != authContext.getCurrentUser()) {
+            order.setCreatedBy(authContext.getCurrentUser().getId());
+        }
+
         return order;
     }
 
@@ -192,6 +199,11 @@ public class OrderServiceImpl implements OrderService {
             order.setPrice(calculateOrderPrice(finalLineItems));
         }
 
+        if (null != authContext.getCurrentUser()) {
+            order.setUpdatedBy(authContext.getCurrentUser().getId());
+        }
+
+        order.setUpdatedAt(new Date());
         orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
     }
@@ -213,6 +225,11 @@ public class OrderServiceImpl implements OrderService {
             order.setPrice(calculateOrderPrice(finalLineItems));
         }
 
+        if (null != authContext.getCurrentUser()) {
+            order.setUpdatedBy(authContext.getCurrentUser().getId());
+        }
+
+        order.setUpdatedAt(new Date());
         orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
     }
@@ -236,6 +253,11 @@ public class OrderServiceImpl implements OrderService {
             order.setPrice(calculateOrderPrice(finalLineItems));
         }
 
+        if (null != authContext.getCurrentUser()) {
+            order.setUpdatedBy(authContext.getCurrentUser().getId());
+        }
+
+        order.setUpdatedAt(new Date());
         orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
     }
