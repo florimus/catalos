@@ -15,4 +15,8 @@ public interface OrderService {
     OrderResponse deleteOrderLineItems(final String orderId,
             final DeleteOrderLineItemRequest deleteOrderLineItemRequest);
 
+    OrderResponse getOrderById(final String orderId);
+
+    OrderResponse createOrderByAdmin(final CreateOrderRequest createOrderRequest);
+
 }

@@ -72,15 +72,21 @@ public class OrderServiceImpl implements OrderService {
                 userId, channelId, OrderStatus.InProgress, true, true);
     }
 
+    private Order findRunningOrderByEmailAndChannelId(final String email, final String channelId) {
+        return this.orderRepository.findOrderByEmailAndChannelIdAndStatusAndActiveAndEnabled(
+                email, channelId, OrderStatus.InProgress, true, true);
+    }
+
     private Order findOrderById(final String orderId) {
         return this.orderRepository.findOrderByIdAndEnabled(orderId, true);
     }
 
-    private Order initializeNewOrder(String userId, String channelId) {
+    private Order initializeNewOrder(String userId, String channelId, String email) {
         Logger.info("aba1efef-fb8b-4ac9-9359-d61a44129852", "Creating new order for user: {} and channel: {}", userId,
                 channelId);
         Order order = new Order();
         order.setUserId(userId);
+        order.setEmail(email);
         order.setChannelId(channelId);
         order.setStatus(OrderStatus.InProgress);
         order.setActive(true);
@@ -204,7 +210,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         if (order == null) {
-            order = initializeNewOrder(userId, channelId);
+            order = initializeNewOrder(userId, channelId, null);
         }
 
         Map<String, Integer> variantQuantityMap = prepareVariantQuantityMap(order, request.getLineItems());
@@ -269,6 +275,72 @@ public class OrderServiceImpl implements OrderService {
         order.setLineItems(finalLineItems);
 
         if (null != finalLineItems) {
+            order.setPrice(calculateOrderPrice(finalLineItems));
+        }
+
+        GetUserInfoResponse user = authContext.getCurrentUser();
+        if (user != null) {
+            order.setUpdatedBy(user.getId());
+        }
+
+        order.setUpdatedAt(new Date());
+        orderRepository.save(order);
+        return OrderHelper.toOrderResponseFromOrder(order);
+    }
+
+    @Override
+    public OrderResponse getOrderById(final String orderId) {
+        Order order = this.findOrderById(orderId);
+        if (null == order) {
+            Logger.error("91020196-1b09-4fbb-a2bf-028132bb7e79", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+
+        Map<String, Integer> variantQuantityMap = prepareVariantQuantityMap(order, List.of());
+
+        List<LineItem> finalLineItems = buildLineItems(variantQuantityMap, order.getChannelId());
+        order.setLineItems(finalLineItems);
+
+        if (null != finalLineItems) {
+            order.setPrice(calculateOrderPrice(finalLineItems));
+        }
+
+        return OrderHelper.toOrderResponseFromOrder(order);
+    }
+
+    @Override
+    public OrderResponse createOrderByAdmin(final CreateOrderRequest request) {
+        String userId = request.getUserId();
+        String channelId = request.getChannelId();
+
+        Order order = null;
+
+        if (null == userId || userId.isBlank()) {
+            userId = java.util.UUID.randomUUID().toString();
+        } else {
+            order = findRunningOrderByEmailAndChannelId(userId, channelId);
+            try {
+                GetUserInfoResponse userInfo = userService.getUserInfoByEmail(userId);
+                if (null != userInfo && null != order) {
+                    order.setEmail(userInfo.getEmail());
+                    order.setUserId(userInfo.getId());
+                }
+            } catch (Exception e) {
+                Logger.info("49ddb14d-094e-4ebd-a610-319485c0e4e2", "Creating order for guest user: {}",
+                        userId);
+            }
+        }
+
+        if (order == null) {
+            order = initializeNewOrder(java.util.UUID.randomUUID().toString(), channelId, userId);
+        }
+
+        Map<String, Integer> variantQuantityMap = prepareVariantQuantityMap(order, request.getLineItems());
+
+        List<LineItem> finalLineItems = buildLineItems(variantQuantityMap, channelId);
+        order.setLineItems(finalLineItems);
+
+        if (!finalLineItems.isEmpty()) {
             order.setPrice(calculateOrderPrice(finalLineItems));
         }
 

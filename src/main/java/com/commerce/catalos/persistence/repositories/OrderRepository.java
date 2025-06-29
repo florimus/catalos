@@ -8,8 +8,11 @@ import com.commerce.catalos.persistence.dtos.Order;
 public interface OrderRepository extends MongoRepository<Order, String> {
 
     Order findOrderByUserIdAndChannelIdAndStatusAndActiveAndEnabled(final String userId, final String channelId,
-            final OrderStatus inProgress, final boolean active, final boolean enabled);
+            final OrderStatus status, final boolean active, final boolean enabled);
 
     Order findOrderByIdAndEnabled(final String orderId, final boolean enabled);
+
+    Order findOrderByEmailAndChannelIdAndStatusAndActiveAndEnabled(final String email, final String channelId,
+            final OrderStatus status, boolean active, boolean enabled);
 
 }
