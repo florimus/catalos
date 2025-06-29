@@ -1,7 +1,14 @@
 package com.commerce.catalos.helpers;
 
 import com.commerce.catalos.models.orders.LineItemPrice;
+import com.commerce.catalos.models.orders.MiniLineItem;
+import com.commerce.catalos.models.orders.MiniOrderResponse;
 import com.commerce.catalos.models.prices.CalculatedPriceResponse;
+import com.commerce.catalos.models.variants.MiniVariantResponse;
+import com.commerce.catalos.models.variants.VariantResponse;
+
+import java.util.List;
+
 import org.springframework.beans.BeanUtils;
 
 import com.commerce.catalos.models.orders.OrderResponse;
@@ -15,10 +22,38 @@ public class OrderHelper {
         return orderResponse;
     }
 
-    public static LineItemPrice toLineItemPriceFromCalculatedPriceResponse (
+    public static LineItemPrice toLineItemPriceFromCalculatedPriceResponse(
             final CalculatedPriceResponse calculatedPriceResponse) {
         LineItemPrice lineItemPrice = new LineItemPrice();
         BeanUtils.copyProperties(calculatedPriceResponse, lineItemPrice);
         return lineItemPrice;
+    }
+
+    public static MiniOrderResponse toMiniOrderResponseFromOrder(final Order order) {
+        MiniOrderResponse miniOrderResponse = new MiniOrderResponse();
+        BeanUtils.copyProperties(order, miniOrderResponse);
+        List<MiniLineItem> miniLineItems = order.getLineItems().stream().map(item -> {
+            MiniLineItem miniLineItem = new MiniLineItem();
+            BeanUtils.copyProperties(item, miniLineItem);
+            String productName = item.getProduct().getName();
+
+            miniLineItem.setProductName(productName);
+
+            VariantResponse variant = item.getVariant();
+            MiniVariantResponse miniVariant = new MiniVariantResponse();
+            BeanUtils.copyProperties(variant, miniVariant);
+
+            miniLineItem.setVariant(miniVariant);
+
+            return miniLineItem;
+        }).toList();
+
+        miniOrderResponse.setLineItems(miniLineItems);
+
+        return miniOrderResponse;
+    }
+
+    public static List<MiniOrderResponse> toMiniOrderResponseFromOrders(final List<Order> orders) {
+        return orders.stream().map(OrderHelper::toMiniOrderResponseFromOrder).toList();
     }
 }

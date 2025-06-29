@@ -13,9 +13,11 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.enums.OrderStatus;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.OrderHelper;
@@ -24,6 +26,7 @@ import com.commerce.catalos.models.orders.DeleteOrderLineItemRequest;
 import com.commerce.catalos.models.orders.LineItem;
 import com.commerce.catalos.models.orders.LineItemError;
 import com.commerce.catalos.models.orders.LineItemPrice;
+import com.commerce.catalos.models.orders.MiniOrderResponse;
 import com.commerce.catalos.models.orders.OrderPrice;
 import com.commerce.catalos.models.orders.OrderRequestLineItem;
 import com.commerce.catalos.models.orders.OrderResponse;
@@ -352,6 +355,18 @@ public class OrderServiceImpl implements OrderService {
         order.setUpdatedAt(new Date());
         orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
+    }
+
+    @Override
+    public Page<MiniOrderResponse> getOrders(final String query, final String channel, final Pageable pageable) {
+        Logger.info("95b02037-263c-4cba-a200-cf3ba73f2b04", "Finding orders with query: {} and pageable: {}",
+                query, pageable);
+        Page<Order> orders = orderRepository.searchOrders(query, channel, pageable);
+        return new Page<MiniOrderResponse>(
+                OrderHelper.toMiniOrderResponseFromOrders(orders.getHits()),
+                orders.getTotalHitsCount(),
+                orders.getCurrentPage(),
+                orders.getPageSize());
     }
 
 }
