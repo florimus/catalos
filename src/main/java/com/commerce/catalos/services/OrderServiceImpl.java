@@ -22,6 +22,7 @@ import com.commerce.catalos.helpers.OrderHelper;
 import com.commerce.catalos.models.orders.CreateOrderRequest;
 import com.commerce.catalos.models.orders.DeleteOrderLineItemRequest;
 import com.commerce.catalos.models.orders.LineItem;
+import com.commerce.catalos.models.orders.LineItemError;
 import com.commerce.catalos.models.orders.LineItemPrice;
 import com.commerce.catalos.models.orders.OrderPrice;
 import com.commerce.catalos.models.orders.OrderRequestLineItem;
@@ -29,6 +30,7 @@ import com.commerce.catalos.models.orders.OrderResponse;
 import com.commerce.catalos.models.orders.UpdateOrderLineItemRequest;
 import com.commerce.catalos.models.prices.CalculatedPriceResponse;
 import com.commerce.catalos.models.products.ProductResponse;
+import com.commerce.catalos.models.stocks.StockInfo;
 import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.persistence.dtos.Order;
@@ -61,6 +63,10 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private UserService userService;
 
+    @Lazy
+    @Autowired
+    private StockService stockService;
+
     private Order findRunningOrderByUserIdAndChannelId(final String userId, final String channelId) {
         return this.orderRepository.findOrderByUserIdAndChannelIdAndStatusAndActiveAndEnabled(
                 userId, channelId, OrderStatus.InProgress, true, true);
@@ -81,8 +87,9 @@ public class OrderServiceImpl implements OrderService {
         order.setEnabled(true);
         order.setCreatedAt(new Date());
 
-        if (null != authContext.getCurrentUser()) {
-            order.setCreatedBy(authContext.getCurrentUser().getId());
+        GetUserInfoResponse user = authContext.getCurrentUser();
+        if (user != null) {
+            order.setUpdatedBy(user.getId());
         }
 
         return order;
@@ -116,6 +123,7 @@ public class OrderServiceImpl implements OrderService {
 
                     VariantResponse variant = variantService.getVariantById(variantId);
                     ProductResponse product = productService.getProductById(variant.getProductId());
+                    StockInfo stock = stockService.getStockInfoByVariantIdAndChannel(variantId, channelId);
                     CalculatedPriceResponse prices = priceService.getPriceOfSku(variant.getSkuId(), channelId,
                             quantity);
 
@@ -124,6 +132,15 @@ public class OrderServiceImpl implements OrderService {
                     lineItem.setVariant(variant);
                     lineItem.setProduct(product);
                     lineItem.setQuantity(quantity);
+
+                    if (null != stock) {
+                        Integer availableStocks = stock.getTotalStocks() - stock.getReservedStocks()
+                                - stock.getSafetyStocks();
+
+                        if (quantity > availableStocks) {
+                            lineItem.setError(new LineItemError(variantId, "Insufficient stock"));
+                        }
+                    }
 
                     if (prices != null) {
                         LineItemPrice lineItemPrice = OrderHelper.toLineItemPriceFromCalculatedPriceResponse(prices);
@@ -199,8 +216,9 @@ public class OrderServiceImpl implements OrderService {
             order.setPrice(calculateOrderPrice(finalLineItems));
         }
 
-        if (null != authContext.getCurrentUser()) {
-            order.setUpdatedBy(authContext.getCurrentUser().getId());
+        GetUserInfoResponse user = authContext.getCurrentUser();
+        if (user != null) {
+            order.setUpdatedBy(user.getId());
         }
 
         order.setUpdatedAt(new Date());
@@ -225,8 +243,9 @@ public class OrderServiceImpl implements OrderService {
             order.setPrice(calculateOrderPrice(finalLineItems));
         }
 
-        if (null != authContext.getCurrentUser()) {
-            order.setUpdatedBy(authContext.getCurrentUser().getId());
+        GetUserInfoResponse user = authContext.getCurrentUser();
+        if (user != null) {
+            order.setUpdatedBy(user.getId());
         }
 
         order.setUpdatedAt(new Date());
@@ -253,8 +272,9 @@ public class OrderServiceImpl implements OrderService {
             order.setPrice(calculateOrderPrice(finalLineItems));
         }
 
-        if (null != authContext.getCurrentUser()) {
-            order.setUpdatedBy(authContext.getCurrentUser().getId());
+        GetUserInfoResponse user = authContext.getCurrentUser();
+        if (user != null) {
+            order.setUpdatedBy(user.getId());
         }
 
         order.setUpdatedAt(new Date());

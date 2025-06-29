@@ -43,4 +43,14 @@ public class StockServiceImpl implements StockService {
         }
         return StockHelper.toVariantStockResponseFromStock(stock);
     }
+
+    @Override
+    public StockInfo getStockInfoByVariantIdAndChannel(String variantId, String channel) {
+        Stock stock = this.findStockByVariantId(variantId);
+        if (null == stock || !stock.isActive()) {
+            Logger.error("375a37ff-ec91-4899-b17d-a447850f6bda", "Stock not exits for the variant");
+            return null;
+        }
+        return stock.getStockInfo().get(channel);
+    }
 }

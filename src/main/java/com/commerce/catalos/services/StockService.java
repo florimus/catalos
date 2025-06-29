@@ -7,4 +7,6 @@ public interface StockService {
     UpsertStockResponse upsertStock(final UpsertStockRequest upsertStockRequest);
 
     VariantStockResponse getStockByVariantId(final String variantId);
+
+    StockInfo getStockInfoByVariantIdAndChannel(final String variantId, final String channel);
 }

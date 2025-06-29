@@ -22,4 +22,6 @@ public class LineItem {
 
     private LineItemPrice itemPrice;
 
+    private LineItemError error;
+
 }

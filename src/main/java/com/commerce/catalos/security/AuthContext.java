@@ -17,6 +17,16 @@ public class AuthContext {
      */
     public GetUserInfoResponse getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return (GetUserInfoResponse) auth.getPrincipal();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return null;
+        }
+
+        Object principal = auth.getPrincipal();
+        if (principal instanceof GetUserInfoResponse) {
+            return (GetUserInfoResponse) principal;
+        }
+
+        return null;
     }
 }
