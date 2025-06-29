@@ -32,21 +32,26 @@ public class OrderHelper {
     public static MiniOrderResponse toMiniOrderResponseFromOrder(final Order order) {
         MiniOrderResponse miniOrderResponse = new MiniOrderResponse();
         BeanUtils.copyProperties(order, miniOrderResponse);
-        List<MiniLineItem> miniLineItems = order.getLineItems().stream().map(item -> {
-            MiniLineItem miniLineItem = new MiniLineItem();
-            BeanUtils.copyProperties(item, miniLineItem);
-            String productName = item.getProduct().getName();
+        List<MiniLineItem> miniLineItems = null;
+        if (order.getLineItems() != null) {
+            miniLineItems = order.getLineItems().stream().map(item -> {
+                MiniLineItem miniLineItem = new MiniLineItem();
+                BeanUtils.copyProperties(item, miniLineItem);
+                String productName = item.getProduct() != null ? item.getProduct().getName() : null;
 
-            miniLineItem.setProductName(productName);
+                miniLineItem.setProductName(productName);
 
-            VariantResponse variant = item.getVariant();
-            MiniVariantResponse miniVariant = new MiniVariantResponse();
-            BeanUtils.copyProperties(variant, miniVariant);
+                VariantResponse variant = item.getVariant();
+                MiniVariantResponse miniVariant = new MiniVariantResponse();
+                if (variant != null) {
+                    BeanUtils.copyProperties(variant, miniVariant);
+                }
 
-            miniLineItem.setVariant(miniVariant);
+                miniLineItem.setVariant(miniVariant);
 
-            return miniLineItem;
-        }).toList();
+                return miniLineItem;
+            }).toList();
+        }
 
         miniOrderResponse.setLineItems(miniLineItems);
 
