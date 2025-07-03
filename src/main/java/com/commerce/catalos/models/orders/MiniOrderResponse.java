@@ -1,5 +1,6 @@
 package com.commerce.catalos.models.orders;
 
+import java.util.Date;
 import java.util.List;
 
 import com.commerce.catalos.core.enums.OrderStatus;
@@ -30,4 +31,10 @@ public class MiniOrderResponse {
     private String coupon;
 
     private OrderPrice price;
+
+    private boolean active;
+
+    private Date createdAt;
+
+    private Date updatedAt;
 }
