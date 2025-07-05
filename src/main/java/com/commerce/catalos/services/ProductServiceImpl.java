@@ -201,10 +201,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponse> listProducts(final String query, final Pageable pageable) {
+    public Page<ProductResponse> listProducts(final String query, final String channel, final Pageable pageable) {
         Logger.info("07b20b95-bced-4a83-b946-e2e3cb9318b5", "Finding the products with query: {} and pagination: {}",
                 query, pageable);
-        Page<Product> products = productRepository.searchProducts(query, pageable);
+        Page<Product> products = productRepository.searchProducts(query, channel, pageable);
         return new Page<ProductResponse>(
                 ProductHelper.toProductResponsesFromProducts(products.getHits()),
                 products.getTotalHitsCount(),

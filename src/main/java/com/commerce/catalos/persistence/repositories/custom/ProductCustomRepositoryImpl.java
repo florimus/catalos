@@ -21,7 +21,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     private MongoTemplate mongoTemplate;
 
     @Override
-    public Page<Product> searchProducts(String search, Pageable pageable) {
+    public Page<Product> searchProducts(String search, final String channel, Pageable pageable) {
         Query query = new Query();
 
         if (search != null && !search.isEmpty()) {
@@ -35,6 +35,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             criteriaList.add(Criteria.where("skuId").regex(search, "i"));
 
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
+        }
+        if (channel != null && !channel.trim().isEmpty()) {
+            query.addCriteria(new Criteria("publishedChannels").in(channel));
         }
         query.addCriteria(new Criteria("enabled").is(true));
         long total = mongoTemplate.count(query, Product.class);
