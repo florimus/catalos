@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
+import com.commerce.catalos.core.enums.AddressType;
 import com.commerce.catalos.core.enums.OrderStatus;
+import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.OrderHelper;
 import com.commerce.catalos.models.orders.CreateOrderRequest;
@@ -30,6 +32,7 @@ import com.commerce.catalos.models.orders.MiniOrderResponse;
 import com.commerce.catalos.models.orders.OrderPrice;
 import com.commerce.catalos.models.orders.OrderRequestLineItem;
 import com.commerce.catalos.models.orders.OrderResponse;
+import com.commerce.catalos.models.orders.UpdateAddressRequest;
 import com.commerce.catalos.models.orders.UpdateOrderLineItemRequest;
 import com.commerce.catalos.models.prices.CalculatedPriceResponse;
 import com.commerce.catalos.models.products.ProductResponse;
@@ -353,7 +356,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setUpdatedAt(new Date());
-        orderRepository.save(order);
+        order = orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
     }
 
@@ -367,6 +370,35 @@ public class OrderServiceImpl implements OrderService {
                 orders.getTotalHitsCount(),
                 orders.getCurrentPage(),
                 orders.getPageSize());
+    }
+
+    @Override
+    public OrderResponse updateAddress(final String orderId, final UpdateAddressRequest updateAddressRequest) {
+        if (null == orderId || orderId.isBlank()) {
+            Logger.error("d193058b-5b69-4c7d-9cb3-4ad07195e077", "Order id is empty");
+            throw new BadRequestException("Order id is empty");
+        }
+
+        Order order = findOrderById(orderId);
+
+        if (null == order) {
+            Logger.error("4769f1e0-ff1d-451f-be60-26c5047614c9", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+
+        if (updateAddressRequest.getAddressType().equals(AddressType.Shipping)) {
+            Logger.info("bd9352de-8f63-44a5-b4b4-7dd48514306e", "Updating shipping address in order: {}", orderId);
+            order.setShippingAddress(OrderHelper.toAddressFromAddressResponse(updateAddressRequest));
+        }
+
+        if (updateAddressRequest.getAddressType().equals(AddressType.Billing)) {
+            Logger.info("0c898cd5-0dad-49bb-b318-51ad5754635d", "Updating billing address in order: {}", orderId);
+            order.setBillingAddress(OrderHelper.toAddressFromAddressResponse(updateAddressRequest));
+        }
+
+        Logger.info("d0365340-9093-4c2e-ab4b-b3f599f17da0", "saving order: {}", orderId);
+        order = orderRepository.save(order);
+        return OrderHelper.toOrderResponseFromOrder(order);
     }
 
 }

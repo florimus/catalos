@@ -15,6 +15,7 @@ import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.models.orders.CreateOrderRequest;
 import com.commerce.catalos.models.orders.DeleteOrderLineItemRequest;
 import com.commerce.catalos.models.orders.OrderResponse;
+import com.commerce.catalos.models.orders.UpdateAddressRequest;
 import com.commerce.catalos.models.orders.UpdateOrderLineItemRequest;
 import com.commerce.catalos.services.OrderService;
 
@@ -56,6 +57,16 @@ public class OrderControllerV1 {
                 orderService.updateOrderLineItems(orderId, updateOrderLineItemRequest));
     }
 
+    @PutMapping("/id/{orderId}/address")
+    public ResponseEntity<OrderResponse> updateAddress(
+            @PathVariable final String orderId,
+            @RequestBody final @Valid UpdateAddressRequest updateAddressRequest) {
+        Logger.info("ba7d8a2a-be6f-4ddf-90df-667d6f2f2e1f",
+                "Received request for updating address in order: {}", orderId);
+        return new ResponseEntity<OrderResponse>(
+                orderService.updateAddress(orderId, updateAddressRequest));
+    }
+
     @DeleteMapping("/id/{orderId}/line-items")
     public ResponseEntity<OrderResponse> deleteOrderLineItems(
             @PathVariable final String orderId,
@@ -65,4 +76,5 @@ public class OrderControllerV1 {
         return new ResponseEntity<OrderResponse>(
                 orderService.deleteOrderLineItems(orderId, deleteOrderLineItemRequest));
     }
+
 }

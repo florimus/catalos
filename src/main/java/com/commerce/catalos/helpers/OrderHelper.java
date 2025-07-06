@@ -12,6 +12,8 @@ import java.util.List;
 import org.springframework.beans.BeanUtils;
 
 import com.commerce.catalos.models.orders.OrderResponse;
+import com.commerce.catalos.models.orders.UpdateAddressRequest;
+import com.commerce.catalos.persistence.dtos.Address;
 import com.commerce.catalos.persistence.dtos.Order;
 
 public class OrderHelper {
@@ -60,5 +62,11 @@ public class OrderHelper {
 
     public static List<MiniOrderResponse> toMiniOrderResponseFromOrders(final List<Order> orders) {
         return orders.stream().map(OrderHelper::toMiniOrderResponseFromOrder).toList();
+    }
+
+    public static Address toAddressFromAddressResponse(final UpdateAddressRequest updateAddressRequest) {
+        Address address = new Address();
+        BeanUtils.copyProperties(updateAddressRequest, address);
+        return address;
     }
 }

@@ -7,6 +7,7 @@ import com.commerce.catalos.models.orders.CreateOrderRequest;
 import com.commerce.catalos.models.orders.DeleteOrderLineItemRequest;
 import com.commerce.catalos.models.orders.MiniOrderResponse;
 import com.commerce.catalos.models.orders.OrderResponse;
+import com.commerce.catalos.models.orders.UpdateAddressRequest;
 import com.commerce.catalos.models.orders.UpdateOrderLineItemRequest;
 
 public interface OrderService {
@@ -24,5 +25,7 @@ public interface OrderService {
     OrderResponse createOrderByAdmin(final CreateOrderRequest createOrderRequest);
 
     Page<MiniOrderResponse> getOrders(final String query, final String channel, final Pageable pageable);
+
+    OrderResponse updateAddress(final String orderId, final UpdateAddressRequest updateAddressRequest);
 
 }
