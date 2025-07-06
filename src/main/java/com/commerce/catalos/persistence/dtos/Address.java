@@ -1,15 +1,21 @@
 package com.commerce.catalos.persistence.dtos;
 
 import com.commerce.catalos.core.enums.AddressType;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
 @Document("cat_address")
+@AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Address extends BaseDto {
 
