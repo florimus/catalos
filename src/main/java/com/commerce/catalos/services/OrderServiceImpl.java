@@ -101,7 +101,8 @@ public class OrderServiceImpl implements OrderService {
 
         GetUserInfoResponse user = authContext.getCurrentUser();
         if (user != null) {
-            order.setUpdatedBy(user.getId());
+            order.setCreatedBy(user.getEmail());
+            order.setUpdatedBy(user.getEmail());
         }
 
         return order;
