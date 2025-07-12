@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.commerce.catalos.core.enums.OrderStatus;
+import com.commerce.catalos.persistence.dtos.PaymentOption;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,6 +28,8 @@ public class MiniOrderResponse {
     private String channelId;
 
     private List<MiniLineItem> lineItems;
+
+    private List<PaymentOption> paymentOptions;
 
     private String coupon;
 

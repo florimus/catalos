@@ -18,10 +18,10 @@ import java.util.List;
 
 @Data
 @Builder
-@EqualsAndHashCode(callSuper = true)
-@Document("cat_orders")
 @AllArgsConstructor
 @NoArgsConstructor
+@Document("cat_orders")
+@EqualsAndHashCode(callSuper = true)
 public class Order extends BaseDto {
 
     @Id
@@ -46,6 +46,8 @@ public class Order extends BaseDto {
     private Address shippingAddress;
 
     private Address billingAddress;
+
+    private List<PaymentOption> paymentOptions;
 
     private PaymentInfo paymentInfo;
 }

@@ -1,6 +1,7 @@
 package com.commerce.catalos.models.orders;
 
-import com.commerce.catalos.core.enums.PaymentMode;
+import com.commerce.catalos.persistence.dtos.PaymentOption;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentInfo {
 
-    private PaymentMode mode;
+    private PaymentOption mode;
 
     private float amountDebited;
 

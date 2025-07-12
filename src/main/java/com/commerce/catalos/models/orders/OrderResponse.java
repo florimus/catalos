@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.commerce.catalos.core.enums.OrderStatus;
 import com.commerce.catalos.persistence.dtos.Address;
+import com.commerce.catalos.persistence.dtos.PaymentOption;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,6 +36,8 @@ public class OrderResponse {
     private Address shippingAddress;
 
     private Address billingAddress;
+
+    private List<PaymentOption> paymentOptions;
 
     private PaymentInfo paymentInfo;
 }

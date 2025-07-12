@@ -40,7 +40,9 @@ import com.commerce.catalos.models.stocks.StockInfo;
 import com.commerce.catalos.models.users.GetUserInfoResponse;
 import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.persistence.dtos.Order;
+import com.commerce.catalos.persistence.dtos.PaymentOption;
 import com.commerce.catalos.persistence.repositories.OrderRepository;
+import com.commerce.catalos.persistence.repositories.PaymentOptionRepository;
 import com.commerce.catalos.security.AuthContext;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +54,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
 
     private final AuthContext authContext;
+
+    private final PaymentOptionRepository paymentOptionRepository;
 
     @Lazy
     @Autowired
@@ -72,6 +76,10 @@ public class OrderServiceImpl implements OrderService {
     @Lazy
     @Autowired
     private StockService stockService;
+
+    private List<PaymentOption> findOrderPaymentOptions(final String channelId) {
+        return this.paymentOptionRepository.findPaymentOptionByApplicableChannelsIn(channelId, true, true);
+    }
 
     private Order findRunningOrderByUserIdAndChannelId(final String userId, final String channelId) {
         return this.orderRepository.findOrderByUserIdAndChannelIdAndStatusAndActiveAndEnabled(
@@ -234,6 +242,8 @@ public class OrderServiceImpl implements OrderService {
             order.setUpdatedBy(user.getId());
         }
 
+        order.setPaymentOptions(findOrderPaymentOptions(channelId));
+
         order.setUpdatedAt(new Date());
         orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
@@ -260,6 +270,8 @@ public class OrderServiceImpl implements OrderService {
         if (user != null) {
             order.setUpdatedBy(user.getId());
         }
+
+        order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
 
         order.setUpdatedAt(new Date());
         orderRepository.save(order);
@@ -290,6 +302,8 @@ public class OrderServiceImpl implements OrderService {
             order.setUpdatedBy(user.getId());
         }
 
+        order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
+
         order.setUpdatedAt(new Date());
         orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
@@ -311,6 +325,8 @@ public class OrderServiceImpl implements OrderService {
         if (null != finalLineItems) {
             order.setPrice(calculateOrderPrice(finalLineItems));
         }
+
+        order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
 
         return OrderHelper.toOrderResponseFromOrder(order);
     }
@@ -356,6 +372,8 @@ public class OrderServiceImpl implements OrderService {
             order.setUpdatedBy(user.getId());
         }
 
+        order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
+
         order.setUpdatedAt(new Date());
         order = orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
@@ -396,6 +414,8 @@ public class OrderServiceImpl implements OrderService {
             Logger.info("0c898cd5-0dad-49bb-b318-51ad5754635d", "Updating billing address in order: {}", orderId);
             order.setBillingAddress(OrderHelper.toAddressFromAddressResponse(updateAddressRequest));
         }
+
+        order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
 
         Logger.info("d0365340-9093-4c2e-ab4b-b3f599f17da0", "saving order: {}", orderId);
         order = orderRepository.save(order);
