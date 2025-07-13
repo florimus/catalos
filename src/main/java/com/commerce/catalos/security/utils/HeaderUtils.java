@@ -21,7 +21,15 @@ public class HeaderUtils {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }
+        if (authHeader != null && authHeader.startsWith("Basic ")) {
+            return authHeader.substring(6);
+        }
         Logger.error("8160f333-86f3-453d-be5b-87d5125f2513", "Invalid user token");
         throw new UnAuthorizedException("Invalid user token");
+    }
+
+    public static boolean isBasicAuth(final HttpServletRequest request){
+        String authHeader = request.getHeader("Authorization");
+        return authHeader != null && authHeader.startsWith("Basic ");
     }
 }
