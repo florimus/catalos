@@ -40,4 +40,6 @@ public class OrderResponse {
     private List<PaymentOption> paymentOptions;
 
     private PaymentInfo paymentInfo;
+
+    private String paymentLink;
 }

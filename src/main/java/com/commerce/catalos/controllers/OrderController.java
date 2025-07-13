@@ -5,15 +5,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
@@ -87,5 +79,16 @@ public class OrderController {
                 "Received request for delete line items in order: {}", orderId);
         return new ResponseEntity<OrderResponse>(
                 orderService.deleteOrderLineItems(orderId, deleteOrderLineItemRequest));
+    }
+
+    @PreAuthorize("hasRole('ORD:NN')")
+    @PatchMapping("/id/{orderId}/option/{optionId}")
+    public ResponseEntity<OrderResponse> selectPaymentMethod(
+            @PathVariable("orderId") final String orderId,
+            @PathVariable("optionId") final String optionId) {
+        Logger.info("",
+                "Received request for select payment option: {} for order: {}",
+                orderId, optionId);
+        return new ResponseEntity<OrderResponse>(orderService.selectPaymentMethod(orderId, optionId));
     }
 }

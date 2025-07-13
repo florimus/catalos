@@ -8,6 +8,9 @@ import com.commerce.catalos.persistence.dtos.PaymentOption;
 
 public interface PaymentOptionRepository extends MongoRepository<PaymentOption, String> {
 
-    List<PaymentOption> findPaymentOptionByApplicableChannelsIn(final String channelId, final boolean enabled,
+    List<PaymentOption> findPaymentOptionByApplicableChannelsInAndEnabledAndActive(final String channelId, final boolean enabled,
             final boolean active);
+
+    PaymentOption findPaymentOptionByIdAndApplicableChannelsInAndEnabledAndActive(
+            final String id, final String channel, final boolean enabled, final boolean active);
 }

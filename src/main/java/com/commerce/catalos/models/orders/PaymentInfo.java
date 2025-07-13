@@ -1,5 +1,6 @@
 package com.commerce.catalos.models.orders;
 
+import com.commerce.catalos.core.enums.PaymentStatus;
 import com.commerce.catalos.persistence.dtos.PaymentOption;
 
 import lombok.AllArgsConstructor;
@@ -17,5 +18,5 @@ public class PaymentInfo {
 
     private String uniqueId;
 
-    private boolean success;
+    private PaymentStatus status;
 }

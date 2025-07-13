@@ -11,6 +11,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import com.commerce.catalos.core.enums.PaymentStatus;
+import com.commerce.catalos.core.errors.ConflictException;
+import com.commerce.catalos.models.customApps.PaymentLinkGeneratedResponse;
+import com.commerce.catalos.models.orders.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
@@ -23,17 +27,6 @@ import com.commerce.catalos.core.enums.OrderStatus;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.OrderHelper;
-import com.commerce.catalos.models.orders.CreateOrderRequest;
-import com.commerce.catalos.models.orders.DeleteOrderLineItemRequest;
-import com.commerce.catalos.models.orders.LineItem;
-import com.commerce.catalos.models.orders.LineItemError;
-import com.commerce.catalos.models.orders.LineItemPrice;
-import com.commerce.catalos.models.orders.MiniOrderResponse;
-import com.commerce.catalos.models.orders.OrderPrice;
-import com.commerce.catalos.models.orders.OrderRequestLineItem;
-import com.commerce.catalos.models.orders.OrderResponse;
-import com.commerce.catalos.models.orders.UpdateAddressRequest;
-import com.commerce.catalos.models.orders.UpdateOrderLineItemRequest;
 import com.commerce.catalos.models.prices.CalculatedPriceResponse;
 import com.commerce.catalos.models.products.ProductResponse;
 import com.commerce.catalos.models.stocks.StockInfo;
@@ -77,8 +70,16 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private StockService stockService;
 
+    @Lazy
+    @Autowired
+    private CustomPaymentAppService customPaymentAppService;
+
+    private PaymentOption findPaymentOptionByIdAndChannel(final String id, final String channel) {
+        return this.paymentOptionRepository.findPaymentOptionByIdAndApplicableChannelsInAndEnabledAndActive(id, channel, true, true);
+    }
+
     private List<PaymentOption> findOrderPaymentOptions(final String channelId) {
-        return this.paymentOptionRepository.findPaymentOptionByApplicableChannelsIn(channelId, true, true);
+        return this.paymentOptionRepository.findPaymentOptionByApplicableChannelsInAndEnabledAndActive(channelId, true, true);
     }
 
     private Order findRunningOrderByUserIdAndChannelId(final String userId, final String channelId) {
@@ -421,5 +422,64 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
     }
+
+    @Override
+    public OrderResponse selectPaymentMethod(final String orderId, final String optionId) {
+        if (orderId == null || orderId.isBlank()) {
+            Logger.error("", "Order id is empty");
+            throw new BadRequestException("Order id is empty");
+        }
+
+        Order order = findOrderById(orderId);
+        if (order == null) {
+            Logger.error("", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+
+        if (null == order.getBillingAddress() || null == order.getShippingAddress()) {
+            Logger.error("", "Addresses are mandatory");
+            throw new ConflictException("Address should be filled in order");
+        }
+
+        PaymentOption option = findPaymentOptionByIdAndChannel(optionId, order.getChannelId());
+        if (option == null) {
+            Logger.error("", "Payment option not available now");
+            throw new ConflictException("Payment option not available now, please select a new payment option");
+        }
+
+        PaymentInfo paymentInfo = new PaymentInfo();
+        paymentInfo.setMode(option);
+        paymentInfo.setAmount(order.getPrice().getGrandTotalPrice());
+        paymentInfo.setStatus(PaymentStatus.Pending);
+
+        if (option.isExternal()) {
+            PaymentLinkGeneratedResponse paymentLinkResponse =
+                    customPaymentAppService.generatePaymentLink(order, optionId);
+
+            if (paymentLinkResponse != null) {
+                paymentInfo.setUniqueId(paymentLinkResponse.getId());
+                order.setPaymentInfo(paymentInfo);
+                order = orderRepository.save(order);
+
+                OrderResponse response = OrderHelper.toOrderResponseFromOrder(order);
+                response.setPaymentLink(paymentLinkResponse.getPaymentUrl());
+                return response;
+            } else {
+                order.setPaymentInfo(null);
+                order = orderRepository.save(order);
+                return OrderHelper.toOrderResponseFromOrder(order);
+            }
+        }
+
+        // For non-external payment methods
+        paymentInfo.setUniqueId(String.valueOf(System.currentTimeMillis()));
+        order.setPaymentInfo(paymentInfo);
+
+        Logger.info("", "Saving order: {}", orderId);
+        order = orderRepository.save(order);
+
+        return OrderHelper.toOrderResponseFromOrder(order);
+    }
+
 
 }

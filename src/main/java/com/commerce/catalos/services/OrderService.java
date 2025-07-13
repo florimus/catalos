@@ -28,4 +28,5 @@ public interface OrderService {
 
     OrderResponse updateAddress(final String orderId, final UpdateAddressRequest updateAddressRequest);
 
+    OrderResponse selectPaymentMethod(final String orderId, final String optionId);
 }
