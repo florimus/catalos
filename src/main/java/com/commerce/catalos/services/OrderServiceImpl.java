@@ -13,7 +13,9 @@ import java.util.stream.Collectors;
 
 import com.commerce.catalos.core.enums.PaymentStatus;
 import com.commerce.catalos.core.errors.ConflictException;
+import com.commerce.catalos.models.customApps.PaymentDetails;
 import com.commerce.catalos.models.customApps.PaymentLinkGeneratedResponse;
+import com.commerce.catalos.models.customApps.VerifyPaymentRequest;
 import com.commerce.catalos.models.orders.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -90,6 +92,10 @@ public class OrderServiceImpl implements OrderService {
     private Order findRunningOrderByEmailAndChannelId(final String email, final String channelId) {
         return this.orderRepository.findOrderByEmailAndChannelIdAndStatusAndActiveAndEnabled(
                 email, channelId, OrderStatus.InProgress, true, true);
+    }
+
+    private Order findProgressingOrderById(final String orderId) {
+        return this.orderRepository.findOrderByIdAndStatusAndEnabled(orderId, OrderStatus.InProgress, true);
     }
 
     private Order findOrderById(final String orderId) {
@@ -252,7 +258,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse updateOrderLineItems(String orderId, UpdateOrderLineItemRequest updateOrderLineItemRequest) {
-        Order order = this.findOrderById(orderId);
+        Order order = this.findProgressingOrderById(orderId);
         if (null == order) {
             Logger.error("bf157555-c712-4bc6-8609-986e6dbeaa45", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
@@ -281,7 +287,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse deleteOrderLineItems(String orderId, DeleteOrderLineItemRequest deleteOrderLineItemRequest) {
-        Order order = this.findOrderById(orderId);
+        Order order = this.findProgressingOrderById(orderId);
         if (null == order) {
             Logger.error("29c85472-7d42-4f43-8d78-bf05b3a54c38", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
@@ -312,7 +318,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getOrderById(final String orderId) {
-        Order order = this.findOrderById(orderId);
+        Order order = this.findProgressingOrderById(orderId);
         if (null == order) {
             Logger.error("91020196-1b09-4fbb-a2bf-028132bb7e79", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
@@ -399,7 +405,7 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("Order id is empty");
         }
 
-        Order order = findOrderById(orderId);
+        Order order = findProgressingOrderById(orderId);
 
         if (null == order) {
             Logger.error("4769f1e0-ff1d-451f-be60-26c5047614c9", "Order not found for order id: {}", orderId);
@@ -430,7 +436,7 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("Order id is empty");
         }
 
-        Order order = findOrderById(orderId);
+        Order order = findProgressingOrderById(orderId);
         if (order == null) {
             Logger.error("", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
@@ -481,5 +487,41 @@ public class OrderServiceImpl implements OrderService {
         return OrderHelper.toOrderResponseFromOrder(order);
     }
 
+    @Override
+    public OrderResponse updateOrderTransaction(final String orderId, final OrderTransactionRequest orderTransactionRequest) {
+        if (orderId == null || orderId.isBlank()) {
+            Logger.error("", "Order id is empty");
+            throw new BadRequestException("Order id is empty");
+        }
 
+        Order order = findProgressingOrderById(orderId);
+        if (order == null) {
+            Logger.error("", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+
+        PaymentInfo paymentInfo = order.getPaymentInfo();
+        if (paymentInfo.getUniqueId().equals(orderTransactionRequest.getPaymentUniqueId())){
+
+            VerifyPaymentRequest verifyPaymentRequest = new VerifyPaymentRequest();
+            verifyPaymentRequest.setPaymentLink(paymentInfo.getUniqueId());
+            verifyPaymentRequest.setAmount(order.getPrice().getGrandTotalPrice());
+            verifyPaymentRequest.setPaymentId(orderTransactionRequest.getPaymentId());
+
+            PaymentDetails paymentDetails = this.customPaymentAppService.verifyPayment(paymentInfo.getMode().getId(), verifyPaymentRequest);
+            if (null != paymentDetails){
+                paymentInfo.setPaymentId(paymentDetails.getPayment_id());
+                paymentInfo.setPaymentAt(paymentDetails.getCreated_at());
+                paymentInfo.setMethod(paymentDetails.getMethod());
+                paymentInfo.setStatus(PaymentStatus.Confirmed);
+                order.setPaymentInfo(paymentInfo);
+                order.setStatus(OrderStatus.Submitted);
+                Logger.info("", "Saving order: {}", orderId);
+                order = orderRepository.save(order);
+                return OrderHelper.toOrderResponseFromOrder(order);
+            }
+        }
+        Logger.error("", "Payment unique id not matching");
+        throw new ConflictException("Invalid transaction");
+    }
 }

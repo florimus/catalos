@@ -10,7 +10,6 @@ import com.commerce.catalos.persistence.dtos.PaymentOption;
 import com.commerce.catalos.persistence.repositories.CustomAppRepository;
 import com.commerce.catalos.persistence.repositories.PaymentOptionRepository;
 import com.commerce.catalos.rest.HttpClient;
-import com.commerce.catalos.security.AuthContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,8 +24,13 @@ public class CustomPaymentAppServiceImpl implements CustomPaymentAppService {
 
     private final HttpClient HttpClient;
 
-    private CustomApp findCustomAppByPrimaryKeyAndChannel(final String primaryKey, final String channelId){
-        return this.customAppRepository.findCustomAppByPrimaryKeyAndApplicableChannelsInAndEnabledAndActive(primaryKey, channelId, true, true);
+    private CustomApp findCustomAppByPrimaryKeyAndChannel(final String primaryKey, final String channelId) {
+        return this.customAppRepository.findCustomAppByPrimaryKeyAndApplicableChannelsInAndEnabledAndActive(primaryKey,
+                channelId, true, true);
+    }
+
+    private CustomApp findCustomAppByPrimaryKey(final String primaryKey) {
+        return this.customAppRepository.findCustomAppByPrimaryKeyAndEnabledAndActive(primaryKey, true, true);
     }
 
     @Override
@@ -46,8 +50,8 @@ public class CustomPaymentAppServiceImpl implements CustomPaymentAppService {
     @Override
     public PaymentLinkGeneratedResponse generatePaymentLink(Order order, String optionId) {
         CustomApp app = this.findCustomAppByPrimaryKeyAndChannel(optionId, order.getChannelId());
-        if (null == app){
-            Logger.error("","App not active");
+        if (null == app) {
+            Logger.error("", "App not active");
             throw new ConflictException("Payment App not active");
         }
 
@@ -62,16 +66,42 @@ public class CustomPaymentAppServiceImpl implements CustomPaymentAppService {
 
         try {
             ResponseEntity<PaymentLinkGeneratedResponse> response = HttpClient.post(
-                    app.getConnectionUrl(), "/api/createPaymentLink", null, requestBody, PaymentLinkGeneratedResponse.class
-            );
-            if (response.getStatusCode().is2xxSuccessful()){
-                Logger.info("", "Successfully connected to custom app");
+                    app.getConnectionUrl(), "/api/createPaymentLink", null, requestBody,
+                    PaymentLinkGeneratedResponse.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                Logger.info("", "Successfully generated payment link");
                 return response.getBody();
             }
         } catch (Exception e) {
             Logger.error("", "Error while connecting to the custom app");
             throw new ConflictException("Cannot establish the connection to custom APP");
         }
-        return  null;
+        return null;
+    }
+
+    @Override
+    public PaymentDetails verifyPayment(final String primaryKey, VerifyPaymentRequest verifyPaymentRequest) {
+        CustomApp app = this.findCustomAppByPrimaryKey(primaryKey);
+        if (null == app) {
+            Logger.error("", "App not active");
+            throw new ConflictException("Payment App not active");
+        }
+        VerifyPaymentRequest requestBody = new VerifyPaymentRequest();
+        requestBody.setPaymentId(verifyPaymentRequest.getPaymentId());
+        requestBody.setPaymentLink(verifyPaymentRequest.getPaymentLink());
+        requestBody.setAmount(verifyPaymentRequest.getAmount() * 100);
+
+        try {
+            ResponseEntity<VerifiedPaymentResponse> response = HttpClient.post(
+                    app.getConnectionUrl(), "/api/validate", null, requestBody, VerifiedPaymentResponse.class);
+            if (response.getStatusCode().is2xxSuccessful() && null != response.getBody()) {
+                Logger.info("", "Successfully connected to custom app");
+                return response.getBody().getPaymentDetails();
+            }
+        } catch (Exception e) {
+            Logger.error("", "Error while connecting to the custom app");
+            throw new ConflictException("Cannot establish the connection to custom APP");
+        }
+        return null;
     }
 }

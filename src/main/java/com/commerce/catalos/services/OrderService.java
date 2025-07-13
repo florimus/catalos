@@ -1,14 +1,9 @@
 package com.commerce.catalos.services;
 
+import com.commerce.catalos.models.orders.*;
 import org.springframework.data.domain.Pageable;
 
 import com.commerce.catalos.core.configurations.Page;
-import com.commerce.catalos.models.orders.CreateOrderRequest;
-import com.commerce.catalos.models.orders.DeleteOrderLineItemRequest;
-import com.commerce.catalos.models.orders.MiniOrderResponse;
-import com.commerce.catalos.models.orders.OrderResponse;
-import com.commerce.catalos.models.orders.UpdateAddressRequest;
-import com.commerce.catalos.models.orders.UpdateOrderLineItemRequest;
 
 public interface OrderService {
 
@@ -29,4 +24,7 @@ public interface OrderService {
     OrderResponse updateAddress(final String orderId, final UpdateAddressRequest updateAddressRequest);
 
     OrderResponse selectPaymentMethod(final String orderId, final String optionId);
+
+    OrderResponse updateOrderTransaction(final String orderId,
+            final OrderTransactionRequest orderTransactionRequest);
 }

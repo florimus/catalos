@@ -5,5 +5,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface CustomAppRepository extends MongoRepository<CustomApp, String> {
 
-    CustomApp findCustomAppByPrimaryKeyAndApplicableChannelsInAndEnabledAndActive(final String primaryKey, final String channelId, final boolean enabled, boolean active);
+    CustomApp findCustomAppByPrimaryKeyAndApplicableChannelsInAndEnabledAndActive(final String primaryKey,
+            final String channelId, final boolean enabled, boolean active);
+
+    CustomApp findCustomAppByPrimaryKeyAndEnabledAndActive(final String primaryKey, final boolean enabled,
+            final boolean active);
 }

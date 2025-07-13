@@ -18,5 +18,11 @@ public class PaymentInfo {
 
     private String uniqueId;
 
+    private String method;
+
+    private String paymentId;
+
+    private String paymentAt;
+
     private PaymentStatus status;
 }

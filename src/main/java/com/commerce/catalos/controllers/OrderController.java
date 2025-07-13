@@ -1,5 +1,6 @@
 package com.commerce.catalos.controllers;
 
+import com.commerce.catalos.models.orders.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -11,11 +12,6 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.core.constants.SortConstants;
-import com.commerce.catalos.models.orders.CreateOrderRequest;
-import com.commerce.catalos.models.orders.DeleteOrderLineItemRequest;
-import com.commerce.catalos.models.orders.MiniOrderResponse;
-import com.commerce.catalos.models.orders.OrderResponse;
-import com.commerce.catalos.models.orders.UpdateOrderLineItemRequest;
 import com.commerce.catalos.services.OrderService;
 
 import jakarta.validation.Valid;
@@ -88,7 +84,18 @@ public class OrderController {
             @PathVariable("optionId") final String optionId) {
         Logger.info("",
                 "Received request for select payment option: {} for order: {}",
-                orderId, optionId);
+                optionId, orderId);
         return new ResponseEntity<OrderResponse>(orderService.selectPaymentMethod(orderId, optionId));
+    }
+
+    @PreAuthorize("hasRole('ORD:NN')")
+    @PutMapping("/id/{orderId}/transaction")
+    public ResponseEntity<OrderResponse> updateOrderTransaction(
+            @PathVariable("orderId") final String orderId,
+            @RequestBody final @Valid OrderTransactionRequest orderTransactionRequest) {
+        Logger.info("",
+                "Received request for update order payment transaction: {} for order: {}",
+                orderTransactionRequest.getPaymentUniqueId(), orderId);
+        return new ResponseEntity<OrderResponse>(orderService.updateOrderTransaction(orderId, orderTransactionRequest));
     }
 }

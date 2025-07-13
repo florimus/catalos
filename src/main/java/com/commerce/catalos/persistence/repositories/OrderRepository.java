@@ -16,4 +16,5 @@ public interface OrderRepository extends MongoRepository<Order, String>, OrderCu
     Order findOrderByEmailAndChannelIdAndStatusAndActiveAndEnabled(final String email, final String channelId,
             final OrderStatus status, boolean active, boolean enabled);
 
+    Order findOrderByIdAndStatusAndEnabled(final String orderId, final OrderStatus orderStatus, final boolean enabled);
 }
