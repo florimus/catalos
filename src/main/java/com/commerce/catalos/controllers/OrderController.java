@@ -82,7 +82,7 @@ public class OrderController {
     public ResponseEntity<OrderResponse> selectPaymentMethod(
             @PathVariable("orderId") final String orderId,
             @PathVariable("optionId") final String optionId) {
-        Logger.info("",
+        Logger.info("06a02dba-91f0-4883-9798-4c03ff426415",
                 "Received request for select payment option: {} for order: {}",
                 optionId, orderId);
         return new ResponseEntity<OrderResponse>(orderService.selectPaymentMethod(orderId, optionId));
@@ -93,7 +93,7 @@ public class OrderController {
     public ResponseEntity<OrderResponse> updateOrderTransaction(
             @PathVariable("orderId") final String orderId,
             @RequestBody final @Valid OrderTransactionRequest orderTransactionRequest) {
-        Logger.info("",
+        Logger.info("df6d91fa-12a3-45f0-9057-590af992996f",
                 "Received request for update order payment transaction: {} for order: {}",
                 orderTransactionRequest.getPaymentUniqueId(), orderId);
         return new ResponseEntity<OrderResponse>(orderService.updateOrderTransaction(orderId, orderTransactionRequest));

@@ -43,7 +43,7 @@ public class CustomPaymentAppServiceImpl implements CustomPaymentAppService {
         paymentOption.setActive(true);
         paymentOption.setEnabled(true);
         paymentOption.setCreatedBy("Custom App");
-        Logger.info("", "Saving custom app info to payment options");
+        Logger.info("0b9d861d-cd44-4b5e-876d-52ddb58eff70", "Saving custom app info to payment options");
         return paymentOptionRepository.save(paymentOption).getId();
     }
 
@@ -51,7 +51,7 @@ public class CustomPaymentAppServiceImpl implements CustomPaymentAppService {
     public PaymentLinkGeneratedResponse generatePaymentLink(Order order, String optionId) {
         CustomApp app = this.findCustomAppByPrimaryKeyAndChannel(optionId, order.getChannelId());
         if (null == app) {
-            Logger.error("", "App not active");
+            Logger.error("6efcf38b-3b42-435a-9d78-5f93c5dc330a", "App not active");
             throw new ConflictException("Payment App not active");
         }
 
@@ -69,11 +69,11 @@ public class CustomPaymentAppServiceImpl implements CustomPaymentAppService {
                     app.getConnectionUrl(), "/api/createPaymentLink", null, requestBody,
                     PaymentLinkGeneratedResponse.class);
             if (response.getStatusCode().is2xxSuccessful()) {
-                Logger.info("", "Successfully generated payment link");
+                Logger.info("bbe37afb-b3b7-410a-8483-e2940a09275f", "Successfully generated payment link");
                 return response.getBody();
             }
         } catch (Exception e) {
-            Logger.error("", "Error while connecting to the custom app");
+            Logger.error("dd188ace-2103-417c-8c18-082a01af7bcc", "Error while connecting to the custom app");
             throw new ConflictException("Cannot establish the connection to custom APP");
         }
         return null;
@@ -83,7 +83,7 @@ public class CustomPaymentAppServiceImpl implements CustomPaymentAppService {
     public PaymentDetails verifyPayment(final String primaryKey, VerifyPaymentRequest verifyPaymentRequest) {
         CustomApp app = this.findCustomAppByPrimaryKey(primaryKey);
         if (null == app) {
-            Logger.error("", "App not active");
+            Logger.error("7dd42991-569d-4b78-bc74-1e2e35d47ccb", "App not active");
             throw new ConflictException("Payment App not active");
         }
         VerifyPaymentRequest requestBody = new VerifyPaymentRequest();
@@ -95,11 +95,11 @@ public class CustomPaymentAppServiceImpl implements CustomPaymentAppService {
             ResponseEntity<VerifiedPaymentResponse> response = HttpClient.post(
                     app.getConnectionUrl(), "/api/validate", null, requestBody, VerifiedPaymentResponse.class);
             if (response.getStatusCode().is2xxSuccessful() && null != response.getBody()) {
-                Logger.info("", "Successfully connected to custom app");
+                Logger.info("727cba86-acc3-4899-a6a1-cc72ec884909", "Successfully connected to custom app");
                 return response.getBody().getPaymentDetails();
             }
         } catch (Exception e) {
-            Logger.error("", "Error while connecting to the custom app");
+            Logger.error("9fd2b75b-2e91-4a46-8994-89853a391d48", "Error while connecting to the custom app");
             throw new ConflictException("Cannot establish the connection to custom APP");
         }
         return null;

@@ -77,11 +77,13 @@ public class OrderServiceImpl implements OrderService {
     private CustomPaymentAppService customPaymentAppService;
 
     private PaymentOption findPaymentOptionByIdAndChannel(final String id, final String channel) {
-        return this.paymentOptionRepository.findPaymentOptionByIdAndApplicableChannelsInAndEnabledAndActive(id, channel, true, true);
+        return this.paymentOptionRepository.findPaymentOptionByIdAndApplicableChannelsInAndEnabledAndActive(id, channel,
+                true, true);
     }
 
     private List<PaymentOption> findOrderPaymentOptions(final String channelId) {
-        return this.paymentOptionRepository.findPaymentOptionByApplicableChannelsInAndEnabledAndActive(channelId, true, true);
+        return this.paymentOptionRepository.findPaymentOptionByApplicableChannelsInAndEnabledAndActive(channelId, true,
+                true);
     }
 
     private Order findRunningOrderByUserIdAndChannelId(final String userId, final String channelId) {
@@ -432,24 +434,24 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse selectPaymentMethod(final String orderId, final String optionId) {
         if (orderId == null || orderId.isBlank()) {
-            Logger.error("", "Order id is empty");
+            Logger.error("8684060f-ac04-4bfc-9190-c552605ece84", "Order id is empty");
             throw new BadRequestException("Order id is empty");
         }
 
         Order order = findProgressingOrderById(orderId);
         if (order == null) {
-            Logger.error("", "Order not found for order id: {}", orderId);
+            Logger.error("807dd27b-ebeb-413c-b915-7a536bedef85", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
         }
 
         if (null == order.getBillingAddress() || null == order.getShippingAddress()) {
-            Logger.error("", "Addresses are mandatory");
+            Logger.error("6af75622-0f13-450b-b2f0-848027c4d358", "Addresses are mandatory");
             throw new ConflictException("Address should be filled in order");
         }
 
         PaymentOption option = findPaymentOptionByIdAndChannel(optionId, order.getChannelId());
         if (option == null) {
-            Logger.error("", "Payment option not available now");
+            Logger.error("beecf987-dec0-4ecb-8446-6df1b993cb5f", "Payment option not available now");
             throw new ConflictException("Payment option not available now, please select a new payment option");
         }
 
@@ -459,8 +461,8 @@ public class OrderServiceImpl implements OrderService {
         paymentInfo.setStatus(PaymentStatus.Pending);
 
         if (option.isExternal()) {
-            PaymentLinkGeneratedResponse paymentLinkResponse =
-                    customPaymentAppService.generatePaymentLink(order, optionId);
+            PaymentLinkGeneratedResponse paymentLinkResponse = customPaymentAppService.generatePaymentLink(order,
+                    optionId);
 
             if (paymentLinkResponse != null) {
                 paymentInfo.setUniqueId(paymentLinkResponse.getId());
@@ -481,47 +483,49 @@ public class OrderServiceImpl implements OrderService {
         paymentInfo.setUniqueId(String.valueOf(System.currentTimeMillis()));
         order.setPaymentInfo(paymentInfo);
 
-        Logger.info("", "Saving order: {}", orderId);
+        Logger.info("258893e2-8674-41a5-80d0-4e9df5523883", "Saving order: {}", orderId);
         order = orderRepository.save(order);
 
         return OrderHelper.toOrderResponseFromOrder(order);
     }
 
     @Override
-    public OrderResponse updateOrderTransaction(final String orderId, final OrderTransactionRequest orderTransactionRequest) {
+    public OrderResponse updateOrderTransaction(final String orderId,
+            final OrderTransactionRequest orderTransactionRequest) {
         if (orderId == null || orderId.isBlank()) {
-            Logger.error("", "Order id is empty");
+            Logger.error("4530494f-174c-4c75-b103-882fad78e228", "Order id is empty");
             throw new BadRequestException("Order id is empty");
         }
 
         Order order = findProgressingOrderById(orderId);
         if (order == null) {
-            Logger.error("", "Order not found for order id: {}", orderId);
+            Logger.error("b7faefaf-5a06-4f4a-abd8-525f8a81a331", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
         }
 
         PaymentInfo paymentInfo = order.getPaymentInfo();
-        if (paymentInfo.getUniqueId().equals(orderTransactionRequest.getPaymentUniqueId())){
+        if (paymentInfo.getUniqueId().equals(orderTransactionRequest.getPaymentUniqueId())) {
 
             VerifyPaymentRequest verifyPaymentRequest = new VerifyPaymentRequest();
             verifyPaymentRequest.setPaymentLink(paymentInfo.getUniqueId());
             verifyPaymentRequest.setAmount(order.getPrice().getGrandTotalPrice());
             verifyPaymentRequest.setPaymentId(orderTransactionRequest.getPaymentId());
 
-            PaymentDetails paymentDetails = this.customPaymentAppService.verifyPayment(paymentInfo.getMode().getId(), verifyPaymentRequest);
-            if (null != paymentDetails){
+            PaymentDetails paymentDetails = this.customPaymentAppService.verifyPayment(paymentInfo.getMode().getId(),
+                    verifyPaymentRequest);
+            if (null != paymentDetails) {
                 paymentInfo.setPaymentId(paymentDetails.getPayment_id());
                 paymentInfo.setPaymentAt(paymentDetails.getCreated_at());
                 paymentInfo.setMethod(paymentDetails.getMethod());
                 paymentInfo.setStatus(PaymentStatus.Confirmed);
                 order.setPaymentInfo(paymentInfo);
                 order.setStatus(OrderStatus.Submitted);
-                Logger.info("", "Saving order: {}", orderId);
+                Logger.info("b2d27177-bc03-4677-a72e-71b3ad49ef1d", "Saving order: {}", orderId);
                 order = orderRepository.save(order);
                 return OrderHelper.toOrderResponseFromOrder(order);
             }
         }
-        Logger.error("", "Payment unique id not matching");
+        Logger.error("e28d054e-65e1-49e0-9bf9-e8a0190c141a", "Payment unique id not matching");
         throw new ConflictException("Invalid transaction");
     }
 }

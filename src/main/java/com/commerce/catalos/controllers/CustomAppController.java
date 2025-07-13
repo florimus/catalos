@@ -26,7 +26,7 @@ public class CustomAppController {
     @PreAuthorize("hasRole('APP:NN')")
     public ResponseEntity<CustomAppResponse> createCustomApp(
             @RequestBody final @Valid CreateCustomAppRequest createCustomAppRequest) {
-        Logger.info("",
+        Logger.info("80c35d8f-b334-4c74-b7ef-39565651ffd8",
                 "Received request for creating new custom-app : {}", createCustomAppRequest.getName());
         return new ResponseEntity<CustomAppResponse>(customAppService.createCustomApp(createCustomAppRequest));
     }

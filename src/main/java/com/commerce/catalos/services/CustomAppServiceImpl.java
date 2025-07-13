@@ -34,13 +34,13 @@ public class CustomAppServiceImpl implements CustomAppService {
     private void validateCustomAppStatus(final String connectionUrl) {
         try {
             ResponseEntity<HealthResponse> response = HttpClient.get(
-                    connectionUrl, "/api/health", null, HealthResponse.class
-            );
-            if (response.getStatusCode().is2xxSuccessful() && Objects.requireNonNull(response.getBody()).getStatus().equals("ok")){
-                Logger.info("", "Successfully connected to custom app");
+                    connectionUrl, "/api/health", null, HealthResponse.class);
+            if (response.getStatusCode().is2xxSuccessful()
+                    && Objects.requireNonNull(response.getBody()).getStatus().equals("ok")) {
+                Logger.info("e6f6a6d2-35fb-4020-9df9-0640f94f12fa", "Successfully connected to custom app");
             }
         } catch (Exception e) {
-            Logger.error("", "Error while connecting to the custom app");
+            Logger.error("1576be47-e143-47fc-bc97-ebb7afaa4a29", "Error while connecting to the custom app");
             throw new ConflictException("Cannot establish the connection to custom APP");
         }
     }
@@ -58,8 +58,8 @@ public class CustomAppServiceImpl implements CustomAppService {
             primaryKey = null;
         }
 
-        if (null == primaryKey || primaryKey.isBlank()){
-            Logger.error("", "Error while creating custom app");
+        if (null == primaryKey || primaryKey.isBlank()) {
+            Logger.error("e433af72-24f0-40a2-a4e7-f42779993024", "Error while creating custom app");
             throw new BadRequestException("Error while installing APP");
         }
 

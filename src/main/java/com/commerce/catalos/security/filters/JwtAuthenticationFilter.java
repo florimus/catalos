@@ -83,16 +83,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (HeaderUtils.isBasicAuth(request)){
+        if (HeaderUtils.isBasicAuth(request)) {
             String authHeader = HeaderUtils.getUserToken(request);
             BasicAuthUtil.BasicAuthCredentials credentials = BasicAuthUtil.extractCredentials(authHeader);
-            if (null == credentials.apiKey() && null == credentials.apiSecret()){
-                Logger.error("", "Invalid api credentials");
+            if (null == credentials.apiKey() && null == credentials.apiSecret()) {
+                Logger.error("44da7c2b-3606-4ee1-8fc3-5e1afdf8d007", "Invalid api credentials");
                 throw new UnAuthorizedException("Invalid Api credentials");
             }
             APIKey apiUser = aPIKeyService.getApiKeyByKeyAndSecret(credentials.apiKey(), credentials.apiSecret());
             if (null == apiUser) {
-                Logger.error("", "ApiKey invalid");
+                Logger.error("6d19a4ff-4997-4305-b394-f2f375ae0469", "ApiKey invalid");
                 throw new UnAuthorizedException("Invalid Api credentials");
             }
             String permissions = roleService.getRoleById(apiUser.getRoleId());
