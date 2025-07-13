@@ -13,7 +13,7 @@ public class PaymentInfo {
 
     private PaymentOption mode;
 
-    private float amountDebited;
+    private float amount;
 
     private String uniqueId;
 
