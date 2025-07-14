@@ -1,9 +1,11 @@
 package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.enums.CustomAppType;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
+import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.CustomAppHelper;
 import com.commerce.catalos.models.customApps.CreateCustomAppRequest;
 import com.commerce.catalos.models.customApps.CustomAppResponse;
@@ -13,6 +15,7 @@ import com.commerce.catalos.persistence.repositories.CustomAppRepository;
 import com.commerce.catalos.rest.HttpClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,10 @@ public class CustomAppServiceImpl implements CustomAppService {
     @Lazy
     @Autowired
     private CustomPaymentAppService customPaymentAppService;
+
+    private CustomApp findCustomAppById(final String id) {
+        return customAppRepository.findCustomAppByIdAndEnabled(id, true);
+    }
 
     private void validateCustomAppStatus(final String connectionUrl) {
         try {
@@ -69,5 +76,32 @@ public class CustomAppServiceImpl implements CustomAppService {
         app.setEnabled(true);
 
         return CustomAppHelper.toCustomAppResponseFromCreateCustomApp(customAppRepository.save(app));
+    }
+
+    @Override
+    public Page<CustomAppResponse> listCustomApps(String query, Pageable pageable) {
+        Logger.info("22551a59-20ca-4e3b-bafc-24b2c8a92883", "Finding custom apps with query: {} and pageable: {}",
+                query, pageable);
+        Page<CustomApp> customApps = customAppRepository.searchCustomApps(query, pageable);
+        return new Page<CustomAppResponse>(
+                CustomAppHelper.toCustomAppListResponseFromCustomApps(customApps.getHits()),
+                customApps.getTotalHitsCount(),
+                customApps.getCurrentPage(),
+                customApps.getPageSize());
+    }
+
+    @Override
+    public CustomAppResponse getCustomAppById(final String id) {
+        if (null == id || id.isBlank()) {
+            Logger.error("d1f3c5b2-8a4e-4f0b-9c6d-7f8c1e2b3a4b", "Custom app ID is null or blank");
+            throw new BadRequestException("Custom app ID cannot be null or blank");
+        }
+        CustomApp customApp = findCustomAppById(id);
+        if (null == customApp) {
+            Logger.error("c2f3d4e5-6a7b-8c9d-0e1f-2a3b4c5d6e7f", "Custom app not found with ID: {}", id);
+            throw new NotFoundException("Custom app not found");
+        }
+        Logger.info("b1c2d3e4-5f6a-7b8c-9d0e-1f2a3b4c5d6e", "Found custom app with ID: {}", id);
+        return CustomAppHelper.toCustomAppResponseFromCreateCustomApp(customApp);
     }
 }
