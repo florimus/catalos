@@ -5,6 +5,6 @@ import com.commerce.catalos.models.customApps.CustomAppResponse;
 
 public interface CustomAppService {
 
-    CustomAppResponse createCustomApp(final CreateCustomAppRequest createCustomAppRequest);
+    CustomAppResponse installCustomApp(final CreateCustomAppRequest createCustomAppRequest);
 
 }

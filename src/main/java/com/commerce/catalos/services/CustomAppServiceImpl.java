@@ -46,7 +46,7 @@ public class CustomAppServiceImpl implements CustomAppService {
     }
 
     @Override
-    public CustomAppResponse createCustomApp(final CreateCustomAppRequest createCustomAppRequest) {
+    public CustomAppResponse installCustomApp(final CreateCustomAppRequest createCustomAppRequest) {
 
         validateCustomAppStatus(createCustomAppRequest.getConnectionUrl());
 
