@@ -2,6 +2,7 @@ package com.commerce.catalos.helpers;
 
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.BeanUtils;
@@ -35,5 +36,11 @@ public class ApiKeyHelper {
         ApiKeyResponse apiKeyResponse = new ApiKeyResponse();
         BeanUtils.copyProperties(apiKey, apiKeyResponse);
         return apiKeyResponse;
+    }
+
+    public static List<ApiKeyResponse> toAPIKeyListResponseFromAPIKeys(final List<APIKey> hits) {
+        return hits.stream()
+                .map(ApiKeyHelper::toApiKeyResponseFromAPIKey)
+                .toList();
     }
 }

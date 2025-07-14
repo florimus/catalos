@@ -1,6 +1,7 @@
 package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Logger;
+import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.utils.PasswordUtil;
 import com.commerce.catalos.helpers.ApiKeyHelper;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,10 +25,6 @@ public class APIKeyServiceImpl implements APIKeyService {
     @Lazy
     @Autowired
     private RoleService roleService;
-
-    private APIKey findApiKeyByKeyAndSecret(final String apiKey, final String apiSecret) {
-        return apiKeyRepository.findByApiKeyAndApiSecretAndEnabledAndActive(apiKey, apiSecret, true, true);
-    }
 
     private APIKey findApiKeyByKey(final String apiKey) {
         return apiKeyRepository.findByApiKeyAndEnabledAndActive(apiKey, true, true);
@@ -40,7 +38,7 @@ public class APIKeyServiceImpl implements APIKeyService {
             throw new BadRequestException("apiKey and apiSecret cannot be null");
         }
         APIKey apiData = this.findApiKeyByKey(apiKey);
-        if(PasswordUtil.matches(apiSecret, apiData.getApiSecret())){
+        if (PasswordUtil.matches(apiSecret, apiData.getApiSecret())) {
             return apiData;
         }
         return null;
@@ -69,5 +67,17 @@ public class APIKeyServiceImpl implements APIKeyService {
         apiKey = apiKeyRepository.save(apiKey);
         apiKey.setApiSecret(apiSecret); // Resetting the secret to the original value for response.
         return ApiKeyHelper.toApiKeyResponseFromAPIKey(apiKey);
+    }
+
+    @Override
+    public Page<ApiKeyResponse> listApiKeys(final String query, final Pageable pageable) {
+        Logger.info("a03082aa-7d22-4932-a75b-20bff9910e23", "Finding api keys with query: {} and pageable: {}",
+                query, pageable);
+        Page<APIKey> apiKeys = apiKeyRepository.searchApiKeys(query, pageable);
+        return new Page<ApiKeyResponse>(
+                ApiKeyHelper.toAPIKeyListResponseFromAPIKeys(apiKeys.getHits()),
+                apiKeys.getTotalHitsCount(),
+                apiKeys.getCurrentPage(),
+                apiKeys.getPageSize());
     }
 }
