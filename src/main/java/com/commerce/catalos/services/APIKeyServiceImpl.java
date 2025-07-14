@@ -28,9 +28,22 @@ public class APIKeyServiceImpl implements APIKeyService {
         return apiKeyRepository.findByApiKeyAndApiSecretAndEnabledAndActive(apiKey, apiSecret, true, true);
     }
 
+    private APIKey findApiKeyByKey(final String apiKey) {
+        return apiKeyRepository.findByApiKeyAndEnabledAndActive(apiKey, true, true);
+    }
+
     @Override
     public APIKey getApiKeyByKeyAndSecret(final String apiKey, final String apiSecret) {
-        return this.findApiKeyByKeyAndSecret(apiKey, apiSecret);
+        if (null == apiKey || null == apiSecret) {
+            Logger.error("c3ed699c-56a0-488b-b2c0-88a05da05b0d",
+                    "Received null apiKey or apiSecret for getting api-key");
+            throw new BadRequestException("apiKey and apiSecret cannot be null");
+        }
+        APIKey apiData = this.findApiKeyByKey(apiKey);
+        if(PasswordUtil.matches(apiSecret, apiData.getApiSecret())){
+            return apiData;
+        }
+        return null;
     }
 
     @Override
