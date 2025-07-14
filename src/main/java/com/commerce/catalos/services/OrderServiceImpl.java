@@ -320,22 +320,24 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getOrderById(final String orderId) {
-        Order order = this.findProgressingOrderById(orderId);
+        Order order = this.findOrderById(orderId);
         if (null == order) {
             Logger.error("91020196-1b09-4fbb-a2bf-028132bb7e79", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
         }
 
-        Map<String, Integer> variantQuantityMap = prepareVariantQuantityMap(order, List.of());
+        if (order.getStatus().equals(OrderStatus.InProgress)) {
+            Map<String, Integer> variantQuantityMap = prepareVariantQuantityMap(order, List.of());
 
-        List<LineItem> finalLineItems = buildLineItems(variantQuantityMap, order.getChannelId());
-        order.setLineItems(finalLineItems);
+            List<LineItem> finalLineItems = buildLineItems(variantQuantityMap, order.getChannelId());
+            order.setLineItems(finalLineItems);
 
-        if (null != finalLineItems) {
-            order.setPrice(calculateOrderPrice(finalLineItems));
+            if (null != finalLineItems) {
+                order.setPrice(calculateOrderPrice(finalLineItems));
+            }
+
+            order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
         }
-
-        order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
 
         return OrderHelper.toOrderResponseFromOrder(order);
     }
