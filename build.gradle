@@ -36,6 +36,8 @@ dependencies {
     implementation 'org.kie:kie-internal:9.44.0.Final'
     implementation 'org.kie:kie-ci:9.44.0.Final'
 
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'

@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import com.commerce.catalos.core.configurations.Messager;
 import com.commerce.catalos.core.enums.PaymentStatus;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.models.customApps.PaymentDetails;
@@ -75,6 +76,10 @@ public class OrderServiceImpl implements OrderService {
     @Lazy
     @Autowired
     private CustomPaymentAppService customPaymentAppService;
+
+    @Lazy
+    @Autowired
+    private Messager messager;
 
     private PaymentOption findPaymentOptionByIdAndChannel(final String id, final String channel) {
         return this.paymentOptionRepository.findPaymentOptionByIdAndApplicableChannelsInAndEnabledAndActive(id, channel,
@@ -338,7 +343,6 @@ public class OrderServiceImpl implements OrderService {
 
             order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
         }
-
         return OrderHelper.toOrderResponseFromOrder(order);
     }
 
@@ -524,6 +528,7 @@ public class OrderServiceImpl implements OrderService {
                 order.setStatus(OrderStatus.Submitted);
                 Logger.info("b2d27177-bc03-4677-a72e-71b3ad49ef1d", "Saving order: {}", orderId);
                 order = orderRepository.save(order);
+                messager.send("order/"+ orderId, Map.of("success", true));
                 return OrderHelper.toOrderResponseFromOrder(order);
             }
         }

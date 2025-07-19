@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/users/login");
     private static final List<String> PUT_SKIP_PATHS = List.of("/users/refresh");
 
-    private static final List<String> SKIP_PATHS = List.of("/api");
+    private static final List<String> SKIP_PATHS = List.of("/api", "/ws");
 
     /**
      * Verifies the JWT token in the Authorization header and authenticates the
