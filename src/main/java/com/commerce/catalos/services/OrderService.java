@@ -27,4 +27,6 @@ public interface OrderService {
 
     OrderResponse updateOrderTransaction(final String orderId,
             final OrderTransactionRequest orderTransactionRequest);
+
+    OrderLinkResponse getPaymentLinkOfOrderById(final String orderId);
 }

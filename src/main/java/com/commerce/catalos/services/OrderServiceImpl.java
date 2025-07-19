@@ -535,4 +535,51 @@ public class OrderServiceImpl implements OrderService {
         Logger.error("e28d054e-65e1-49e0-9bf9-e8a0190c141a", "Payment unique id not matching");
         throw new ConflictException("Invalid transaction");
     }
+
+    @Override
+    public OrderLinkResponse getPaymentLinkOfOrderById(final String orderId) {
+        if (orderId == null || orderId.isBlank()) {
+            Logger.error("", "Order id is empty");
+            throw new BadRequestException("Order id is empty");
+        }
+
+        Order order = findProgressingOrderById(orderId);
+        if (order == null) {
+            Logger.error("", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+
+        PaymentInfo paymentInfo = order.getPaymentInfo();
+
+        if(null == paymentInfo) {
+            Logger.error("", "Please select a payment option");
+            throw new ConflictException("Payment option not selected");
+        }
+
+        PaymentOption option = findPaymentOptionByIdAndChannel(paymentInfo.getMode().getId(), order.getChannelId());
+
+        if (option == null) {
+            Logger.error("beecf987-dec0-4ecb-8446-6df1b993cb5f", "Payment option not available now");
+            throw new ConflictException("Payment option not available now, please select a new payment option");
+        }
+
+        if (option.isExternal()) {
+            PaymentLinkGeneratedResponse paymentLinkResponse = customPaymentAppService.generatePaymentLink(order,
+                    paymentInfo.getMode().getId());
+
+            if (paymentLinkResponse != null) {
+                paymentInfo.setUniqueId(paymentLinkResponse.getId());
+                order.setPaymentInfo(paymentInfo);
+                orderRepository.save(order);
+                return OrderLinkResponse.builder().paymentLink(paymentLinkResponse.getPaymentUrl()).build();
+            } else {
+                order.setPaymentInfo(null);
+                orderRepository.save(order);
+                return OrderLinkResponse.builder().paymentLink(null).build();
+            }
+        }
+
+        Logger.error("", "Cannot generate link for internal payment option");
+        throw new ConflictException("Cannot create payment link");
+    }
 }

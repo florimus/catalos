@@ -98,4 +98,13 @@ public class OrderController {
                 orderTransactionRequest.getPaymentUniqueId(), orderId);
         return new ResponseEntity<OrderResponse>(orderService.updateOrderTransaction(orderId, orderTransactionRequest));
     }
+
+    @PatchMapping("/id/{orderId}/link")
+    @PreAuthorize("hasRole('ORD:NN')")
+    public ResponseEntity<OrderLinkResponse> getPaymentLinkOfOrderById(
+            @PathVariable("orderId") final String orderId) {
+        Logger.info("",
+                "Received request for fetch payment link of order: {}", orderId);
+        return new ResponseEntity<OrderLinkResponse>(orderService.getPaymentLinkOfOrderById(orderId));
+    }
 }
