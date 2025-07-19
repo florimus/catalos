@@ -130,6 +130,18 @@ public class OrderServiceImpl implements OrderService {
         return order;
     }
 
+    private void updateOrderItemsInventory(final List<LineItem> lineItems, final String channelId) {
+        List<CompletableFuture<Void>> futures = lineItems.stream()
+                .map(item -> CompletableFuture.runAsync(() -> {
+                    String variantId = item.getVariant().getId();
+                    Integer quantity = item.getQuantity();
+                    stockService.updateVariantStockInChannel(variantId, channelId, quantity);
+                }))
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
+
     private Map<String, Integer> prepareVariantQuantityMap(Order order, List<OrderRequestLineItem> lineItems) {
         Map<String, Integer> variantQuantityMap = new LinkedHashMap<>();
 
@@ -528,6 +540,7 @@ public class OrderServiceImpl implements OrderService {
                 order.setStatus(OrderStatus.Submitted);
                 Logger.info("b2d27177-bc03-4677-a72e-71b3ad49ef1d", "Saving order: {}", orderId);
                 order = orderRepository.save(order);
+                updateOrderItemsInventory(order.getLineItems(), order.getChannelId());
                 messager.send("order/"+ orderId, Map.of("success", true));
                 return OrderHelper.toOrderResponseFromOrder(order);
             }

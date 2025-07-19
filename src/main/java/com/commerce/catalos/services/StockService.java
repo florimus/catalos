@@ -9,4 +9,6 @@ public interface StockService {
     VariantStockResponse getStockByVariantId(final String variantId);
 
     StockInfo getStockInfoByVariantIdAndChannel(final String variantId, final String channel);
+
+    void updateVariantStockInChannel(final String variantId, final String channelId, final Integer reservation);
 }
