@@ -1,6 +1,7 @@
 package com.commerce.catalos.persistence.dtos;
 
 import com.commerce.catalos.core.enums.OrderStatus;
+import com.commerce.catalos.models.orders.EventItem;
 import com.commerce.catalos.models.orders.LineItem;
 import com.commerce.catalos.models.orders.OrderPrice;
 import com.commerce.catalos.models.orders.PaymentInfo;
@@ -15,6 +16,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -50,4 +52,6 @@ public class Order extends BaseDto {
     private List<PaymentOption> paymentOptions;
 
     private PaymentInfo paymentInfo;
+
+    private Map<String, EventItem> events;
 }

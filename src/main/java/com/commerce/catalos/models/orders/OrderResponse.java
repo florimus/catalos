@@ -1,6 +1,7 @@
 package com.commerce.catalos.models.orders;
 
 import java.util.List;
+import java.util.Map;
 
 import com.commerce.catalos.core.enums.OrderStatus;
 import com.commerce.catalos.persistence.dtos.Address;
@@ -42,4 +43,6 @@ public class OrderResponse {
     private PaymentInfo paymentInfo;
 
     private String paymentLink;
+
+    private Map<String, EventItem> events;
 }

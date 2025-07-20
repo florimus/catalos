@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import com.commerce.catalos.core.configurations.Messager;
+import com.commerce.catalos.core.constants.OrderEvents;
 import com.commerce.catalos.core.enums.PaymentStatus;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.models.customApps.PaymentDetails;
@@ -126,7 +127,7 @@ public class OrderServiceImpl implements OrderService {
             order.setCreatedBy(user.getEmail());
             order.setUpdatedBy(user.getEmail());
         }
-
+        order.setEvents(OrderHelper.createOrderEvent(OrderEvents.Created.name(), "admin"));
         return order;
     }
 
@@ -532,6 +533,7 @@ public class OrderServiceImpl implements OrderService {
         // For non-external payment methods
         paymentInfo.setUniqueId(String.valueOf(System.currentTimeMillis()));
         order.setPaymentInfo(paymentInfo);
+        order.setEvents(OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.PaymentInitialised.name(), "admin"));
 
         Logger.info("258893e2-8674-41a5-80d0-4e9df5523883", "Saving order: {}", orderId);
         order = orderRepository.save(order);
@@ -570,6 +572,7 @@ public class OrderServiceImpl implements OrderService {
                 paymentInfo.setStatus(PaymentStatus.Confirmed);
                 order.setPaymentInfo(paymentInfo);
                 order.setStatus(OrderStatus.Submitted);
+                order.setEvents(OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.Submitted.name(), "admin"));
                 Logger.info("b2d27177-bc03-4677-a72e-71b3ad49ef1d", "Saving order: {}", orderId);
                 order = orderRepository.save(order);
                 updateOrderItemsInventory(order.getLineItems(), order.getChannelId());
@@ -615,6 +618,7 @@ public class OrderServiceImpl implements OrderService {
             if (paymentLinkResponse != null) {
                 paymentInfo.setUniqueId(paymentLinkResponse.getId());
                 order.setPaymentInfo(paymentInfo);
+                order.setEvents(OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.PaymentInitialised.name(), "admin"));
                 orderRepository.save(order);
                 return OrderLinkResponse.builder().paymentLink(paymentLinkResponse.getPaymentUrl()).build();
             } else {
@@ -660,6 +664,7 @@ public class OrderServiceImpl implements OrderService {
         CompletableFuture.allOf(packagingFuture, inventoryFuture).join();
 
         order.setStatus(OrderStatus.Fulfilled);
+        order.setEvents(OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.fulfillment.name(), "admin"));
 
         Logger.info("", "Saving order: {}", orderId);
         order = orderRepository.save(order);

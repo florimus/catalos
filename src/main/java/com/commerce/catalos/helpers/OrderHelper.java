@@ -1,18 +1,16 @@
 package com.commerce.catalos.helpers;
 
-import com.commerce.catalos.models.orders.LineItemPrice;
-import com.commerce.catalos.models.orders.MiniLineItem;
-import com.commerce.catalos.models.orders.MiniOrderResponse;
+import com.commerce.catalos.models.orders.*;
 import com.commerce.catalos.models.prices.CalculatedPriceResponse;
 import com.commerce.catalos.models.variants.MiniVariantResponse;
 import com.commerce.catalos.models.variants.VariantResponse;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 
-import com.commerce.catalos.models.orders.OrderResponse;
-import com.commerce.catalos.models.orders.UpdateAddressRequest;
 import com.commerce.catalos.persistence.dtos.Address;
 import com.commerce.catalos.persistence.dtos.Order;
 
@@ -69,4 +67,30 @@ public class OrderHelper {
         BeanUtils.copyProperties(updateAddressRequest, address);
         return address;
     }
+
+    public static Map<String, EventItem> createOrderEvent(final String event, final String user) {
+        return Map.of(event, new EventItem(new Date(), user, null));
+    }
+
+    public static Map<String, EventItem> createOrderEvent(final String event, final String user, final String note) {
+        return Map.of(event, new EventItem(new Date(), user, note));
+    }
+
+
+    public static Map<String, EventItem> updateOrderEvent(Map<String, EventItem> events, final String event, final String user) {
+        if (null == events){
+            return Map.of(event, new EventItem(new Date(), user, null));
+        }
+        events.put(event, new EventItem(new Date(), user, null));
+        return events;
+    }
+
+    public static Map<String, EventItem> updateOrderEvent(Map<String, EventItem> events, final String event, final String user, final String note) {
+        if (null == events){
+            return Map.of(event, new EventItem(new Date(), user, note));
+        }
+        events.put(event, new EventItem(new Date(), user, note));
+        return events;
+    }
+
 }
