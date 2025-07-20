@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +19,10 @@ public class LineItem {
     private ProductResponse product;
 
     private VariantResponse variant;
+
+    private List<String> unitIds;
+
+    private List<String> packageIds;
 
     private Integer quantity;
 

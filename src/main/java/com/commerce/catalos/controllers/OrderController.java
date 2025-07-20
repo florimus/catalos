@@ -107,4 +107,15 @@ public class OrderController {
                 "Received request for fetch payment link of order: {}", orderId);
         return new ResponseEntity<OrderLinkResponse>(orderService.getPaymentLinkOfOrderById(orderId));
     }
+
+    @PreAuthorize("hasRole('ORD:NN')")
+    @PatchMapping("/id/{orderId}/packaging")
+    public ResponseEntity<OrderResponse> updateOrderPackaging(
+            @PathVariable("orderId") final String orderId,
+            @RequestBody final OrderPackagingInfoRequest orderPackagingInfoRequest) {
+        Logger.info("",
+                "Received request for update order packaging requests: {} for order: {}",
+                orderPackagingInfoRequest, orderId);
+        return new ResponseEntity<OrderResponse>(orderService.updateOrderPackaging(orderId, orderPackagingInfoRequest));
+    }
 }

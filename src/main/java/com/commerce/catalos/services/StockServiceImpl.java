@@ -76,4 +76,25 @@ public class StockServiceImpl implements StockService {
         Logger.info("", "Updating the stock reserved number");
         stockRepository.save(stock);
     }
+
+    @Override
+    public void updateVariantStockInChannelShipping(String variantId, String channelId, Integer shippingQuantity) {
+        Stock stock = this.findStockByVariantId(variantId);
+        if (null == stock || !stock.isActive()) {
+            Logger.error("", "Stock not exits for the variant");
+            throw new ConflictException("Order cannot be placed, since there is not stock");
+        }
+        Map<String, StockInfo> stockInfos = stock.getStockInfo();
+        StockInfo currentStockInfo = stockInfos.get(channelId);
+        if (null == currentStockInfo) {
+            Logger.error("", "Stock not exits for the variant in this channel");
+            throw new ConflictException("Order cannot be placed, since there is not stock in this channel");
+        }
+        currentStockInfo.setReservedStocks(currentStockInfo.getReservedStocks() - shippingQuantity);
+        currentStockInfo.setTotalStocks(currentStockInfo.getTotalStocks() - shippingQuantity);
+        stockInfos.put(channelId, currentStockInfo);
+        stock.setStockInfo(stockInfos);
+        Logger.info("", "Updating the stock quantity");
+        stockRepository.save(stock);
+    }
 }

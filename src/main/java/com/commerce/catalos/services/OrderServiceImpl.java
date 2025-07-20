@@ -142,6 +142,18 @@ public class OrderServiceImpl implements OrderService {
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
+    private void updateOrderItemsInventoryAfterShipping(final List<LineItem> lineItems, final String channelId) {
+        List<CompletableFuture<Void>> futures = lineItems.stream()
+                .map(item -> CompletableFuture.runAsync(() -> {
+                    String variantId = item.getVariant().getId();
+                    Integer quantity = item.getQuantity();
+                    stockService.updateVariantStockInChannelShipping(variantId, channelId, quantity);
+                }))
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
+
     private Map<String, Integer> prepareVariantQuantityMap(Order order, List<OrderRequestLineItem> lineItems) {
         Map<String, Integer> variantQuantityMap = new LinkedHashMap<>();
 
@@ -226,6 +238,26 @@ public class OrderServiceImpl implements OrderService {
 
         return orderPrice;
     }
+
+    private void updatePackagingInfo(List<LineItem> lineItem, final OrderPackagingInfoRequest orderPackagingInfoRequest) {
+        Map<String, List<String>> unitIds = orderPackagingInfoRequest.getUnitIds();
+        Map<String, List<String>> packagingIds = orderPackagingInfoRequest.getPackageIds();
+
+        lineItem.forEach(item -> {
+            if (null == unitIds.get(item.getId())) {
+                Logger.error("", "Unit ids not found for : {}", item.getId());
+                throw new NotFoundException("Unit id not found");
+            }
+            item.setUnitIds(unitIds.get(item.getId()));
+
+            if (null == packagingIds.get(item.getId())) {
+                Logger.error("", "Packaging ids not found for : {}", item.getId());
+                throw new NotFoundException("Packaging id not found");
+            }
+            item.setPackageIds(packagingIds.get(item.getId()));
+        });
+    }
+
 
     @Override
     public OrderResponse createOrder(final CreateOrderRequest request) {
@@ -594,5 +626,43 @@ public class OrderServiceImpl implements OrderService {
 
         Logger.error("", "Cannot generate link for internal payment option");
         throw new ConflictException("Cannot create payment link");
+    }
+
+    @Override
+    public OrderResponse updateOrderPackaging(final String orderId, final OrderPackagingInfoRequest orderPackagingInfoRequest) {
+        if (orderId == null || orderId.isBlank()) {
+            Logger.error("", "Order id is empty");
+            throw new BadRequestException("Order id is empty");
+        }
+
+        Order order = findOrderById(orderId);
+        if (order == null) {
+            Logger.error("", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+
+        if (!order.getStatus().name().equals(OrderStatus.Submitted.name())) {
+            Logger.error("", "Order is not in the state for updating packages");
+            throw new ConflictException("Cannot update the order package in this stage");
+        }
+
+        List<LineItem> lineItems = order.getLineItems();
+
+        CompletableFuture<Void> packagingFuture = CompletableFuture.runAsync(() ->
+                this.updatePackagingInfo(lineItems, orderPackagingInfoRequest)
+        );
+
+        final String channelId = order.getChannelId();
+        CompletableFuture<Void> inventoryFuture = CompletableFuture.runAsync(() ->
+                this.updateOrderItemsInventoryAfterShipping(lineItems, channelId)
+        );
+
+        CompletableFuture.allOf(packagingFuture, inventoryFuture).join();
+
+        order.setStatus(OrderStatus.Fulfilled);
+
+        Logger.info("", "Saving order: {}", orderId);
+        order = orderRepository.save(order);
+        return OrderHelper.toOrderResponseFromOrder(order);
     }
 }
