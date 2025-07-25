@@ -440,10 +440,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Page<MiniOrderResponse> getOrders(final String query, final String channel, final Pageable pageable) {
+    public Page<MiniOrderResponse> getOrders(final String query, final String channel, final OrderFilterInputs orderFilterInputs, final Pageable pageable) {
         Logger.info("95b02037-263c-4cba-a200-cf3ba73f2b04", "Finding orders with query: {} and pageable: {}",
                 query, pageable);
-        Page<Order> orders = orderRepository.searchOrders(query, channel, pageable);
+        Page<Order> orders = orderRepository.searchOrders(query, channel, orderFilterInputs, pageable);
         return new Page<MiniOrderResponse>(
                 OrderHelper.toMiniOrderResponseFromOrders(orders.getHits()),
                 orders.getTotalHitsCount(),

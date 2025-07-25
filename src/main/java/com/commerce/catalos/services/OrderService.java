@@ -19,7 +19,7 @@ public interface OrderService {
 
     OrderResponse createOrderByAdmin(final CreateOrderRequest createOrderRequest);
 
-    Page<MiniOrderResponse> getOrders(final String query, final String channel, final Pageable pageable);
+    Page<MiniOrderResponse> getOrders(final String query, final String channel, final OrderFilterInputs orderFilterInputs, final Pageable pageable);
 
     OrderResponse updateAddress(final String orderId, final UpdateAddressRequest updateAddressRequest);
 

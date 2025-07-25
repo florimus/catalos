@@ -44,15 +44,17 @@ public class OrderController {
         return new ResponseEntity<OrderResponse>(orderService.getOrderById(orderId));
     }
 
-    @GetMapping("/search")
+    @PutMapping("/search")
     @PreAuthorize("hasRole('ORD:LS')")
     public ResponseEntity<Page<MiniOrderResponse>> getOrders(
             @RequestParam(required = false, defaultValue = "") String query,
             @RequestParam(required = false, defaultValue = "") String channel,
+            @RequestBody(required = false) final OrderFilterInputs orderFilterInputs,
             @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Direction.DESC) Pageable pageable) {
         Logger.info("598f3922-5e91-4571-a31b-48fc03b75178",
                 "Received request for search order: {}", query);
-        return new ResponseEntity<Page<MiniOrderResponse>>(orderService.getOrders(query, channel, pageable));
+        return new ResponseEntity<Page<MiniOrderResponse>>(
+                orderService.getOrders(query, channel, orderFilterInputs, pageable));
     }
 
     @PutMapping("/id/{orderId}")
@@ -96,7 +98,8 @@ public class OrderController {
         Logger.info("df6d91fa-12a3-45f0-9057-590af992996f",
                 "Received request for update order payment transaction: {} for order: {}",
                 orderTransactionRequest.getPaymentUniqueId(), orderId);
-        return new ResponseEntity<OrderResponse>(orderService.updateOrderTransaction(orderId, orderTransactionRequest));
+        return new ResponseEntity<OrderResponse>(
+                orderService.updateOrderTransaction(orderId, orderTransactionRequest));
     }
 
     @PatchMapping("/id/{orderId}/link")
@@ -116,6 +119,7 @@ public class OrderController {
         Logger.info("",
                 "Received request for update order packaging requests: {} for order: {}",
                 orderPackagingInfoRequest, orderId);
-        return new ResponseEntity<OrderResponse>(orderService.updateOrderPackaging(orderId, orderPackagingInfoRequest));
+        return new ResponseEntity<OrderResponse>(
+                orderService.updateOrderPackaging(orderId, orderPackagingInfoRequest));
     }
 }
