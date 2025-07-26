@@ -62,13 +62,13 @@ A minimal, responsive, and modern user interface designed with Tailwind CSS that
 git clone https://github.com/florimus/catalos.git
 
 # Navigate to project directory
-cd catalos-admin
+cd catalos
 
 # Install dependencies
-npm install
+./gradlew clean build
 
-# Run the development server
-npm run dev
+# Run the server
+./gradlew bootRun
 ```
 
 ## 📚 Documentation Links
