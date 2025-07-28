@@ -43,6 +43,7 @@ public class ModuleServiceImpl implements ModuleService {
             module.setActive(true);
         }
         module.setData(moduleRequest.getData());
+        module.setTranslations(moduleRequest.getTranslations());
         Logger.info("5a464293-e7b4-44db-9146-eb2f0be97260", "saving module for resource: {}",
                 moduleRequest.getResourceId());
         return ModuleHelper.toCreateModuleResponseFromContentModule(moduleRepository.save(module));

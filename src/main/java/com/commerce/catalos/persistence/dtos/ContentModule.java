@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -23,4 +25,6 @@ public class ContentModule extends BaseDto {
     private String resourceId;
 
     private String data;
+
+    private Map<String, String> translations;
 }

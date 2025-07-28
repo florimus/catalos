@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,6 +18,8 @@ public class ModuleResponse {
     private String resourceId;
 
     private String data;
+
+    private Map<String, String> translations;
 
     private boolean active;
 }
