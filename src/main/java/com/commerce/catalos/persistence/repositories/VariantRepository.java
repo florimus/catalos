@@ -5,6 +5,8 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import com.commerce.catalos.persistence.dtos.Variant;
 import com.commerce.catalos.persistence.repositories.custom.VariantCustomRepository;
 
+import java.util.List;
+
 public interface VariantRepository extends MongoRepository<Variant, String>, VariantCustomRepository {
 
     boolean existsBySkuIdOrSlugAndEnabled(final String sku, final String slug, final boolean enabled);
@@ -15,4 +17,5 @@ public interface VariantRepository extends MongoRepository<Variant, String>, Var
 
     Variant findVariantByUrlAndEnabled(String url, boolean enabled);
 
+    List<Variant> findVariantByProductIdAndEnabledAndActive(final String productId, final boolean enabled, final boolean active);
 }

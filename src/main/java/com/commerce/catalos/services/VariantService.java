@@ -35,4 +35,6 @@ public interface VariantService {
 
     public VariantURLResponse getVariantByURL(final String url, final String channel);
 
+    public List<VariantResponse> getAllProductVariants(final String productId);
+
 }

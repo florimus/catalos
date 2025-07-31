@@ -1,0 +1,40 @@
+scalar JSON
+
+type Query {
+    getProductById(id: String!): Product
+    getVariantById(id: String!): Variant
+}
+
+type Product {
+    id: ID
+    name: String
+    skuId: String
+    categoryName: String
+    categoryId: String
+    brandName: String
+    brandId: String
+    productTypeId: String
+    attributes: JSON
+    variants: [Variant]
+}
+
+type Variant {
+    id: ID
+    name: String
+    slug: String
+    skuId: String
+    url: String
+    seoTitle: String
+    medias: [Media]
+    seoDescription: String
+    attributes: JSON
+}
+
+type Media {
+    type: String
+    defaultSrc: String
+    lg: String
+    md: String
+    sm: String
+    alt: String
+}

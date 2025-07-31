@@ -51,4 +51,8 @@ public class VariantHelper {
         response.setPrices(prices);
         return response;
     }
+
+    public static List<VariantResponse> toVariantListResponse(final List<Variant> variants) {
+        return variants.stream().map(VariantHelper::toVariantResponseFromVariant).toList();
+    }
 }

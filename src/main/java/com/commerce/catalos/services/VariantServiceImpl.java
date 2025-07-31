@@ -69,6 +69,10 @@ public class VariantServiceImpl implements VariantService {
         return String.format("/products/%s/variants/%s", productId, slug);
     }
 
+    private List<Variant> findVariantsByProductId(final String productId) {
+        return variantRepository.findVariantByProductIdAndEnabledAndActive(productId, true, true);
+    }
+
     @Override
     public CreateVariantResponse createVariant(final CreateVariantRequest createVariantRequest) {
         ProductResponse product = productService.getProductById(createVariantRequest.getProductId());
@@ -245,6 +249,11 @@ public class VariantServiceImpl implements VariantService {
         CalculatedPriceResponse prices = pricesFuture.join();
 
         return VariantHelper.toVariantURLResponseFromVariant(variant, product, productType, prices);
+    }
+
+    @Override
+    public List<VariantResponse> getAllProductVariants(final String productId) {
+        return VariantHelper.toVariantListResponse(this.findVariantsByProductId(productId));
     }
 
 }
