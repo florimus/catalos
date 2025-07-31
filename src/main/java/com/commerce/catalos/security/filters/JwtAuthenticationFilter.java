@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.commerce.catalos.core.utils.BasicAuthUtil;
 import com.commerce.catalos.persistence.dtos.APIKey;
+import com.commerce.catalos.security.RequestContext;
 import com.commerce.catalos.services.APIKeyService;
 import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final RoleService roleService;
 
+    private final RequestContext requestContext;
+
     @Lazy
     @Autowired
     private APIKeyService aPIKeyService;
@@ -67,6 +70,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
+
+        requestContext.populateRequestContext(request);
 
         if (request.getMethod().equals("POST") && POST_SKIP_PATHS.contains(path)) {
             filterChain.doFilter(request, response);

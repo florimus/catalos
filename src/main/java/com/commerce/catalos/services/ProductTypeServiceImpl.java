@@ -94,7 +94,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
             Logger.error("e01f88c6-53cf-47bf-a478-38a606670dcd", "Product type not found: {}", id);
             throw new NotFoundException("Product-type not found");
         }
-        Logger.info("7a8ecf2b-c389-4356-b492-90a6a2a6fb7e", "Updating product type by id: {}", id);
+        Logger.info("7a8ecf2b-c389-4356-b492-90a6a2a6fb7e", "fetching product type by id: {}", id);
         return ProductTypeHelper.toProductTypeResponseFromProductType(productType);
     }
 

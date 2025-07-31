@@ -40,7 +40,7 @@ public class TranslationServiceImpl implements TranslationService {
         Translation translation = this.findTranslationByUniqueIdAndLanguageCode(uniqueId, languageCode);
         if (null == translation){
             Logger.error("","No translation for {} in language {}", uniqueId, languageCode);
-            throw new NotFoundException("Translation not found");
+            return null;
         }
         return TranslationHelper.toTranslationResponseFromTranslation(translation);
     }

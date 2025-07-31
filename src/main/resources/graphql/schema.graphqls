@@ -14,8 +14,19 @@ type Product {
     brandName: String
     brandId: String
     productTypeId: String
+    productType: ProductType
     attributes: JSON
     variants: [Variant]
+    translations: JSON
+}
+
+type ProductType {
+    id: ID
+    name: String
+    slug: String
+    productAttributes: JSON
+    variantAttributes: JSON
+    translations: JSON
 }
 
 type Variant {
@@ -27,7 +38,9 @@ type Variant {
     seoTitle: String
     medias: [Media]
     seoDescription: String
+    productType: ProductType
     attributes: JSON
+    translations: JSON
 }
 
 type Media {
