@@ -13,6 +13,7 @@ type Product {
     categoryId: String
     brandName: String
     brandId: String
+    brand: Brand
     productTypeId: String
     productType: ProductType
     attributes: JSON
@@ -41,6 +42,14 @@ type Variant {
     productType: ProductType
     attributes: JSON
     translations: JSON
+}
+
+type Brand {
+    id: ID
+    name: String
+    avatar: String
+    seoTitle: String
+    seoDescription: String
 }
 
 type Media {
