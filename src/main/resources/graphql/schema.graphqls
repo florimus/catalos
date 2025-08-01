@@ -4,6 +4,7 @@ type Query {
     getProductById(id: String!): Product
     getVariantById(id: String!): Variant
     me: UserInfo
+    loginUser(email: String!, password: String!): AuthTokens
 }
 
 type Product {
@@ -85,4 +86,9 @@ type UserInfo {
     grandType: String
     roleId: String
     verified: String
+}
+
+type AuthTokens {
+    accessToken: String
+    refreshToken: String
 }
