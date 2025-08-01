@@ -24,8 +24,7 @@ public class HeaderUtils {
         if (authHeader != null && authHeader.startsWith("Basic ")) {
             return authHeader.substring(6);
         }
-        Logger.error("8160f333-86f3-453d-be5b-87d5125f2513", "Invalid user token");
-        throw new UnAuthorizedException("Invalid user token");
+        return null;
     }
 
     public static boolean isBasicAuth(final HttpServletRequest request){

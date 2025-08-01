@@ -44,12 +44,13 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private static final List<String> POST_SKIP_PATHS = List.of("/users", "/users/login");
     private static final List<String> PUT_SKIP_PATHS = List.of("/users/refresh");
     private static final List<String> SKIP_PATHS = List.of("/api", "/ws");
+    private static final String GRAPHQL_PATH = "/graphql";
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
 
-        String path = request.getRequestURI();
+        final String path = request.getRequestURI();
         requestContext.populateRequestContext(request);
 
         if (shouldSkipFilter(request.getMethod(), path)) {
@@ -57,10 +58,14 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (HeaderUtils.isBasicAuth(request)) {
-            processBasicAuth(request);
+        final String authHeader = HeaderUtils.getUserToken(request);
+
+        if (path.startsWith(GRAPHQL_PATH) && authHeader == null) {
+            authenticateAsDefaultCustomer(request);
+        } else if (HeaderUtils.isBasicAuth(request)) {
+            processBasicAuth(authHeader, request);
         } else {
-            processJwtAuth(request);
+            processJwtAuth(authHeader, request);
         }
 
         filterChain.doFilter(request, response);
@@ -72,31 +77,38 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         return SKIP_PATHS.stream().anyMatch(path::startsWith);
     }
 
-    private void processBasicAuth(HttpServletRequest request) {
-        String authHeader = HeaderUtils.getUserToken(request);
+    private void processBasicAuth(String authHeader, HttpServletRequest request) {
+        if (authHeader == null) {
+            logAndThrowUnauthorized("8160f333-86f3-453d-be5b-87d5125f2513", "Invalid user token");
+        }
+
         BasicAuthUtil.BasicAuthCredentials credentials = BasicAuthUtil.extractCredentials(authHeader);
 
         if (credentials.apiKey() == null || credentials.apiSecret() == null) {
-            logAndThrowUnauthorized("44da7c2b-3606-4ee1-8fc3-5e1afdf8d007", "Invalid api credentials");
+            logAndThrowUnauthorized("44da7c2b-3606-4ee1-8fc3-5e1afdf8d007", "Invalid API credentials");
         }
 
         APIKey apiUser = apiKeyService.getApiKeyByKeyAndSecret(credentials.apiKey(), credentials.apiSecret());
         if (apiUser == null) {
-            logAndThrowUnauthorized("6d19a4ff-4997-4305-b394-f2f375ae0469", "Invalid Api credentials");
+            logAndThrowUnauthorized("6d19a4ff-4997-4305-b394-f2f375ae0469", "Invalid API credentials");
         }
 
-        String permissions = roleService.getRoleById(apiUser.getRoleId());
-        setAuthentication(
-                GetUserInfoResponse.builder().active(true).email(apiUser.getApiKey()).build(),
-                permissions,
+        authenticateUser(
+                GetUserInfoResponse.builder()
+                        .active(true)
+                        .email(apiUser.getApiKey())
+                        .build(),
+                apiUser.getRoleId(),
                 request
         );
     }
 
-    private void processJwtAuth(HttpServletRequest request) {
-        String authHeader = HeaderUtils.getUserToken(request);
-        TokenClaims tokenClaims = JwtUtil.getTokenClaims(authHeader);
+    private void processJwtAuth(String authHeader, HttpServletRequest request) {
+        if (authHeader == null) {
+            logAndThrowUnauthorized("", "Invalid user token");
+        }
 
+        TokenClaims tokenClaims = JwtUtil.getTokenClaims(authHeader);
         if (tokenClaims == null) {
             logAndThrowUnauthorized("37c795f1-c895-4846-8d75-63289cc5e349", "Failed to decode token");
         }
@@ -106,27 +118,34 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (tokenClaims.isGuest()) {
-            String permissions = roleService.getRoleById(DefaultRoles.Customer.name());
-            setAuthentication(
-                    GetUserInfoResponse.builder()
-                            .active(true)
-                            .id(tokenClaims.getUserId())
-                            .email(tokenClaims.getEmail())
-                            .build(),
-                    permissions,
-                    request
-            );
+            authenticateAsDefaultCustomer(tokenClaims.getUserId(), tokenClaims.getEmail(), request);
         } else {
             GetUserInfoResponse userInfo = userService.getUserInfoByEmail(tokenClaims.getEmail());
             if (!userInfo.isActive()) {
                 logAndThrowUnauthorized("feb2bb73d-bdc6-4874-b77a-ec48a5cc1966", "Inactive user token");
             }
-            String permissions = roleService.getRoleById(userInfo.getRoleId());
-            setAuthentication(userInfo, permissions, request);
+            authenticateUser(userInfo, userInfo.getRoleId(), request);
         }
     }
 
-    private void setAuthentication(GetUserInfoResponse userInfo, String permissions, HttpServletRequest request) {
+    private void authenticateAsDefaultCustomer(HttpServletRequest request) {
+        authenticateAsDefaultCustomer(null, null, request);
+    }
+
+    private void authenticateAsDefaultCustomer(String userId, String email, HttpServletRequest request) {
+        authenticateUser(
+                GetUserInfoResponse.builder()
+                        .active(true)
+                        .id(userId)
+                        .email(email)
+                        .build(),
+                DefaultRoles.Customer.name(),
+                request
+        );
+    }
+
+    private void authenticateUser(GetUserInfoResponse userInfo, String roleId, HttpServletRequest request) {
+        String permissions = roleService.getRoleById(roleId);
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 userInfo,
                 null,
