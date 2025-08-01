@@ -1,6 +1,6 @@
 package com.commerce.catalos.security;
 
-import com.commerce.catalos.security.filters.JwtAuthenticationFilter;
+import com.commerce.catalos.security.filters.AuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthenticationFilter authenticationFilter;
 
     /**
      * The Spring Security configuration for the application. This method
@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter,
+                .addFilterBefore(authenticationFilter,
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
