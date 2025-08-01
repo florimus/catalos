@@ -7,6 +7,10 @@ type Query {
     loginUser(email: String!, password: String!): AuthTokens
 }
 
+type Mutation {
+    registerUser(userRegistrationInput: UserRegistrationInput!): UserInfo
+}
+
 type Product {
     id: ID
     name: String
@@ -78,7 +82,6 @@ type Media {
 
 type UserInfo {
     id: ID
-    userGroupId: String
     firstName: String
     lastName: String
     email: String
@@ -86,9 +89,17 @@ type UserInfo {
     grandType: String
     roleId: String
     verified: String
+    tokens: AuthTokens
 }
 
 type AuthTokens {
     accessToken: String
     refreshToken: String
+}
+
+input UserRegistrationInput {
+    firstName: String!
+    lastName: String
+    email: String!
+    password: String!
 }

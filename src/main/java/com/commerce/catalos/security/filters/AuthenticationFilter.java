@@ -139,7 +139,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                         .id(userId)
                         .email(email)
                         .build(),
-                DefaultRoles.Customer.name(),
+                DefaultRoles.User.name(),
                 request
         );
     }

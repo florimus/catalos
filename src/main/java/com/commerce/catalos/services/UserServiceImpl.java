@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService {
         User user = UserHelper.toUserFromRegisterUserRequest(registerUserRequest);
         user.setPassword(PasswordUtil.hash(user.getPassword()));
         user.setGrandType(GrandType.password);
-        user.setRoleId(DefaultRoles.Customer.name());
+        user.setRoleId(DefaultRoles.User.name());
         user.setCreatedBy(user.getEmail());
         user.setUpdatedBy(user.getEmail());
 

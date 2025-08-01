@@ -54,7 +54,7 @@ public class RoleServiceImpl implements RoleService {
      */
     @Override
     public String getRoleById(final String uniqueId) {
-        if (uniqueId == null || DefaultRoles.Customer.name().equals(uniqueId)) {
+        if (uniqueId == null || DefaultRoles.User.name().equals(uniqueId)) {
             Logger.info("76ca50e1-df83-4197-b3fb-499a6a7ca2a5", "Customer role requested with uniqueId: {}", uniqueId);
             return "CUS:ALL";
         }
