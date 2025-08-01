@@ -3,6 +3,7 @@ scalar JSON
 type Query {
     getProductById(id: String!): Product
     getVariantById(id: String!): Variant
+    me: UserInfo
 }
 
 type Product {
@@ -72,4 +73,16 @@ type Media {
     md: String
     sm: String
     alt: String
+}
+
+type UserInfo {
+    id: ID
+    userGroupId: String
+    firstName: String
+    lastName: String
+    email: String
+    avatar: String
+    grandType: String
+    roleId: String
+    verified: String
 }
