@@ -1,5 +1,7 @@
 package com.commerce.catalos.resolvers;
 
+import com.commerce.catalos.models.brands.BrandResponse;
+import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.productTypes.ProductTypeResponse;
 import com.commerce.catalos.models.products.ProductResponse;
 import com.commerce.catalos.models.translations.TranslationResponse;
@@ -44,9 +46,24 @@ public class TranslationResolvers {
             return null;
         }
         TranslationResponse translations = translationService.fetchTranslation(variantResponse.getId(), requestContext.getLanguage());
-        if (null != translations){
-            return translations.getTranslations();
+        return translations.getTranslations();
+    }
+
+    @SchemaMapping(typeName = "Brand", field = "translations")
+    public Map<String, Object> resolveBrandTranslations(final BrandResponse brandResponse){
+        if (requestContext.getLanguage().equals("EN")){
+            return null;
         }
-        return null;
+        TranslationResponse translations = translationService.fetchTranslation(brandResponse.getId(), requestContext.getLanguage());
+        return translations.getTranslations();
+    }
+
+    @SchemaMapping(typeName = "Category", field = "translations")
+    public Map<String, Object> resolveCategoryTranslations(final CategoryResponse categoryResponse){
+        if (requestContext.getLanguage().equals("EN")){
+            return null;
+        }
+        TranslationResponse translations = translationService.fetchTranslation(categoryResponse.getId(), requestContext.getLanguage());
+        return translations.getTranslations();
     }
 }

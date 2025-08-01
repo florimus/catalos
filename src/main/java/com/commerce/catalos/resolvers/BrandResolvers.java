@@ -15,7 +15,7 @@ public class BrandResolvers {
     private final BrandService brandService;
 
     @SchemaMapping(typeName = "Product", field = "brand")
-    public BrandResponse resolveVariants(ProductResponse productResponse) {
+    public BrandResponse resolveBrand(ProductResponse productResponse) {
         return brandService.getBrandById(productResponse.getBrandId());
     }
 }
