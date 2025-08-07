@@ -5,6 +5,7 @@ type Query {
     getVariantById(id: String!): Variant
     me: UserInfo
     loginUser(email: String!, password: String!): AuthTokens
+    getCart(id: ID!): Cart
 }
 
 type Mutation {
@@ -102,4 +103,87 @@ input UserRegistrationInput {
     lastName: String
     email: String!
     password: String!
+}
+
+type Cart {
+    id: ID
+    status: String
+    userId: String
+    email: String
+    isGuestOrder: Boolean
+    channelId: String
+    lineItems: [LineItem]
+    coupon: String
+    price: Price
+    shippingAddress: Address
+    billingAddress: Address
+    paymentOptions: [PaymentOption]
+    paymentInfo: PaymentInfo
+    paymentLink: String
+}
+
+type LineItem {
+    id: String
+    product: Product
+    variant: Variant
+    unitIds: [String]
+    packageIds: [String]
+    quantity: Int
+    itemPrice: ItemPrice
+    error: LineItemError
+}
+
+type Price {
+    subtotalPrice: Float
+    totalTaxPrice: Float
+    shippingPrice: Float
+    totalDiscountPrice: Float
+    grandTotalPrice: Float
+}
+
+type Address {
+    id: String
+    sourceId: String
+    addressType: String
+    phone: String
+    addressLine1: String
+    addressLine2: String
+    country: String
+    state: String
+    city: String
+    area: String
+    pinCode: String      
+}
+
+type PaymentInfo {
+    mode: PaymentOption
+    amount: Float
+    uniqueId: String
+    method: String
+    paymentId: String
+    paymentAt: String
+    status: String
+}
+
+type ItemPrice {
+    salesPrice: Float
+    discountName: String
+    discountedPrice: Float
+    discountPercentage: Float 
+    discountFlatPrice: Float
+    taxPrice: Float
+    finalPrice: Float
+}
+
+type LineItemError {
+    lineItemId: String
+    message: String
+}
+
+type PaymentOption {
+  id: String
+  name: String
+  applicableChannels: [String]
+  isExternal: Boolean
+  mode: String
 }
