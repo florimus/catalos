@@ -11,6 +11,7 @@ type Query {
 type Mutation {
     registerUser(userRegistrationInput: UserRegistrationInput!): UserInfo
     createCart(lineItems: [OrderRequestLineItem]): Cart
+    updateCartItem(id: ID!, updateItems: UpdateOrderLineItemRequest!): Cart
 }
 
 type Product {
@@ -187,6 +188,10 @@ type PaymentOption {
   applicableChannels: [String]
   isExternal: Boolean
   mode: String
+}
+
+input UpdateOrderLineItemRequest {
+    lineItems: [OrderRequestLineItem]
 }
 
 input OrderRequestLineItem {

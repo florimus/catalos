@@ -35,4 +35,11 @@ public class CartResolvers {
         createOrderRequest.setLineItems(lineItems);
         return orderService.createOrder(createOrderRequest);
     }
+
+    @MutationMapping
+    public OrderResponse updateCartItem(
+            @Argument("id") final String id,
+            @Argument("updateItems") final UpdateOrderLineItemRequest updateOrderLineItemRequest) {
+        return orderService.updateOrderLineItems(id, updateOrderLineItemRequest);
+    }
 }
