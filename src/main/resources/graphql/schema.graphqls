@@ -12,6 +12,7 @@ type Mutation {
     registerUser(userRegistrationInput: UserRegistrationInput!): UserInfo
     createCart(lineItems: [OrderRequestLineItem]): Cart
     updateCartItem(id: ID!, updateItems: UpdateOrderLineItemRequest!): Cart
+    removeCartItem(id: ID!, deleteItems: DeleteOrderLineItem!): Cart
 }
 
 type Product {
@@ -197,4 +198,8 @@ input UpdateOrderLineItemRequest {
 input OrderRequestLineItem {
     variantId: String
     quantity: Int
+}
+
+input DeleteOrderLineItem {
+    lineItems: [String]
 }

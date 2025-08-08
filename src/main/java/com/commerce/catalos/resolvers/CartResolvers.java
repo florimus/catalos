@@ -2,14 +2,12 @@ package com.commerce.catalos.resolvers;
 
 import java.util.List;
 
+import com.commerce.catalos.models.orders.*;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
-import com.commerce.catalos.models.orders.CreateOrderRequest;
-import com.commerce.catalos.models.orders.OrderRequestLineItem;
-import com.commerce.catalos.models.orders.OrderResponse;
 import com.commerce.catalos.security.RequestContext;
 import com.commerce.catalos.services.OrderService;
 
@@ -41,5 +39,12 @@ public class CartResolvers {
             @Argument("id") final String id,
             @Argument("updateItems") final UpdateOrderLineItemRequest updateOrderLineItemRequest) {
         return orderService.updateOrderLineItems(id, updateOrderLineItemRequest);
+    }
+
+    @MutationMapping
+    public OrderResponse removeCartItem(
+            @Argument("id") final String id,
+            @Argument("deleteItems") final DeleteOrderLineItemRequest deleteOrderLineItemRequest) {
+        return orderService.deleteOrderLineItems(id, deleteOrderLineItemRequest);
     }
 }
