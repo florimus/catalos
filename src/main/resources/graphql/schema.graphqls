@@ -10,6 +10,7 @@ type Query {
 
 type Mutation {
     registerUser(userRegistrationInput: UserRegistrationInput!): UserInfo
+    createCart(lineItems: [OrderRequestLineItem]): Cart
 }
 
 type Product {
@@ -186,4 +187,9 @@ type PaymentOption {
   applicableChannels: [String]
   isExternal: Boolean
   mode: String
+}
+
+input OrderRequestLineItem {
+    variantId: String
+    quantity: Int
 }

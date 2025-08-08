@@ -92,9 +92,10 @@ public class OrderServiceImpl implements OrderService {
                 true);
     }
 
-    private Order findRunningOrderByUserIdAndChannelId(final String userId, final String channelId) {
-        return this.orderRepository.findOrderByUserIdAndChannelIdAndStatusAndActiveAndEnabled(
-                userId, channelId, OrderStatus.InProgress, true, true);
+    private Order findRunningOrderByUserIdOrEmailAndChannelId(final String userId, final String email,
+            final String channelId) {
+        return this.orderRepository.findOrderByUserIdOrEmailAndChannelIdAndStatusAndActiveAndEnabled(
+                userId, email, channelId, OrderStatus.InProgress, true, true);
     }
 
     private Order findRunningOrderByEmailAndChannelId(final String email, final String channelId) {
@@ -240,7 +241,8 @@ public class OrderServiceImpl implements OrderService {
         return orderPrice;
     }
 
-    private void updatePackagingInfo(List<LineItem> lineItem, final OrderPackagingInfoRequest orderPackagingInfoRequest) {
+    private void updatePackagingInfo(List<LineItem> lineItem,
+            final OrderPackagingInfoRequest orderPackagingInfoRequest) {
         Map<String, List<String>> unitIds = orderPackagingInfoRequest.getUnitIds();
         Map<String, List<String>> packagingIds = orderPackagingInfoRequest.getPackageIds();
 
@@ -259,10 +261,10 @@ public class OrderServiceImpl implements OrderService {
         });
     }
 
-
     @Override
     public OrderResponse createOrder(final CreateOrderRequest request) {
-        String userId = request.getUserId();
+        String userId = authContext.getCurrentUser().getId();
+        String email = authContext.getCurrentUser().getEmail();
         String channelId = request.getChannelId();
 
         Order order = null;
@@ -270,7 +272,7 @@ public class OrderServiceImpl implements OrderService {
         if (null == userId || userId.isBlank()) {
             userId = java.util.UUID.randomUUID().toString();
         } else {
-            order = findRunningOrderByUserIdAndChannelId(userId, channelId);
+            order = findRunningOrderByUserIdOrEmailAndChannelId(userId, email, channelId);
             try {
                 GetUserInfoResponse userInfo = userService.getUserInfoById(userId);
                 if (null != userInfo && null != order) {
@@ -440,7 +442,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Page<MiniOrderResponse> getOrders(final String query, final String channel, final OrderFilterInputs orderFilterInputs, final Pageable pageable) {
+    public Page<MiniOrderResponse> getOrders(final String query, final String channel,
+            final OrderFilterInputs orderFilterInputs, final Pageable pageable) {
         Logger.info("95b02037-263c-4cba-a200-cf3ba73f2b04", "Finding orders with query: {} and pageable: {}",
                 query, pageable);
         Page<Order> orders = orderRepository.searchOrders(query, channel, orderFilterInputs, pageable);
@@ -533,7 +536,8 @@ public class OrderServiceImpl implements OrderService {
         // For non-external payment methods
         paymentInfo.setUniqueId(String.valueOf(System.currentTimeMillis()));
         order.setPaymentInfo(paymentInfo);
-        order.setEvents(OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.PaymentInitialised.name(), "admin"));
+        order.setEvents(
+                OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.PaymentInitialised.name(), "admin"));
 
         Logger.info("258893e2-8674-41a5-80d0-4e9df5523883", "Saving order: {}", orderId);
         order = orderRepository.save(order);
@@ -576,7 +580,7 @@ public class OrderServiceImpl implements OrderService {
                 Logger.info("b2d27177-bc03-4677-a72e-71b3ad49ef1d", "Saving order: {}", orderId);
                 order = orderRepository.save(order);
                 updateOrderItemsInventory(order.getLineItems(), order.getChannelId());
-                messager.send("order/"+ orderId, Map.of("success", true));
+                messager.send("order/" + orderId, Map.of("success", true));
                 return OrderHelper.toOrderResponseFromOrder(order);
             }
         }
@@ -599,7 +603,7 @@ public class OrderServiceImpl implements OrderService {
 
         PaymentInfo paymentInfo = order.getPaymentInfo();
 
-        if(null == paymentInfo) {
+        if (null == paymentInfo) {
             Logger.error("", "Please select a payment option");
             throw new ConflictException("Payment option not selected");
         }
@@ -618,7 +622,8 @@ public class OrderServiceImpl implements OrderService {
             if (paymentLinkResponse != null) {
                 paymentInfo.setUniqueId(paymentLinkResponse.getId());
                 order.setPaymentInfo(paymentInfo);
-                order.setEvents(OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.PaymentInitialised.name(), "admin"));
+                order.setEvents(OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.PaymentInitialised.name(),
+                        "admin"));
                 orderRepository.save(order);
                 return OrderLinkResponse.builder().paymentLink(paymentLinkResponse.getPaymentUrl()).build();
             } else {
@@ -633,7 +638,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponse updateOrderPackaging(final String orderId, final OrderPackagingInfoRequest orderPackagingInfoRequest) {
+    public OrderResponse updateOrderPackaging(final String orderId,
+            final OrderPackagingInfoRequest orderPackagingInfoRequest) {
         if (orderId == null || orderId.isBlank()) {
             Logger.error("", "Order id is empty");
             throw new BadRequestException("Order id is empty");
@@ -652,14 +658,12 @@ public class OrderServiceImpl implements OrderService {
 
         List<LineItem> lineItems = order.getLineItems();
 
-        CompletableFuture<Void> packagingFuture = CompletableFuture.runAsync(() ->
-                this.updatePackagingInfo(lineItems, orderPackagingInfoRequest)
-        );
+        CompletableFuture<Void> packagingFuture = CompletableFuture
+                .runAsync(() -> this.updatePackagingInfo(lineItems, orderPackagingInfoRequest));
 
         final String channelId = order.getChannelId();
-        CompletableFuture<Void> inventoryFuture = CompletableFuture.runAsync(() ->
-                this.updateOrderItemsInventoryAfterShipping(lineItems, channelId)
-        );
+        CompletableFuture<Void> inventoryFuture = CompletableFuture
+                .runAsync(() -> this.updateOrderItemsInventoryAfterShipping(lineItems, channelId));
 
         CompletableFuture.allOf(packagingFuture, inventoryFuture).join();
 
