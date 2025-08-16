@@ -61,4 +61,11 @@ public class CartResolvers {
             @Argument("email") final String email) {
         return orderService.updateEmail(id, email);
     }
+
+    @MutationMapping
+    public OrderResponse selectPaymentMethod(
+            @Argument("id") final String id,
+            @Argument("optionId") final String optionId) {
+        return orderService.selectPaymentMethod(id, optionId);
+    }
 }

@@ -417,6 +417,7 @@ public class OrderServiceImpl implements OrderService {
 
             order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
         }
+        orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
     }
 
