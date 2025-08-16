@@ -549,6 +549,9 @@ public class OrderServiceImpl implements OrderService {
             if (paymentLinkResponse != null) {
                 paymentInfo.setUniqueId(paymentLinkResponse.getId());
                 order.setPaymentInfo(paymentInfo);
+                order.setEvents(
+                        OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.PaymentInitialised.name(),
+                                "admin"));
                 order = orderRepository.save(order);
 
                 OrderResponse response = OrderHelper.toOrderResponseFromOrder(order);
@@ -564,8 +567,6 @@ public class OrderServiceImpl implements OrderService {
         // For non-external payment methods
         paymentInfo.setUniqueId(String.valueOf(System.currentTimeMillis()));
         order.setPaymentInfo(paymentInfo);
-        order.setEvents(
-                OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.PaymentInitialised.name(), "admin"));
 
         Logger.info("258893e2-8674-41a5-80d0-4e9df5523883", "Saving order: {}", orderId);
         order = orderRepository.save(order);
