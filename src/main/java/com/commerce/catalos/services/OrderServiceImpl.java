@@ -575,6 +575,38 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderResponse submitOrder(final String orderId) {
+        if (orderId == null || orderId.isBlank()) {
+            Logger.error("61e1dcb7-1bb3-4bf6-a49d-abcadc496dc0", "Order id is empty");
+            throw new BadRequestException("Order id is empty");
+        }
+
+        Order order = findProgressingOrderById(orderId);
+        if (order == null) {
+            Logger.error("df79461b-f723-4b0c-b678-63693a8f0367", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+        PaymentInfo paymentInfo = order.getPaymentInfo();
+        if (null == paymentInfo) {
+            Logger.error("28c43e27-f59e-46e5-b15c-2c7fb0d289ea", "Please select a payment option");
+            throw new ConflictException("Payment option not selected");
+        }
+        if (paymentInfo.getMode().isExternal()) {
+            Logger.error("0ed975e2-2fd1-499d-8b50-e94f005e5820",
+                    "External payment option cannot be submitted directly");
+            throw new ConflictException("External payment option cannot be submitted directly");
+        }
+
+        order.setEvents(
+                OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.Submitted.name(), "admin"));
+        order.setStatus(OrderStatus.Submitted);
+        paymentInfo.setStatus(PaymentStatus.Pending);
+        order.setPaymentInfo(paymentInfo);
+        Logger.info("ede3cbcc-bf6c-4247-96a8-572ccd37b28f", "'Updated order: {}", orderId);
+        return OrderHelper.toOrderResponseFromOrder(orderRepository.save(order));
+    }
+
+    @Override
     public OrderResponse updateOrderTransaction(final String orderId,
             final OrderTransactionRequest orderTransactionRequest) {
         if (orderId == null || orderId.isBlank()) {
@@ -584,7 +616,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = findProgressingOrderById(orderId);
         if (order == null) {
-            Logger.error("b7faefaf-5a06-4f4a-abd8-525f8a81a331", "Order not found for order id: {}", orderId);
+            Logger.error("46de8655-1e86-422e-b511-dc8f64e6af28", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
         }
 
@@ -633,7 +665,7 @@ public class OrderServiceImpl implements OrderService {
         PaymentInfo paymentInfo = order.getPaymentInfo();
 
         if (null == paymentInfo) {
-            Logger.error("70f40072-6c06-49f6-95dc-29f9739d20f7", "Please select a payment option");
+            Logger.error("15fcde8d-188c-438f-a484-10e48377b907", "Please select a payment option");
             throw new ConflictException("Payment option not selected");
         }
 

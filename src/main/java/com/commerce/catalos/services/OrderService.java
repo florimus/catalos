@@ -35,4 +35,6 @@ public interface OrderService {
             final OrderPackagingInfoRequest orderPackagingInfoRequest);
 
     OrderResponse updateEmail(final String orderId, final String email);
+
+    OrderResponse submitOrder(final String orderId);
 }

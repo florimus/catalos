@@ -47,8 +47,8 @@ public class OrderController {
     @PutMapping("/search")
     @PreAuthorize("hasRole('ORD:LS')")
     public ResponseEntity<Page<MiniOrderResponse>> getOrders(
-            @RequestParam(required = false, defaultValue = "") String query,
-            @RequestParam(required = false, defaultValue = "") String channel,
+            @RequestParam(required = false, defaultValue = "8f9d917e-5890-4ac3-9157-bb7f06996d5e") String query,
+            @RequestParam(required = false, defaultValue = "0040f261-51ae-4bc3-a1df-e44a21586bb1") String channel,
             @RequestBody(required = false) final OrderFilterInputs orderFilterInputs,
             @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Direction.DESC) Pageable pageable) {
         Logger.info("598f3922-5e91-4571-a31b-48fc03b75178",
@@ -91,6 +91,15 @@ public class OrderController {
     }
 
     @PreAuthorize("hasRole('ORD:NN')")
+    @PatchMapping("/id/{orderId}/submit")
+    public ResponseEntity<OrderResponse> submitOrder(
+            @PathVariable("orderId") final String orderId) {
+        Logger.info("33747581-7ece-4430-aadd-27c1b4cf2d72",
+                "Received request for submit order: {}", orderId);
+        return new ResponseEntity<OrderResponse>(orderService.submitOrder(orderId));
+    }
+
+    @PreAuthorize("hasRole('ORD:NN')")
     @PutMapping("/id/{orderId}/transaction")
     public ResponseEntity<OrderResponse> updateOrderTransaction(
             @PathVariable("orderId") final String orderId,
@@ -106,7 +115,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ORD:NN')")
     public ResponseEntity<OrderLinkResponse> getPaymentLinkOfOrderById(
             @PathVariable("orderId") final String orderId) {
-        Logger.info("",
+        Logger.info("c9c69f2e-2abb-48c4-82d4-16a69af11087",
                 "Received request for fetch payment link of order: {}", orderId);
         return new ResponseEntity<OrderLinkResponse>(orderService.getPaymentLinkOfOrderById(orderId));
     }
@@ -116,7 +125,7 @@ public class OrderController {
     public ResponseEntity<OrderResponse> updateOrderPackaging(
             @PathVariable("orderId") final String orderId,
             @RequestBody final OrderPackagingInfoRequest orderPackagingInfoRequest) {
-        Logger.info("",
+        Logger.info("a4cbe0be-f187-4075-90e1-771f54397d8b",
                 "Received request for update order packaging requests: {} for order: {}",
                 orderPackagingInfoRequest, orderId);
         return new ResponseEntity<OrderResponse>(

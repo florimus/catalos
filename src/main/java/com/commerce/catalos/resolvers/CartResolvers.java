@@ -68,4 +68,10 @@ public class CartResolvers {
             @Argument("optionId") final String optionId) {
         return orderService.selectPaymentMethod(id, optionId);
     }
+
+    @MutationMapping
+    public OrderResponse submitOrder(
+            @Argument("id") final String id) {
+        return orderService.submitOrder(id);
+    }
 }

@@ -16,6 +16,7 @@ type Mutation {
     updateCartAddress(id: ID!, address: AddressInput!): Cart
     updateEmail(id: ID!, email: String!): Cart!
     selectPaymentMethod(id: ID!, optionId: String!): Cart
+    submitOrder(id: ID!): Cart
 }
 
 type Product {
