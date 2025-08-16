@@ -13,6 +13,7 @@ type Mutation {
     createCart(lineItems: [OrderRequestLineItem]): Cart
     updateCartItem(id: ID!, updateItems: UpdateOrderLineItemRequest!): Cart
     removeCartItem(id: ID!, deleteItems: DeleteOrderLineItem!): Cart
+    updateCartAddress(id: ID!, address: AddressInput!): Cart
 }
 
 type Product {
@@ -202,4 +203,18 @@ input OrderRequestLineItem {
 
 input DeleteOrderLineItem {
     lineItems: [String]
+}
+
+input AddressInput {
+    id: String
+    sourceId: String
+    addressType: String
+    phone: String
+    addressLine1: String
+    addressLine2: String
+    country: String
+    state: String
+    city: String
+    area: String
+    pinCode: String
 }

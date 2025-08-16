@@ -47,4 +47,11 @@ public class CartResolvers {
             @Argument("deleteItems") final DeleteOrderLineItemRequest deleteOrderLineItemRequest) {
         return orderService.deleteOrderLineItems(id, deleteOrderLineItemRequest);
     }
+
+    @MutationMapping
+    public OrderResponse updateCartAddress(
+            @Argument("id") final String id,
+            @Argument("address") final UpdateAddressRequest updateAddressRequest) {
+        return orderService.updateAddress(id, updateAddressRequest);
+    }
 }
