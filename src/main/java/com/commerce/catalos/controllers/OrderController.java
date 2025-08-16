@@ -47,8 +47,8 @@ public class OrderController {
     @PutMapping("/search")
     @PreAuthorize("hasRole('ORD:LS')")
     public ResponseEntity<Page<MiniOrderResponse>> getOrders(
-            @RequestParam(required = false, defaultValue = "8f9d917e-5890-4ac3-9157-bb7f06996d5e") String query,
-            @RequestParam(required = false, defaultValue = "0040f261-51ae-4bc3-a1df-e44a21586bb1") String channel,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String channel,
             @RequestBody(required = false) final OrderFilterInputs orderFilterInputs,
             @PageableDefault(page = SortConstants.PAGE, size = SortConstants.SIZE, sort = SortConstants.SORT, direction = Direction.DESC) Pageable pageable) {
         Logger.info("598f3922-5e91-4571-a31b-48fc03b75178",
