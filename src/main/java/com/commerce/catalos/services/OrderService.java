@@ -19,7 +19,8 @@ public interface OrderService {
 
     OrderResponse createOrderByAdmin(final CreateOrderRequest createOrderRequest);
 
-    Page<MiniOrderResponse> getOrders(final String query, final String channel, final OrderFilterInputs orderFilterInputs, final Pageable pageable);
+    Page<MiniOrderResponse> getOrders(final String query, final String channel,
+            final OrderFilterInputs orderFilterInputs, final Pageable pageable);
 
     OrderResponse updateAddress(final String orderId, final UpdateAddressRequest updateAddressRequest);
 
@@ -30,5 +31,8 @@ public interface OrderService {
 
     OrderLinkResponse getPaymentLinkOfOrderById(final String orderId);
 
-    OrderResponse updateOrderPackaging(final String orderId, final OrderPackagingInfoRequest orderPackagingInfoRequest);
+    OrderResponse updateOrderPackaging(final String orderId,
+            final OrderPackagingInfoRequest orderPackagingInfoRequest);
+
+    OrderResponse updateEmail(final String orderId, final String email);
 }

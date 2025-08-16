@@ -54,4 +54,11 @@ public class CartResolvers {
             @Argument("address") final UpdateAddressRequest updateAddressRequest) {
         return orderService.updateAddress(id, updateAddressRequest);
     }
+
+    @MutationMapping
+    public OrderResponse updateEmail(
+            @Argument("id") final String id,
+            @Argument("email") final String email) {
+        return orderService.updateEmail(id, email);
+    }
 }

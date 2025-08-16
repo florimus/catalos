@@ -14,6 +14,7 @@ type Mutation {
     updateCartItem(id: ID!, updateItems: UpdateOrderLineItemRequest!): Cart
     removeCartItem(id: ID!, deleteItems: DeleteOrderLineItem!): Cart
     updateCartAddress(id: ID!, address: AddressInput!): Cart
+    updateEmail(id: ID!, email: String!): Cart!
 }
 
 type Product {

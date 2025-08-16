@@ -248,17 +248,44 @@ public class OrderServiceImpl implements OrderService {
 
         lineItem.forEach(item -> {
             if (null == unitIds.get(item.getId())) {
-                Logger.error("", "Unit ids not found for : {}", item.getId());
+                Logger.error("2aac9510-4097-49d2-9fa2-9aa4759f92b6", "Unit ids not found for : {}", item.getId());
                 throw new NotFoundException("Unit id not found");
             }
             item.setUnitIds(unitIds.get(item.getId()));
 
             if (null == packagingIds.get(item.getId())) {
-                Logger.error("", "Packaging ids not found for : {}", item.getId());
+                Logger.error("c389fe8b-a007-41fa-b1f1-c10d39d59061", "Packaging ids not found for : {}", item.getId());
                 throw new NotFoundException("Packaging id not found");
             }
             item.setPackageIds(packagingIds.get(item.getId()));
         });
+    }
+
+    private void deleteDuplicateOrderAfterMerge(final String orderId) {
+        this.orderRepository.deleteById(orderId);
+    }
+
+    private Order mergeOrders(final Order currentOrder, final Order oldOrder) {
+        Map<String, Integer> currentOrderVariantQuantityMap = this.prepareVariantQuantityMap(currentOrder, null);
+        Map<String, Integer> oldOrderVariantQuantityMap = this.prepareVariantQuantityMap(oldOrder, null);
+
+        oldOrderVariantQuantityMap.forEach((variantId, quantity) -> {
+            if (currentOrderVariantQuantityMap.containsKey(variantId)) {
+                currentOrderVariantQuantityMap.put(variantId, currentOrderVariantQuantityMap.get(variantId) + quantity);
+            } else {
+                currentOrderVariantQuantityMap.put(variantId, quantity);
+            }
+        });
+        List<LineItem> finalLineItems = buildLineItems(currentOrderVariantQuantityMap, currentOrder.getChannelId());
+        currentOrder.setLineItems(finalLineItems);
+        if (null == currentOrder.getShippingAddress()) {
+            currentOrder.setShippingAddress(oldOrder.getShippingAddress());
+        }
+        if (null == currentOrder.getBillingAddress()) {
+            currentOrder.setBillingAddress(oldOrder.getBillingAddress());
+        }
+        this.deleteDuplicateOrderAfterMerge(oldOrder.getId());
+        return currentOrder;
     }
 
     @Override
@@ -591,20 +618,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderLinkResponse getPaymentLinkOfOrderById(final String orderId) {
         if (orderId == null || orderId.isBlank()) {
-            Logger.error("", "Order id is empty");
+            Logger.error("e67d0e43-050f-460b-aba5-5487f8b824f8", "Order id is empty");
             throw new BadRequestException("Order id is empty");
         }
 
         Order order = findProgressingOrderById(orderId);
         if (order == null) {
-            Logger.error("", "Order not found for order id: {}", orderId);
+            Logger.error("93ee84bc-79ae-4873-bfbb-be76f2f4107b", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
         }
 
         PaymentInfo paymentInfo = order.getPaymentInfo();
 
         if (null == paymentInfo) {
-            Logger.error("", "Please select a payment option");
+            Logger.error("70f40072-6c06-49f6-95dc-29f9739d20f7", "Please select a payment option");
             throw new ConflictException("Payment option not selected");
         }
 
@@ -633,7 +660,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        Logger.error("", "Cannot generate link for internal payment option");
+        Logger.error("ca6aa91f-1a17-4556-aa6c-8303792057ea", "Cannot generate link for internal payment option");
         throw new ConflictException("Cannot create payment link");
     }
 
@@ -641,18 +668,18 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse updateOrderPackaging(final String orderId,
             final OrderPackagingInfoRequest orderPackagingInfoRequest) {
         if (orderId == null || orderId.isBlank()) {
-            Logger.error("", "Order id is empty");
+            Logger.error("82e379e7-769a-4b36-a156-74e46375583a", "Order id is empty");
             throw new BadRequestException("Order id is empty");
         }
 
         Order order = findOrderById(orderId);
         if (order == null) {
-            Logger.error("", "Order not found for order id: {}", orderId);
+            Logger.error("03050ba8-63e3-4418-af4c-195343bda327", "Order not found for order id: {}", orderId);
             throw new NotFoundException("Order not available");
         }
 
         if (!order.getStatus().name().equals(OrderStatus.Submitted.name())) {
-            Logger.error("", "Order is not in the state for updating packages");
+            Logger.error("2aba31ec-33a8-412c-bbe3-5154dd96a314", "Order is not in the state for updating packages");
             throw new ConflictException("Cannot update the order package in this stage");
         }
 
@@ -670,8 +697,34 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.Fulfilled);
         order.setEvents(OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.fulfillment.name(), "admin"));
 
-        Logger.info("", "Saving order: {}", orderId);
+        Logger.info("ae917214-7411-44c9-813f-272e86a51e82", "Saving order: {}", orderId);
         order = orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
+    }
+
+    @Override
+    public OrderResponse updateEmail(final String orderId, final String email) {
+        if (orderId == null || orderId.isBlank()) {
+            Logger.error("82e379e7-769a-4b36-a156-74e46375583a", "Order id is empty");
+            throw new BadRequestException("Order id is empty");
+        }
+
+        Order order = findProgressingOrderById(orderId);
+        if (order == null) {
+            Logger.error("03050ba8-63e3-4418-af4c-195343bda327", "Order not found for order id: {}", orderId);
+            throw new NotFoundException("Order not available");
+        }
+
+        if (null != order.getEmail()) {
+            Logger.error("0dc25fc3-750d-4061-a80a-7f950529ee60", "Order already has an email");
+            throw new ConflictException("Order already has an email");
+        }
+
+        Order existingEmailOrder = this.findRunningOrderByEmailAndChannelId(email, order.getChannelId());
+        if (existingEmailOrder != null) {
+            order = this.mergeOrders(order, existingEmailOrder);
+        }
+        order.setEmail(email);
+        return OrderHelper.toOrderResponseFromOrder(orderRepository.save(order));
     }
 }
