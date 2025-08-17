@@ -6,6 +6,7 @@ type Query {
     me: UserInfo
     loginUser(email: String!, password: String!): AuthTokens
     getCart(id: ID!): Cart
+    getPaymentLink(id: ID!): OrderLinkResponse
 }
 
 type Mutation {
@@ -220,4 +221,8 @@ input AddressInput {
     city: String
     area: String
     pinCode: String
+}
+
+type OrderLinkResponse {
+    paymentLink: String
 }

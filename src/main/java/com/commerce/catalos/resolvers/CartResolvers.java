@@ -74,4 +74,9 @@ public class CartResolvers {
             @Argument("id") final String id) {
         return orderService.submitOrder(id);
     }
+
+    @QueryMapping
+    public OrderLinkResponse getPaymentLink(@Argument("id") final String id) {
+        return orderService.getPaymentLinkOfOrderById(id);
+    }
 }
