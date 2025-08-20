@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Push and Deploy to Oracle
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,3 +25,28 @@ jobs:
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/catalos-core:latest
+
+      - name: Deploy to Oracle VM
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ubuntu
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            echo "==> Logging into Docker Hub"
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+            echo "==> Stopping old container (if running)"
+            docker stop catalos-core || true
+            docker rm catalos-core || true
+
+            echo "==> Pulling latest image"
+            docker pull ${{ secrets.DOCKER_USERNAME }}/catalos-core:latest
+
+            echo "==> Running new container"
+            docker run -d --restart always --name catalos-core -p 8071:8071 \
+              -e MONGO_URI="${{ secrets.MONGO_URI }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              -e JWT_EXPIRATION_MS=86400000 \
+              ${{ secrets.DOCKER_USERNAME }}/catalos-core:latest
+
