@@ -77,4 +77,11 @@ public class OrderControllerV1 {
                 orderService.deleteOrderLineItems(orderId, deleteOrderLineItemRequest));
     }
 
+    @PutMapping("/id/{orderId}/submit")
+    public ResponseEntity<OrderResponse> submitOrder(@PathVariable final String orderId) {
+        Logger.info("",
+                "Received request for submit order: {}", orderId);
+        return new ResponseEntity<OrderResponse>(orderService.submitOrder(orderId));
+    }
+
 }
