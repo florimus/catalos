@@ -1,9 +1,6 @@
 package com.commerce.catalos.core.utils;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -35,5 +32,9 @@ public class TimeUtils {
         LocalDate localDate = LocalDate.parse(dateStr, INPUT_DATE_FORMAT);
         ZonedDateTime zdt = localDate.atTime(LocalTime.MAX).atZone(ZoneId.of("UTC"));
         return Date.from(zdt.toInstant());
+    }
+
+    public static Integer getCurrentYear() {
+        return Year.now().getValue();
     }
 }

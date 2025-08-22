@@ -19,6 +19,7 @@ public class RoleConstants {
             Map.entry("ORD", "Orders"),
             Map.entry("APP", "CustomApps"),
             Map.entry("API", "ApiKeys"),
+            Map.entry("DAS", "DashBoard"),
             Map.entry("TAX", "Taxes"));
 
     public static final Map<String, String> PERMISSION_CODES = Map.of(
