@@ -42,6 +42,8 @@ public class UserServiceImpl implements UserService {
 
     private final RoleService roleService;
 
+    private final DashboardService dashboardService;
+
     /**
      * Check if user email exists in the database
      * 
@@ -109,6 +111,7 @@ public class UserServiceImpl implements UserService {
         user.setUpdatedBy(user.getEmail());
 
         user = userRepository.save(user);
+        dashboardService.createNewUser();
         Logger.info("47cb6454-1f5d-422e-b38b-82873fc2e0e7", "User registration completed with email: {}",
                 registerUserRequest.getEmail());
 

@@ -6,4 +6,6 @@ public interface DashboardService {
 
     DashboardResponse getDashboardInfo();
 
+    void createNewUser();
+
 }
