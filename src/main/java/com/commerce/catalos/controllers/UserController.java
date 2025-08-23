@@ -145,4 +145,11 @@ public class UserController {
         Logger.info("", "Received request for invite user with role: {}", inviteUserRequest.getRoleId());
         return new ResponseEntity<InviteUserResponse>(userService.inviteUser(inviteUserRequest));
     }
+
+    @PutMapping("/accept-invite")
+    @PreAuthorize("hasRole('USR:NN')")
+    public ResponseEntity<UserTokenResponse> acceptInvitation(@RequestBody final @Valid OnboardUserRequest onboardUserRequest){
+        Logger.info("", "Received request for accept invitation");
+        return new ResponseEntity<UserTokenResponse>(userService.acceptInvitation(onboardUserRequest));
+    }
 }

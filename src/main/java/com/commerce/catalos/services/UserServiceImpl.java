@@ -318,4 +318,49 @@ public class UserServiceImpl implements UserService {
         return UserHelper.toInviteUserResponseFromUser(newUser);
     }
 
+    @Override
+    public UserTokenResponse acceptInvitation(final OnboardUserRequest onboardUserRequest) {
+        Logger.info("", "Accepting user invite request start");
+
+        if (!JwtUtil.isTokenValid(onboardUserRequest.getToken())) {
+            Logger.error("", "Invalid JWT token");
+            throw new ConflictException("Invalid token");
+        }
+
+        User user = this.getUserByEmail(onboardUserRequest.getEmail());
+        if (user == null) {
+            Logger.error("", "User not exists");
+            throw new NotFoundException("User not found");
+        }
+
+        if (user.isActive() && user.isEnabled()) {
+            Logger.error("", "User is already activated");
+            throw new ConflictException("User already activated");
+        }
+
+        Map<String, String> tokenMap = user.getToken();
+        String invitationToken = (tokenMap != null) ? tokenMap.get(UserTokenTypes.INVITATION.name()) : null;
+
+        if (invitationToken == null) {
+            Logger.error("", "User invite token not found");
+            throw new NotFoundException("User invite token not found");
+        }
+
+        if (!invitationToken.equals(onboardUserRequest.getToken())) {
+            Logger.error("", "User tokens do not match");
+            throw new ConflictException("Token mismatch");
+        }
+
+        tokenMap.remove(UserTokenTypes.INVITATION.name());
+        user.setToken(tokenMap);
+
+        user.setActive(true);
+        user.setGrandType(GrandType.password);
+        user.setPassword(PasswordUtil.hash(onboardUserRequest.getPassword()));
+
+        Logger.info("", "Saving user after invitation acceptance");
+        this.userRepository.save(user);
+
+        return JwtUtil.generateTokens(user.getId(), user.getEmail(), false);
+    }
 }

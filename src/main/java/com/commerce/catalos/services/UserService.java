@@ -28,4 +28,6 @@ public interface UserService {
 	public UpdateStaffInfoResponse updateStaffInfo(final UpdateStaffInfoRequest updateUserInfoRequest);
 
 	public InviteUserResponse inviteUser(final InviteUserRequest inviteUserRequest);
+
+	public UserTokenResponse acceptInvitation(final OnboardUserRequest onboardUserRequest);
 }

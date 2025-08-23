@@ -111,7 +111,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(subject)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(TIMED_TOKEN_EXPIRATION_MS))
+                .setExpiration(new Date(System.currentTimeMillis() + TIMED_TOKEN_EXPIRATION_MS))
                 .signWith(KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
