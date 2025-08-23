@@ -4,18 +4,7 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.core.constants.SortConstants;
-import com.commerce.catalos.models.users.GetUserInfoResponse;
-import com.commerce.catalos.models.users.LoginUserRequest;
-import com.commerce.catalos.models.users.RefreshTokenRequest;
-import com.commerce.catalos.models.users.RegisterUserRequest;
-import com.commerce.catalos.models.users.RegisterUserResponse;
-import com.commerce.catalos.models.users.UpdateStaffInfoRequest;
-import com.commerce.catalos.models.users.UpdateStaffInfoResponse;
-import com.commerce.catalos.models.users.UpdateUserInfoRequest;
-import com.commerce.catalos.models.users.UpdateUserInfoResponse;
-import com.commerce.catalos.models.users.UpdateUserStatusResponse;
-import com.commerce.catalos.models.users.UserInfoResponse;
-import com.commerce.catalos.models.users.UserTokenResponse;
+import com.commerce.catalos.models.users.*;
 import com.commerce.catalos.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -148,5 +137,12 @@ public class UserController {
     public ResponseEntity<UserInfoResponse> myInfo() {
         Logger.info("f800aa36-d660-415e-b7ff-24641e962ee9", "Received request for my info");
         return new ResponseEntity<UserInfoResponse>(userService.myInfo());
+    }
+
+    @PostMapping("/invite")
+    @PreAuthorize("hasRole('USR:NN')")
+    public ResponseEntity<InviteUserResponse> inviteUser(@RequestBody final @Valid InviteUserRequest inviteUserRequest){
+        Logger.info("", "Received request for invite user with role: {}", inviteUserRequest.getRoleId());
+        return new ResponseEntity<InviteUserResponse>(userService.inviteUser(inviteUserRequest));
     }
 }

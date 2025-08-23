@@ -1,12 +1,6 @@
 package com.commerce.catalos.helpers;
 
-import com.commerce.catalos.models.users.GetUserInfoResponse;
-import com.commerce.catalos.models.users.RegisterUserRequest;
-import com.commerce.catalos.models.users.RegisterUserResponse;
-import com.commerce.catalos.models.users.UpdateStaffInfoResponse;
-import com.commerce.catalos.models.users.UpdateUserInfoResponse;
-import com.commerce.catalos.models.users.UpdateUserStatusResponse;
-import com.commerce.catalos.models.users.UserInfoResponse;
+import com.commerce.catalos.models.users.*;
 import com.commerce.catalos.persistence.dtos.User;
 
 import java.util.List;
@@ -106,7 +100,7 @@ public class UserHelper {
      */
     public static List<GetUserInfoResponse> toGetUserInfoResponseFromUsers(final List<User> users) {
         return users.stream()
-                .map(user -> UserHelper.toGetUserInfoResponseFromUser(user))
+                .map(UserHelper::toGetUserInfoResponseFromUser)
                 .collect(Collectors.toList());
     }
 
@@ -122,9 +116,21 @@ public class UserHelper {
         return response;
     }
 
-    public static UpdateStaffInfoResponse toUpdateStaffStatusResponseFromUser(User save) {
+    public static UpdateStaffInfoResponse toUpdateStaffStatusResponseFromUser(final User save) {
         UpdateStaffInfoResponse response = new UpdateStaffInfoResponse();
         BeanUtils.copyProperties(save, response);
+        return response;
+    }
+
+    public static User toUserFromInviteUserRequest(final InviteUserRequest inviteUserRequest) {
+        User user = new User();
+        BeanUtils.copyProperties(inviteUserRequest, user);
+        return user;
+    }
+
+    public static InviteUserResponse toInviteUserResponseFromUser(final User user) {
+        InviteUserResponse response = new InviteUserResponse();
+        BeanUtils.copyProperties(user, response);
         return response;
     }
 }

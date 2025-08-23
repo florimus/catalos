@@ -13,7 +13,9 @@ public interface UserRepository extends MongoRepository<User, String>, UserCusto
 
     boolean existsByEmail(final String email);
 
-    Optional<User> findByEmail(final String email);
+    Optional<User> findByEmailAndEnabled(final String email, final Boolean enabled);
 
     User findUserByIdAndEnabled(final String id, final boolean enabled);
+
+    User findUserByEmail(final String email);
 }

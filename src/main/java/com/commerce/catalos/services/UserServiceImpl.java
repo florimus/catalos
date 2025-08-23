@@ -4,23 +4,13 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.enums.DefaultRoles;
 import com.commerce.catalos.core.enums.GrandType;
+import com.commerce.catalos.core.enums.UserTokenTypes;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.core.utils.JwtUtil;
 import com.commerce.catalos.core.utils.PasswordUtil;
 import com.commerce.catalos.helpers.UserHelper;
-import com.commerce.catalos.models.users.GetUserInfoResponse;
-import com.commerce.catalos.models.users.LoginUserRequest;
-import com.commerce.catalos.models.users.RegisterUserRequest;
-import com.commerce.catalos.models.users.RegisterUserResponse;
-import com.commerce.catalos.models.users.TokenClaims;
-import com.commerce.catalos.models.users.UpdateStaffInfoRequest;
-import com.commerce.catalos.models.users.UpdateStaffInfoResponse;
-import com.commerce.catalos.models.users.UpdateUserInfoRequest;
-import com.commerce.catalos.models.users.UpdateUserInfoResponse;
-import com.commerce.catalos.models.users.UpdateUserStatusResponse;
-import com.commerce.catalos.models.users.UserInfoResponse;
-import com.commerce.catalos.models.users.UserTokenResponse;
+import com.commerce.catalos.models.users.*;
 import com.commerce.catalos.persistence.dtos.User;
 import com.commerce.catalos.persistence.repositories.UserRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -28,6 +18,8 @@ import com.commerce.catalos.security.AuthContext;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -50,7 +42,7 @@ public class UserServiceImpl implements UserService {
      * @param email Email to be checked
      * @return true if email exists, false otherwise
      */
-    private boolean isEmailExits(final String email) {
+    private boolean isUserEmailExits(final String email) {
         return userRepository.existsByEmail(email);
     }
 
@@ -61,7 +53,7 @@ public class UserServiceImpl implements UserService {
      * @return A user if found, null otherwise
      */
     private User getUserByEmail(final String email) {
-        return userRepository.findByEmail(email).orElse(null);
+        return userRepository.findByEmailAndEnabled(email, true).orElse(null);
     }
 
     /**
@@ -97,7 +89,7 @@ public class UserServiceImpl implements UserService {
     public RegisterUserResponse registerUser(final RegisterUserRequest registerUserRequest) {
         Logger.info("942e37c4-7c4f-4592-8c10-44456f8983c3", "User registration started");
 
-        if (this.isEmailExits(registerUserRequest.getEmail())) {
+        if (this.isUserEmailExits(registerUserRequest.getEmail())) {
             Logger.error("2b2268e8-fecb-4e6d-b8ce-bf8ca58e82b3", "Account already exits with email: {}",
                     registerUserRequest.getEmail());
             throw new ConflictException("Account already exits");
@@ -280,4 +272,50 @@ public class UserServiceImpl implements UserService {
         user.setUpdatedBy(authContext.getCurrentUser().getEmail());
         return UserHelper.toUpdateStaffStatusResponseFromUser(userRepository.save(user));
     }
+
+    @Override
+    public InviteUserResponse inviteUser(final InviteUserRequest inviteUserRequest) {
+        String email = inviteUserRequest.getEmail();
+        Logger.info("invite-user", "User invite started for email {}", email);
+
+        User existingUser = this.getUserByEmail(email);
+
+        if (existingUser != null) {
+            if (existingUser.isActive() && existingUser.isEnabled()) {
+                Logger.error("", "Account already exists with email {}", email);
+                throw new ConflictException("Account already activated");
+            }
+
+            existingUser.setUpdatedAt(new Date());
+            existingUser.setUpdatedBy(authContext.getCurrentUser().getEmail());
+            Map<String, String> userTokens = existingUser.getToken();
+            if (null == userTokens) {
+                userTokens = new HashMap<String, String >();
+            }
+            String token = JwtUtil.generateTimedToken(UserTokenTypes.INVITATION.name());
+            userTokens.put(UserTokenTypes.INVITATION.name(), token);
+            existingUser.setToken(userTokens);
+            userRepository.save(existingUser);
+
+            // TODO: send email
+            Logger.info("", "Re-invite existing user with email {}", email);
+            return UserHelper.toInviteUserResponseFromUser(existingUser);
+        }
+
+        User newUser = UserHelper.toUserFromInviteUserRequest(inviteUserRequest);
+
+        String token = JwtUtil.generateTimedToken(UserTokenTypes.INVITATION.name());
+        newUser.setToken(Map.of(UserTokenTypes.INVITATION.name(), token));
+
+        newUser.setCreatedAt(new Date());
+        newUser.setEnabled(true);
+        newUser.setActive(false);
+        newUser.setCreatedBy(authContext.getCurrentUser().getEmail());
+        userRepository.save(newUser);
+
+        // TODO: send email
+        Logger.info("invite-user", "New user invited with email {}", email);
+        return UserHelper.toInviteUserResponseFromUser(newUser);
+    }
+
 }

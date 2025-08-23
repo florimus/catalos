@@ -1,19 +1,9 @@
 package com.commerce.catalos.services;
 
+import com.commerce.catalos.models.users.*;
 import org.springframework.data.domain.Pageable;
 
 import com.commerce.catalos.core.configurations.Page;
-import com.commerce.catalos.models.users.GetUserInfoResponse;
-import com.commerce.catalos.models.users.LoginUserRequest;
-import com.commerce.catalos.models.users.RegisterUserRequest;
-import com.commerce.catalos.models.users.RegisterUserResponse;
-import com.commerce.catalos.models.users.UpdateStaffInfoRequest;
-import com.commerce.catalos.models.users.UpdateStaffInfoResponse;
-import com.commerce.catalos.models.users.UpdateUserInfoRequest;
-import com.commerce.catalos.models.users.UpdateUserInfoResponse;
-import com.commerce.catalos.models.users.UpdateUserStatusResponse;
-import com.commerce.catalos.models.users.UserInfoResponse;
-import com.commerce.catalos.models.users.UserTokenResponse;
 
 public interface UserService {
 
@@ -36,4 +26,6 @@ public interface UserService {
 	public UpdateUserStatusResponse updateUserStatus(final String id, final boolean status);
 
 	public UpdateStaffInfoResponse updateStaffInfo(final UpdateStaffInfoRequest updateUserInfoRequest);
+
+	public InviteUserResponse inviteUser(final InviteUserRequest inviteUserRequest);
 }

@@ -5,6 +5,8 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Map;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -27,6 +29,8 @@ public class User extends BaseDto {
     private String avatar;
 
     private String password;
+
+    private Map<String, String> token;
 
     private GrandType grandType;
 

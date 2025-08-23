@@ -22,6 +22,8 @@ public class JwtUtil {
 
     private static final long REFRESH_EXPIRATION_MS = 86400000;
 
+    private static final long TIMED_TOKEN_EXPIRATION_MS = 86400000;
+
     private static final Key KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     /**
@@ -103,5 +105,14 @@ public class JwtUtil {
         } catch (JwtException e) {
             return false;
         }
+    }
+
+    public static String generateTimedToken(final String subject) {
+        return Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(TIMED_TOKEN_EXPIRATION_MS))
+                .signWith(KEY, SignatureAlgorithm.HS256)
+                .compact();
     }
 }
