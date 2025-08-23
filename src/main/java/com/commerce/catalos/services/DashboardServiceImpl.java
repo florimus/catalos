@@ -40,4 +40,16 @@ public class DashboardServiceImpl implements DashboardService {
             this.dashboardRepository.save(dashboard);
         });
     }
+
+    @Async
+    @Override
+    public void createNewOrder() {
+        CompletableFuture.runAsync(() -> {
+            Integer currentYear = TimeUtils.getCurrentYear();
+            Dashboard dashboard = this.getDashboardConfigByYear(currentYear);
+            dashboard.setNewOrdersCount(dashboard.getNewOrdersCount() + 1);
+            Logger.info("", "updating orders count by one for this month");
+            this.dashboardRepository.save(dashboard);
+        });
+    }
 }

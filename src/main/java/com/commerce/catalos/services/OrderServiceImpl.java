@@ -54,6 +54,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final PaymentOptionRepository paymentOptionRepository;
 
+    private final DashboardService dashboardService;
+
     @Lazy
     @Autowired
     private VariantService variantService;
@@ -602,6 +604,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.Submitted);
         paymentInfo.setStatus(PaymentStatus.Pending);
         order.setPaymentInfo(paymentInfo);
+        dashboardService.createNewOrder();
         Logger.info("ede3cbcc-bf6c-4247-96a8-572ccd37b28f", "'Updated order: {}", orderId);
         return OrderHelper.toOrderResponseFromOrder(orderRepository.save(order));
     }
@@ -640,6 +643,7 @@ public class OrderServiceImpl implements OrderService {
                 order.setEvents(OrderHelper.updateOrderEvent(order.getEvents(), OrderEvents.Submitted.name(), "admin"));
                 Logger.info("b2d27177-bc03-4677-a72e-71b3ad49ef1d", "Saving order: {}", orderId);
                 order = orderRepository.save(order);
+                dashboardService.createNewOrder();
                 updateOrderItemsInventory(order.getLineItems(), order.getChannelId());
                 messager.send("order/" + orderId, Map.of("success", true));
                 return OrderHelper.toOrderResponseFromOrder(order);

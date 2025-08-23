@@ -8,4 +8,6 @@ public interface DashboardService {
 
     void createNewUser();
 
+    void createNewOrder();
+
 }
