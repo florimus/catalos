@@ -34,6 +34,10 @@ public class CustomAppServiceImpl implements CustomAppService {
     @Autowired
     private CustomPaymentAppService customPaymentAppService;
 
+    @Lazy
+    @Autowired
+    private CustomEmailService customEmailService;
+
     private CustomApp findCustomAppById(final String id) {
         return customAppRepository.findCustomAppByIdAndEnabled(id, true);
     }
@@ -61,6 +65,8 @@ public class CustomAppServiceImpl implements CustomAppService {
 
         if (Objects.requireNonNull(createCustomAppRequest.getAppType()) == CustomAppType.PaymentOption) {
             primaryKey = customPaymentAppService.createPaymentOption(createCustomAppRequest);
+        } else if(Objects.requireNonNull(createCustomAppRequest.getAppType()) == CustomAppType.EmailProvider) {
+            primaryKey = customEmailService.createEmailService(createCustomAppRequest);
         } else {
             primaryKey = null;
         }
