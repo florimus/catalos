@@ -3,6 +3,7 @@ package com.commerce.catalos.services;
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.enums.DefaultRoles;
+import com.commerce.catalos.core.enums.EmailNotificationType;
 import com.commerce.catalos.core.enums.GrandType;
 import com.commerce.catalos.core.enums.UserTokenTypes;
 import com.commerce.catalos.core.errors.ConflictException;
@@ -10,17 +11,19 @@ import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.core.utils.JwtUtil;
 import com.commerce.catalos.core.utils.PasswordUtil;
 import com.commerce.catalos.helpers.UserHelper;
+import com.commerce.catalos.models.emails.EmailRequest;
 import com.commerce.catalos.models.users.*;
 import com.commerce.catalos.persistence.dtos.User;
 import com.commerce.catalos.persistence.repositories.UserRepository;
 import com.commerce.catalos.security.AuthContext;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +38,14 @@ public class UserServiceImpl implements UserService {
     private final RoleService roleService;
 
     private final DashboardService dashboardService;
+
+    @Value("${auth-app-server.url}")
+    private String authAppUrl;
+
+
+    @Lazy
+    @Autowired
+    private CustomEmailService customEmailService;
 
     /**
      * Check if user email exists in the database
@@ -297,7 +308,13 @@ public class UserServiceImpl implements UserService {
             existingUser.setToken(userTokens);
             userRepository.save(existingUser);
 
-            // TODO: send email
+            List<String> to = List.of(email);
+            Map<String, Object> payload = new HashMap<String, Object>();
+            payload.put("user", existingUser);
+            payload.put("inviteUrl", authAppUrl+ "?t=" + token);
+            EmailRequest request = new EmailRequest(to, EmailNotificationType.INVITE_USER, null, payload);
+            customEmailService.sendEmail(request);
+
             Logger.info("", "Re-invite existing user with email {}", email);
             return UserHelper.toInviteUserResponseFromUser(existingUser);
         }
@@ -313,7 +330,13 @@ public class UserServiceImpl implements UserService {
         newUser.setCreatedBy(authContext.getCurrentUser().getEmail());
         userRepository.save(newUser);
 
-        // TODO: send email
+        List<String> to = List.of(email);
+        Map<String, Object> payload = new HashMap<String, Object>();
+        payload.put("user", newUser);
+        payload.put("inviteUrl", authAppUrl+ "?t=" + token);
+        EmailRequest request = new EmailRequest(to, EmailNotificationType.INVITE_USER, null, payload);
+        customEmailService.sendEmail(request);
+
         Logger.info("invite-user", "New user invited with email {}", email);
         return UserHelper.toInviteUserResponseFromUser(newUser);
     }
