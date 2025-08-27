@@ -31,8 +31,8 @@ jobs:
 
             echo "==> Running new container"
             docker run -d --restart always --name catalos-core -p 8071:8071 \
-              -e MONGO_URI="${{ secrets.MONGO_URI }}" \
-              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-              -e JWT_EXPIRATION_MS="${{ secrets.JWT_EXPIRATION_MS }}" \
-              -e AUTH_APP_SERVER="${{ secrets.AUTH_APP_SERVER }}" \
+              -e MONGO_URI=${{ secrets.MONGO_URI }} \
+              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e JWT_EXPIRATION_MS=${{ secrets.JWT_EXPIRATION_MS }} \
+              -e AUTH_APP_SERVER=${{ secrets.AUTH_APP_SERVER }} \
               ${{ secrets.DOCKER_USERNAME }}/catalos-core:latest
