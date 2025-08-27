@@ -311,7 +311,7 @@ public class UserServiceImpl implements UserService {
             List<String> to = List.of(email);
             Map<String, Object> payload = new HashMap<String, Object>();
             payload.put("user", existingUser);
-            payload.put("inviteUrl", authAppUrl+ "?t=" + token);
+            payload.put("inviteUrl", authAppUrl+ "/invite?t=" + token);
             EmailRequest request = new EmailRequest(to, EmailNotificationType.INVITE_USER, null, payload);
             customEmailService.sendEmail(request);
 
@@ -333,7 +333,7 @@ public class UserServiceImpl implements UserService {
         List<String> to = List.of(email);
         Map<String, Object> payload = new HashMap<String, Object>();
         payload.put("user", newUser);
-        payload.put("inviteUrl", authAppUrl+ "?t=" + token);
+        payload.put("inviteUrl", authAppUrl+ "/invite?t=" + token);
         EmailRequest request = new EmailRequest(to, EmailNotificationType.INVITE_USER, null, payload);
         customEmailService.sendEmail(request);
 

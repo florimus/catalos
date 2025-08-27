@@ -42,7 +42,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private final @Lazy APIKeyService apiKeyService;
 
     private static final List<String> POST_SKIP_PATHS = List.of("/users", "/users/login");
-    private static final List<String> PUT_SKIP_PATHS = List.of("/users/refresh");
+    private static final List<String> PUT_SKIP_PATHS = List.of("/users/refresh", "/users/accept-invite");
     private static final List<String> SKIP_PATHS = List.of("/api", "/ws");
     private static final String GRAPHQL_PATH = "/graphql";
 
