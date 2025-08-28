@@ -1,5 +1,6 @@
 package com.commerce.catalos.pricing;
 
+import java.util.Comparator;
 import java.util.List;
 
 import com.commerce.catalos.core.enums.DiscountType;
@@ -74,25 +75,55 @@ public class PricingServiceImpl implements PricingService {
         response.setDiscountFlatPrice(response.getSalesPrice() - discountableAmount);
     }
 
-    private CalculatedPriceResponse calculatePrice(final PriceInfo priceInfo, final List<Discount> applicableDiscounts,
-            final Integer quantity, final String channelId) {
 
-        CalculatedPriceResponse response = new CalculatedPriceResponse();
-        response.setSalesPrice(quantity * priceInfo.getSalesPrice());
+    private CalculatedPriceResponse calculatePrice(final PriceInfo priceInfo,
+                                                   final List<Discount> applicableDiscounts,
+                                                   final Integer quantity,
+                                                   final String channelId) {
 
-        if (null== applicableDiscounts || applicableDiscounts.isEmpty()) {
+        float salesPrice = quantity * priceInfo.getSalesPrice();
+
+        if (applicableDiscounts == null || applicableDiscounts.isEmpty()) {
+            CalculatedPriceResponse response = new CalculatedPriceResponse();
+            response.setSalesPrice(salesPrice);
             response.setDiscountedPrice(0);
-            response.setDiscountFlatPrice(priceInfo.getSalesPrice());
-        } else {
-            this.applyDiscount(applicableDiscounts.get(0), response);
+            response.setDiscountFlatPrice(salesPrice);
+
+            float totalTax = (float) priceInfo.getTaxClasses().stream()
+                    .mapToDouble(taxClassItem -> {
+                        this.applyTax(taxClassItem.getId(), channelId, response);
+                        return response.getTaxPrice();
+                    }).sum();
+
+            response.setTaxPrice(totalTax);
+            response.setFinalPrice(response.getDiscountFlatPrice() + totalTax);
+            return response;
         }
-        priceInfo.getTaxClasses().forEach(taxClassItem -> {
-            this.applyTax(taxClassItem.getId(), channelId, response);
-        });
-        response.setTaxPrice(quantity * response.getTaxPrice());
-        response.setFinalPrice(response.getDiscountFlatPrice() + response.getTaxPrice());
-        return response;
+
+        CalculatedPriceResponse bestResponse = applicableDiscounts.stream()
+                .map(discount -> {
+                    CalculatedPriceResponse tempResponse = new CalculatedPriceResponse();
+                    tempResponse.setSalesPrice(salesPrice);
+
+                    this.applyDiscount(discount, tempResponse);
+                    tempResponse.setDiscountName(discount.getName());
+
+                    return tempResponse;
+                })
+                .min(Comparator.comparing(CalculatedPriceResponse::getDiscountFlatPrice))
+                .orElseThrow();
+
+        float totalTax = (float) priceInfo.getTaxClasses().stream()
+                .mapToDouble(taxClassItem -> {
+                    this.applyTax(taxClassItem.getId(), channelId, bestResponse);
+                    return bestResponse.getTaxPrice();
+                }).sum();
+        bestResponse.setTaxPrice(totalTax);
+        bestResponse.setFinalPrice(bestResponse.getDiscountFlatPrice() + totalTax);
+        return bestResponse;
     }
+
+
 
     private PriceInfo getTablePriceBySku(final SkuPriceResponse skuPriceResponse, final String channelId) {
         if (skuPriceResponse == null || skuPriceResponse.getPriceInfo() == null) {
