@@ -32,13 +32,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-graphql'
 	implementation 'com.graphql-java:graphql-java-extended-scalars:20.2'
 
-	implementation 'org.drools:drools-core:9.44.0.Final'
-    implementation 'org.drools:drools-compiler:9.44.0.Final'
-    implementation 'org.kie:kie-api:9.44.0.Final'
-    implementation 'org.kie:kie-dmn-api:9.44.0.Final'
-    implementation 'org.kie:kie-internal:9.44.0.Final'
-    implementation 'org.kie:kie-ci:9.44.0.Final'
-
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
