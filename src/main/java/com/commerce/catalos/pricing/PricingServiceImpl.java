@@ -53,6 +53,7 @@ public class PricingServiceImpl implements PricingService {
             response.setTaxValue(tax.getRate());
             response.setFixedTax(false);
         }
+        Logger.info("", "Applied tax amount: {} for the channel: {}", response.getTaxPrice(), channelId);
     }
 
     private void applyDiscount(final Discount discount, final CalculatedPriceResponse response) {
@@ -83,13 +84,15 @@ public class PricingServiceImpl implements PricingService {
 
         float salesPrice = quantity * priceInfo.getSalesPrice();
 
+        // Case: no discounts
         if (applicableDiscounts == null || applicableDiscounts.isEmpty()) {
+            Logger.info("", "No discounts for the product in channel: {}", channelId);
             CalculatedPriceResponse response = new CalculatedPriceResponse();
             response.setSalesPrice(salesPrice);
             response.setDiscountedPrice(0);
             response.setDiscountFlatPrice(salesPrice);
 
-            float totalTax = (float) priceInfo.getTaxClasses().stream()
+            float totalTax = (float) priceInfo.getTaxClasses().parallelStream() // <-- parallel
                     .mapToDouble(taxClassItem -> {
                         this.applyTax(taxClassItem.getId(), channelId, response);
                         return response.getTaxPrice();
@@ -100,7 +103,8 @@ public class PricingServiceImpl implements PricingService {
             return response;
         }
 
-        CalculatedPriceResponse bestResponse = applicableDiscounts.stream()
+        // Case: apply discounts in parallel and pick best
+        CalculatedPriceResponse bestResponse = applicableDiscounts.parallelStream()
                 .map(discount -> {
                     CalculatedPriceResponse tempResponse = new CalculatedPriceResponse();
                     tempResponse.setSalesPrice(salesPrice);
@@ -113,13 +117,15 @@ public class PricingServiceImpl implements PricingService {
                 .min(Comparator.comparing(CalculatedPriceResponse::getDiscountFlatPrice))
                 .orElseThrow();
 
-        float totalTax = (float) priceInfo.getTaxClasses().stream()
+        float totalTax = (float) priceInfo.getTaxClasses().parallelStream()
                 .mapToDouble(taxClassItem -> {
                     this.applyTax(taxClassItem.getId(), channelId, bestResponse);
                     return bestResponse.getTaxPrice();
                 }).sum();
+
         bestResponse.setTaxPrice(totalTax);
         bestResponse.setFinalPrice(bestResponse.getDiscountFlatPrice() + totalTax);
+
         return bestResponse;
     }
 
