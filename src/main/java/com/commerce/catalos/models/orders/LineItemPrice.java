@@ -21,5 +21,9 @@ public class LineItemPrice {
 
     private float taxPrice;
 
+    private float taxValue;
+
+    private boolean isFixedTax;
+
     private float finalPrice;
 }
