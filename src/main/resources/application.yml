@@ -10,6 +10,11 @@ logging:
 spring:
   application:
     name: catalos
+  cache:
+    cache-names: skuPriceCache
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=60m
+
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb+srv://catalos_read_write_user:Yht4gVfjC9Jdr5er@flourimus-b2c-core.rwrgd.mongodb.net/catalos_backend_dev2}
