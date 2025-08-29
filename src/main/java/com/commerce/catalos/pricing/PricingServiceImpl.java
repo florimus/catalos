@@ -1,14 +1,15 @@
 package com.commerce.catalos.pricing;
 
+import java.util.Comparator;
 import java.util.List;
 
-import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.KieSession;
+import com.commerce.catalos.core.enums.DiscountType;
+import com.commerce.catalos.models.taxes.TaxResponse;
+import com.commerce.catalos.services.TaxService;
 import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.errors.NotFoundException;
-import com.commerce.catalos.models.prices.BestDiscountHolder;
 import com.commerce.catalos.models.prices.CalculatedPriceResponse;
 import com.commerce.catalos.models.prices.PriceInfo;
 import com.commerce.catalos.models.prices.SkuPriceResponse;
@@ -31,55 +32,111 @@ public class PricingServiceImpl implements PricingService {
 
     private final PromotionRepository promotionRepository;
 
-    private final KieContainer kieContainer;
+    private final TaxService taxService;
 
-    // private CalculatedPriceResponse calculatePrice(final PriceInfo priceInfo,
-    // final List<Discount> applicableDiscounts,
-    // final Integer quantity) {
-
-    // CalculatedPriceResponse calculatedPriceResponse = new
-    // CalculatedPriceResponse();
-    // KieSession kieSession = kieContainer.newKieSession();
-    // kieSession.setGlobal("calculatedPriceResponse", calculatedPriceResponse);
-
-    // kieSession.insert(priceInfo);
-    // kieSession.insert(quantity);
-    // applicableDiscounts.forEach(kieSession::insert);
-
-    // kieSession.fireAllRules();
-    // kieSession.dispose();
-
-    // return calculatedPriceResponse;
-    // }
-
-    private CalculatedPriceResponse calculatePrice(final PriceInfo priceInfo, final List<Discount> applicableDiscounts,
-            final Integer quantity) {
-
-        CalculatedPriceResponse calculatedPriceResponse = new CalculatedPriceResponse();
-        BestDiscountHolder bestDiscountHolder = new BestDiscountHolder();
-
-        KieSession kieSession = kieContainer.newKieSession();
-
-        kieSession.setGlobal("calculatedPriceResponse", calculatedPriceResponse);
-        kieSession.setGlobal("bestDiscountHolder", bestDiscountHolder);
-
-        kieSession.insert(priceInfo);
-        kieSession.insert(quantity);
-        applicableDiscounts.forEach(kieSession::insert);
-
-        kieSession.fireAllRules();
-        kieSession.dispose();
-
-        return calculatedPriceResponse;
+    private void applyTax(final String taxId, final String channelId, final CalculatedPriceResponse response) {
+        if (null == taxId) {
+            Logger.warn("", "No tax for the product");
+            return;
+        }
+        TaxResponse tax = this.taxService.getTaxById(taxId);
+        if (tax.getApplicableChannels() == null || !tax.getApplicableChannels().contains(channelId)) {
+            Logger.warn("", "Tax is not configured for the product in channel {}", channelId);
+            response.setTaxPrice(0);
+            response.setTaxValue(0);
+        } else if (tax.isFixed()){
+            response.setTaxValue(tax.getRate());
+            response.setTaxPrice(tax.getRate());
+            response.setFixedTax(true);
+        } else {
+            response.setTaxPrice(response.getDiscountFlatPrice() * (1 + (tax.getRate() / 100)) - response.getDiscountFlatPrice());
+            response.setTaxValue(tax.getRate());
+            response.setFixedTax(false);
+        }
+        Logger.info("", "Applied tax amount: {} for the channel: {}", response.getTaxPrice(), channelId);
     }
 
+    private void applyDiscount(final Discount discount, final CalculatedPriceResponse response) {
+        boolean isPercentageDiscount = discount.getDiscountType().equals(DiscountType.PercentageOFF);
+        float maxDiscountAmount = discount.getMaxDiscountPrice();
+        float discountableAmount;
+
+        if (isPercentageDiscount) {
+            discountableAmount = (response.getSalesPrice() * discount.getMaxDiscountPrice()) / 100f;
+            response.setDiscountPercentage(discount.getDiscountValue());
+        } else {
+            discountableAmount = discount.getDiscountValue();
+        }
+
+        if (maxDiscountAmount > 0) {
+            discountableAmount = Math.min(discountableAmount, maxDiscountAmount);
+        }
+
+        response.setDiscountedPrice(discountableAmount);
+        response.setDiscountFlatPrice(response.getSalesPrice() - discountableAmount);
+    }
+
+
+    private CalculatedPriceResponse calculatePrice(final PriceInfo priceInfo,
+                                                   final List<Discount> applicableDiscounts,
+                                                   final Integer quantity,
+                                                   final String channelId) {
+
+        float salesPrice = quantity * priceInfo.getSalesPrice();
+
+        // Case: no discounts
+        if (applicableDiscounts == null || applicableDiscounts.isEmpty()) {
+            Logger.info("", "No discounts for the product in channel: {}", channelId);
+            CalculatedPriceResponse response = new CalculatedPriceResponse();
+            response.setSalesPrice(salesPrice);
+            response.setDiscountedPrice(0);
+            response.setDiscountFlatPrice(salesPrice);
+
+            float totalTax = (float) priceInfo.getTaxClasses().parallelStream() // <-- parallel
+                    .mapToDouble(taxClassItem -> {
+                        this.applyTax(taxClassItem.getId(), channelId, response);
+                        return response.getTaxPrice();
+                    }).sum();
+
+            response.setTaxPrice(totalTax);
+            response.setFinalPrice(response.getDiscountFlatPrice() + totalTax);
+            return response;
+        }
+
+        // Case: apply discounts in parallel and pick best
+        CalculatedPriceResponse bestResponse = applicableDiscounts.parallelStream()
+                .map(discount -> {
+                    CalculatedPriceResponse tempResponse = new CalculatedPriceResponse();
+                    tempResponse.setSalesPrice(salesPrice);
+
+                    this.applyDiscount(discount, tempResponse);
+                    tempResponse.setDiscountName(discount.getName());
+
+                    return tempResponse;
+                })
+                .min(Comparator.comparing(CalculatedPriceResponse::getDiscountFlatPrice))
+                .orElseThrow();
+
+        float totalTax = (float) priceInfo.getTaxClasses().parallelStream()
+                .mapToDouble(taxClassItem -> {
+                    this.applyTax(taxClassItem.getId(), channelId, bestResponse);
+                    return bestResponse.getTaxPrice();
+                }).sum();
+
+        bestResponse.setTaxPrice(totalTax);
+        bestResponse.setFinalPrice(bestResponse.getDiscountFlatPrice() + totalTax);
+
+        return bestResponse;
+    }
+
+
+
     private PriceInfo getTablePriceBySku(final SkuPriceResponse skuPriceResponse, final String channelId) {
-        if (skuPriceResponse == null) {
+        if (skuPriceResponse == null || skuPriceResponse.getPriceInfo() == null) {
             Logger.error("b8a2df55-0afa-4447-ac65-c5224c8a433c", "Price not found for SKU: {}", channelId);
             throw new NotFoundException("Price not found for SKU: " + channelId);
         }
-        PriceInfo priceInfo = skuPriceResponse.getPriceInfo().get(channelId);
-        return priceInfo;
+        return skuPriceResponse.getPriceInfo().get(channelId);
     }
 
     @Override
@@ -117,7 +174,7 @@ public class PricingServiceImpl implements PricingService {
         List<Discount> allDiscounts = this.promotionRepository.getActiveDiscounts(variant.getId(), product.getId(),
                 channelId, quantity, customerGroupId, null, null, null);
 
-        return this.calculatePrice(priceInfo, allDiscounts, quantity);
+        return this.calculatePrice(priceInfo, allDiscounts, quantity, channelId);
     }
 
 }

@@ -21,6 +21,10 @@ public class CalculatedPriceResponse {
 
     private float taxPrice;
 
+    private float taxValue;
+
+    private boolean isFixedTax;
+
     private float finalPrice;
 
 }

@@ -197,7 +197,7 @@ public class OrderServiceImpl implements OrderService {
                     lineItem.setQuantity(quantity);
 
                     if (null != stock) {
-                        Integer availableStocks = stock.getTotalStocks() - stock.getReservedStocks()
+                        int availableStocks = stock.getTotalStocks() - stock.getReservedStocks()
                                 - stock.getSafetyStocks();
 
                         if (quantity > availableStocks) {
@@ -211,7 +211,7 @@ public class OrderServiceImpl implements OrderService {
                     }
 
                     return lineItem;
-                }, executor)).collect(Collectors.toList());
+                }, executor)).toList();
 
         List<LineItem> finalLineItems = futures.stream()
                 .map(CompletableFuture::join)
@@ -222,14 +222,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderPrice calculateOrderPrice(List<LineItem> lineItems) {
-        float subtotal = 0f, tax = 0f, discount = 0f;
+        float subtotal = 0f, tax = 0f, discount = 0f, finalPrice = 0f;
 
         for (LineItem item : lineItems) {
             LineItemPrice price = item.getItemPrice();
             if (price != null) {
                 subtotal += price.getSalesPrice();
                 tax += price.getTaxPrice();
-                discount += price.getDiscountFlatPrice();
+                discount += price.getDiscountedPrice();
+                finalPrice += price.getDiscountFlatPrice();
             }
         }
 
@@ -238,7 +239,7 @@ public class OrderServiceImpl implements OrderService {
         orderPrice.setTotalTaxPrice(tax);
         orderPrice.setTotalDiscountPrice(discount);
         orderPrice.setShippingPrice(0f);
-        orderPrice.setGrandTotalPrice(subtotal + tax - discount);
+        orderPrice.setGrandTotalPrice(finalPrice + tax);
 
         return orderPrice;
     }
@@ -267,7 +268,7 @@ public class OrderServiceImpl implements OrderService {
         this.orderRepository.deleteById(orderId);
     }
 
-    private Order mergeOrders(final Order currentOrder, final Order oldOrder) {
+    private void mergeOrders(final Order currentOrder, final Order oldOrder) {
         Map<String, Integer> currentOrderVariantQuantityMap = this.prepareVariantQuantityMap(currentOrder, null);
         Map<String, Integer> oldOrderVariantQuantityMap = this.prepareVariantQuantityMap(oldOrder, null);
 
@@ -287,7 +288,6 @@ public class OrderServiceImpl implements OrderService {
             currentOrder.setBillingAddress(oldOrder.getBillingAddress());
         }
         this.deleteDuplicateOrderAfterMerge(oldOrder.getId());
-        return currentOrder;
     }
 
     @Override
@@ -418,8 +418,8 @@ public class OrderServiceImpl implements OrderService {
             }
 
             order.setPaymentOptions(findOrderPaymentOptions(order.getChannelId()));
+            orderRepository.save(order);
         }
-        orderRepository.save(order);
         return OrderHelper.toOrderResponseFromOrder(order);
     }
 
@@ -760,7 +760,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order existingEmailOrder = this.findRunningOrderByEmailAndChannelId(email, order.getChannelId());
         if (existingEmailOrder != null) {
-            order = this.mergeOrders(order, existingEmailOrder);
+            this.mergeOrders(order, existingEmailOrder);
         }
         order.setEmail(email);
         return OrderHelper.toOrderResponseFromOrder(orderRepository.save(order));

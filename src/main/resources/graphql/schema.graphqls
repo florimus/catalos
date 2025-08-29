@@ -7,6 +7,7 @@ type Query {
     loginUser(email: String!, password: String!): AuthTokens
     getCart(id: ID!): Cart
     getPaymentLink(id: ID!): OrderLinkResponse
+    getPriceOfSku(id:ID!, channel: String!, quantity: Int!): ItemPrice
 }
 
 type Mutation {
@@ -180,6 +181,8 @@ type ItemPrice {
     discountPercentage: Float 
     discountFlatPrice: Float
     taxPrice: Float
+    taxValue: Float
+    isFixedTax: Boolean
     finalPrice: Float
 }
 
