@@ -48,7 +48,6 @@ public class PriceServiceImpl implements PriceService {
         return priceRepository.save(PriceHelper.toPriceFromUpsertPriceRequest(upsertPriceRequest));
     }
 
-    @CacheEvict(value = "skuPriceCache", key = "#upsertPriceRequest.skuId + '-*'", allEntries = true)
     private Price updateExistingPrice(final Price price, final UpsertPriceRequest upsertPriceRequest) {
         Logger.info("846f53f5-ed40-4d95-89c3-0d05fb4b4c73", "Price updating");
         channelService.verifyChannels(upsertPriceRequest.getPriceInfo().keySet().stream().toList(), true);
@@ -67,7 +66,6 @@ public class PriceServiceImpl implements PriceService {
     }
 
     @Override
-    @Cacheable(value = "skuPriceCache", key = "#skuId + '-' + #channelId + '-' + #quantity")
     public CalculatedPriceResponse getPriceOfSku(final String skuId, final String channelId, final Integer quantity) {
         return pricingService.getPriceOfSku(skuId, channelId, this.getTablePriceBySku(skuId), quantity, null);
     }

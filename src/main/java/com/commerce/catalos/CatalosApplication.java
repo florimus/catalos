@@ -7,7 +7,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @EnableAsync
 @SpringBootApplication
-@EnableCaching
 public class CatalosApplication {
 
 	public static void main(String[] args) {
