@@ -3,6 +3,12 @@ package com.commerce.catalos.services;
 import java.util.Date;
 import java.util.List;
 
+import com.commerce.catalos.core.configurations.Page;
+import com.commerce.catalos.models.products.ProductResponse;
+import com.commerce.catalos.models.promotions.PromotionFilterInputs;
+import com.commerce.catalos.models.promotions.PromotionResponse;
+import com.commerce.catalos.models.variants.VariantListResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
@@ -43,11 +49,11 @@ public class PromotionServiceImpl implements PromotionService {
     }
 
     private List<String> validateProductIds(final List<String> productIds) {
-        return productService.getProductsByIds(productIds).stream().map(product -> product.getId()).toList();
+        return productService.getProductsByIds(productIds).stream().map(ProductResponse::getId).toList();
     }
 
     private List<String> validateVariantIds(final List<String> variantIds) {
-        return variantService.getVariantsByIds(variantIds).stream().map(variant -> variant.getId()).toList();
+        return variantService.getVariantsByIds(variantIds).stream().map(VariantListResponse::getId).toList();
     }
 
     private void isValidChannel(final String channelId) {
@@ -219,6 +225,19 @@ public class PromotionServiceImpl implements PromotionService {
         Logger.info("e7367f24-ed2f-48e0-b8e1-c16b6073127f", "Fetching active discounts for variant: {} and channel: {}",
                 variantId, channelId);
         return null;
+    }
+
+    @Override
+    public Page<PromotionResponse> searchPromotions(
+            final String query, final String channel, final PromotionFilterInputs promotionFilterInputs, final Pageable pageable) {
+        Logger.info("", "Finding promotion with query: {}, filter: {} and pageable: {}",
+                query, promotionFilterInputs, pageable);
+        Page<Discount> promotions = promotionRepository.getPromotions(query, channel, promotionFilterInputs, pageable);
+        return new Page<PromotionResponse>(
+                PromotionHelper.toPromotionResponsesFromDiscounts(promotions.getHits()),
+                promotions.getTotalHitsCount(),
+                promotions.getCurrentPage(),
+                promotions.getPageSize());
     }
 
 }
