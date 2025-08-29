@@ -7,4 +7,5 @@ import com.commerce.catalos.persistence.repositories.custom.PromotionCustomRepos
 
 public interface PromotionRepository extends MongoRepository<Discount, String>, PromotionCustomRepository {
 
+    Discount findByIdAndEnabled(final String id, final boolean enabled);
 }

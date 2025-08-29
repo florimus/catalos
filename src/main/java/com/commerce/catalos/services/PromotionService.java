@@ -19,4 +19,6 @@ public interface PromotionService {
 
     Page<PromotionResponse> searchPromotions(
             final String query, final String channel, final PromotionFilterInputs promotionFilterInputs, final Pageable pageable);
+
+    PromotionResponse getPromotionById(final String id);
 }

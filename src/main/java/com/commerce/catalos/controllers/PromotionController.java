@@ -49,4 +49,11 @@ public class PromotionController {
         return new ResponseEntity<Page<PromotionResponse>>(
                 this.promotionService.searchPromotions(query, channel, promotionFilterInputs, pageable));
     }
+
+    @GetMapping("/id/{id}")
+    @PreAuthorize("hasRole('PRO:LS')")
+    public ResponseEntity<PromotionResponse> getPromotionById(@PathVariable("id") final String id) {
+        Logger.info("", "Received request for fetch promotion by id: {}", id);
+        return new ResponseEntity<PromotionResponse>(this.promotionService.getPromotionById(id));
+    }
 }

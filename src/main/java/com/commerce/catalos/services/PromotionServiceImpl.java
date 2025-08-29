@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.commerce.catalos.core.configurations.Page;
+import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.models.products.ProductResponse;
 import com.commerce.catalos.models.promotions.PromotionFilterInputs;
 import com.commerce.catalos.models.promotions.PromotionResponse;
@@ -46,6 +47,10 @@ public class PromotionServiceImpl implements PromotionService {
                 throw new IllegalArgumentException("Unexpected value: " + createPromotionRequest.getDiscountType());
         };
         return PromotionHelper.toCreatePromotionResponseFromDiscount(discount);
+    }
+
+    private Discount findPromotionById(final String id) {
+        return this.promotionRepository.findByIdAndEnabled(id, true);
     }
 
     private List<String> validateProductIds(final List<String> productIds) {
@@ -238,6 +243,20 @@ public class PromotionServiceImpl implements PromotionService {
                 promotions.getTotalHitsCount(),
                 promotions.getCurrentPage(),
                 promotions.getPageSize());
+    }
+
+    @Override
+    public PromotionResponse getPromotionById(final String id) {
+        if (null == id || id.isBlank()){
+            Logger.error("", "Id is mandatory");
+            throw new BadRequestException("Invalid promotion id");
+        }
+        Discount promotion = this.findPromotionById(id);
+        if (null != promotion){
+            return PromotionHelper.toPromotionResponseFromDiscount(promotion);
+        }
+        Logger.error("", "Promotion not found");
+        throw new NotFoundException("Promotion not found");
     }
 
 }
