@@ -118,10 +118,10 @@ public class PromotionCustomRepositoryImpl implements PromotionCustomRepository 
                 orConditions.add(Criteria.where("targetedCategories").in(search));
                 orConditions.add(Criteria.where("targetedCollections").in(search));
             }
+            criteria.andOperator(new Criteria().orOperator(orConditions.toArray(new Criteria[0])));
         }
 
         criteria.and("forAllProducts").is(promotionFilterInputs.isForAllProducts());
-        criteria.andOperator(new Criteria().orOperator(orConditions.toArray(new Criteria[0])));
 
         Query query = new Query(criteria);
         query.addCriteria(new Criteria("enabled").is(true));
