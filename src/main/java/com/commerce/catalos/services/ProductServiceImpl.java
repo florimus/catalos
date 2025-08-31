@@ -9,15 +9,18 @@ import com.commerce.catalos.helpers.ProductHelper;
 import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.products.*;
+import com.commerce.catalos.models.variants.VariantResponse;
 import com.commerce.catalos.persistence.dtos.Product;
 import com.commerce.catalos.persistence.repositories.ProductRepository;
 import com.commerce.catalos.security.AuthContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,10 @@ public class ProductServiceImpl implements ProductService {
     private final BrandService brandService;
 
     private final AuthContext authContext;
+
+    @Autowired
+    @Lazy
+    private VariantService variantService;
 
     private boolean isExitsWithSkuId(final String skuId) {
         return productRepository.existsBySkuIdAndEnabled(skuId, true);
@@ -269,4 +276,63 @@ public class ProductServiceImpl implements ProductService {
                 products.getCurrentPage(),
                 products.getPageSize());
     }
+
+    @Override
+    public List<ProductVariantResponse> productVariantResponse(final ProductVariantRequest productVariantRequest) {
+        Logger.info("",
+                "Finding the products and variants with request: {}", productVariantRequest);
+
+        List<String> productIds = productVariantRequest.getProductIds();
+        List<String> variantIds = productVariantRequest.getVariantIds();
+
+        Set<String> variantProductIds = this.variantService.getVariantProductIds(variantIds);
+        Logger.info("", "fetched variant products ids: {}", variantProductIds);
+
+        if (variantProductIds == null) {
+            variantProductIds = new HashSet<>();
+        } else {
+            variantProductIds = new HashSet<>(variantProductIds); // make mutable
+        }
+
+        if (productIds != null && !productIds.isEmpty()) {
+            variantProductIds.addAll(productIds);
+        }
+
+        return variantProductIds.stream()
+                .map(productId -> {
+                    Product product = this.findProductById(productId);
+                    List<VariantResponse> variants = this.variantService.getAllProductVariants(productId);
+
+                    if (variants == null || variants.isEmpty()) {
+                        return null;
+                    }
+
+                    List<Map<String, String>> variantMaps = variants.stream().map(variant -> {
+                        Map<String, String> variantMap = new HashMap<>();
+                        variantMap.put("id", variant.getId());
+                        variantMap.put("name", variant.getName());
+                        variantMap.put("sku", variant.getSkuId());
+                        variantMap.put("status",
+                                (variantIds.contains(variant.getId()) || Objects.requireNonNull(productIds).contains(productId)) ? "Selected" : "UnSelected"
+                        );
+
+                        if (variant.getMedias() != null && !variant.getMedias().isEmpty()) {
+                            variantMap.put("thumbnail", variant.getMedias().getFirst().getDefaultSrc());
+                        } else {
+                            variantMap.put("thumbnail", null);
+                        }
+                        return variantMap;
+                    }).toList();
+
+                    ProductVariantResponse response = new ProductVariantResponse();
+                    response.setProductId(productId);
+                    response.setProductName(product.getName());
+                    response.setVariants(variantMaps);
+
+                    return response;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
 }

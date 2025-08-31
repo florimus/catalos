@@ -6,6 +6,7 @@ import com.commerce.catalos.persistence.dtos.Variant;
 import com.commerce.catalos.persistence.repositories.custom.VariantCustomRepository;
 
 import java.util.List;
+import java.util.Set;
 
 public interface VariantRepository extends MongoRepository<Variant, String>, VariantCustomRepository {
 
@@ -17,5 +18,7 @@ public interface VariantRepository extends MongoRepository<Variant, String>, Var
 
     Variant findVariantByUrlAndEnabled(String url, boolean enabled);
 
-    List<Variant> findVariantByProductIdAndEnabledAndActive(final String productId, final boolean enabled, final boolean active);
+    List<Variant> findVariantByProductIdAndEnabled(final String productId, final boolean enabled);
+
+    Set<String> findProductIdsOfVariants(final List<String> variantIds);
 }

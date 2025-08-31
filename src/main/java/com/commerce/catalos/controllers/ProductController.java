@@ -15,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @EnableMethodSecurity
 @RequestMapping("/products")
@@ -104,5 +106,13 @@ public class ProductController {
         Logger.info("b141891e-e1f0-491d-8457-babab45ac87f",
                 "Received request to delete the product with id: {}", id);
         return new ResponseEntity<ProductDeleteResponse>(productService.deleteProducts(id));
+    }
+
+    @PutMapping("/product-variants")
+    @PreAuthorize("hasRole('PRD:LS')")
+    public ResponseEntity<List<ProductVariantResponse>> productVariantResponse (@RequestBody final ProductVariantRequest productVariantRequest) {
+        Logger.info("",
+                "Received request to fetch the product with variants: {}", productVariantRequest);
+        return new ResponseEntity<List<ProductVariantResponse>>(productService.productVariantResponse(productVariantRequest));
     }
 }

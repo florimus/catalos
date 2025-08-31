@@ -2,9 +2,10 @@ package com.commerce.catalos.persistence.repositories.custom;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -46,6 +47,18 @@ public class VariantCustomRepositoryImpl implements VariantCustomRepository {
         query.with(pageable);
         List<Variant> productTypes = mongoTemplate.find(query, Variant.class);
         return new Page<Variant>(productTypes, total, pageable.getPageNumber(), pageable.getPageSize());
+    }
+
+    @Override
+    public Set<String> findProductIdsOfVariants(final List<String> variantIds) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(variantIds));
+        query.addCriteria(new Criteria("enabled").is(true));
+        List<Variant> variants = mongoTemplate.find(query, Variant.class);
+        if (variants.isEmpty()) {
+            return Set.of();
+        }
+        return variants.stream().map(Variant::getProductId).collect(Collectors.toSet());
     }
 
 }

@@ -2,6 +2,7 @@ package com.commerce.catalos.services;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ public class VariantServiceImpl implements VariantService {
     }
 
     private List<Variant> findVariantsByProductId(final String productId) {
-        return variantRepository.findVariantByProductIdAndEnabledAndActive(productId, true, true);
+        return variantRepository.findVariantByProductIdAndEnabled(productId, true);
     }
 
     @Override
@@ -254,6 +255,14 @@ public class VariantServiceImpl implements VariantService {
     @Override
     public List<VariantResponse> getAllProductVariants(final String productId) {
         return VariantHelper.toVariantListResponse(this.findVariantsByProductId(productId));
+    }
+
+    @Override
+    public Set<String> getVariantProductIds(final List<String> variantIds) {
+        if (variantIds == null || variantIds.isEmpty()){
+            return Set.of();
+        }
+        return variantRepository.findProductIdsOfVariants(variantIds);
     }
 
 }

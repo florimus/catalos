@@ -28,4 +28,6 @@ public interface ProductService {
 
     public Page<ProductResponse> getProductsByBrandId(final String brandId, final String query,
             final Pageable pageable);
+
+    public List<ProductVariantResponse> productVariantResponse(final ProductVariantRequest productVariantRequest);
 }

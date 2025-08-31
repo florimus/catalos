@@ -1,6 +1,7 @@
 package com.commerce.catalos.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
 
@@ -37,4 +38,5 @@ public interface VariantService {
 
     public List<VariantResponse> getAllProductVariants(final String productId);
 
+    public Set<String> getVariantProductIds(final List<String> variantIds);
 }
