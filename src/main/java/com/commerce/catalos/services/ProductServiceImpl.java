@@ -285,14 +285,8 @@ public class ProductServiceImpl implements ProductService {
         List<String> productIds = productVariantRequest.getProductIds();
         List<String> variantIds = productVariantRequest.getVariantIds();
 
-        Set<String> variantProductIds = this.variantService.getVariantProductIds(variantIds);
+        Set<String> variantProductIds = new HashSet<>(this.variantService.getVariantProductIds(variantIds));
         Logger.info("", "fetched variant products ids: {}", variantProductIds);
-
-        if (variantProductIds == null) {
-            variantProductIds = new HashSet<>();
-        } else {
-            variantProductIds = new HashSet<>(variantProductIds); // make mutable
-        }
 
         if (productIds != null && !productIds.isEmpty()) {
             variantProductIds.addAll(productIds);
