@@ -2,6 +2,7 @@ package com.commerce.catalos.services;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
+import com.commerce.catalos.core.constants.SortConstants;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
@@ -16,11 +17,13 @@ import com.commerce.catalos.security.AuthContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +51,48 @@ public class ProductServiceImpl implements ProductService {
 
     private Product findProductById(final String productId) {
         return productRepository.findProductByIdAndEnabled(productId, true);
+    }
+
+    private Stream<ProductVariantResponse> populateProductVariantResponses(
+            final Set<String> variantProductIds, final List<String> variantIds, final List<String> productIds, final String channelId) {
+        return variantProductIds.parallelStream()
+                .map(productId -> {
+                    Product product = this.findProductById(productId); // FIXME: avoid multiple API calls
+                    if (null == product || !product.getPublishedChannels().contains(channelId)){
+                        Logger.error("", "Product: {} is not available in channel: {}", productId, channelId);
+                        return null;
+                    }
+                    List<VariantResponse> variants = this.variantService.getAllProductVariants(productId);
+
+                    if (variants == null || variants.isEmpty()) {
+                        Logger.error("", "Variant is not exits for the product: {}", productId);
+                        return null;
+                    }
+
+                    List<Map<String, String>> variantMaps = variants.stream().map(variant -> {
+                        Map<String, String> variantMap = new HashMap<>();
+                        variantMap.put("id", variant.getId());
+                        variantMap.put("name", variant.getName());
+                        variantMap.put("sku", variant.getSkuId());
+                        variantMap.put("status",
+                                (variantIds.contains(variant.getId()) || Objects.requireNonNull(productIds).contains(productId)) ? "Selected" : "UnSelected"
+                        );
+
+                        if (variant.getMedias() != null && !variant.getMedias().isEmpty()) {
+                            variantMap.put("thumbnail", variant.getMedias().getFirst().getDefaultSrc());
+                        } else {
+                            variantMap.put("thumbnail", null);
+                        }
+                        return variantMap;
+                    }).toList();
+
+                    ProductVariantResponse response = new ProductVariantResponse();
+                    response.setProductId(productId);
+                    response.setProductName(product.getName());
+                    response.setVariants(variantMaps);
+
+                    return response;
+                });
     }
 
     @Override
@@ -292,39 +337,36 @@ public class ProductServiceImpl implements ProductService {
             variantProductIds.addAll(productIds);
         }
 
-        return variantProductIds.stream()
-                .map(productId -> {
-                    Product product = this.findProductById(productId);
-                    List<VariantResponse> variants = this.variantService.getAllProductVariants(productId);
+        return this.populateProductVariantResponses(variantProductIds, variantIds, productIds, productVariantRequest.getChannel())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
 
-                    if (variants == null || variants.isEmpty()) {
-                        return null;
-                    }
+    @Override
+    public List<ProductVariantResponse> searchProductVariantResponse(final ProductVariantRequest productVariantRequest, final String query) {
+        Pageable pageable = PageRequest.of(SortConstants.PAGE, SortConstants.SIZE);
+        Page<ProductResponse> searchedProducts = this.listProducts(query, productVariantRequest.getChannel(), pageable);
 
-                    List<Map<String, String>> variantMaps = variants.stream().map(variant -> {
-                        Map<String, String> variantMap = new HashMap<>();
-                        variantMap.put("id", variant.getId());
-                        variantMap.put("name", variant.getName());
-                        variantMap.put("sku", variant.getSkuId());
-                        variantMap.put("status",
-                                (variantIds.contains(variant.getId()) || Objects.requireNonNull(productIds).contains(productId)) ? "Selected" : "UnSelected"
-                        );
+        if (searchedProducts.getHits().isEmpty()) {
+            Logger.info("", "No products matched for the query: {}", query);
+            return List.of();
+        }
 
-                        if (variant.getMedias() != null && !variant.getMedias().isEmpty()) {
-                            variantMap.put("thumbnail", variant.getMedias().getFirst().getDefaultSrc());
-                        } else {
-                            variantMap.put("thumbnail", null);
-                        }
-                        return variantMap;
-                    }).toList();
+        Set<String> searchedProductIds = searchedProducts.getHits().stream().map(ProductResponse::getId).collect(Collectors.toSet());
 
-                    ProductVariantResponse response = new ProductVariantResponse();
-                    response.setProductId(productId);
-                    response.setProductName(product.getName());
-                    response.setVariants(variantMaps);
+        Logger.info("", "fetched product ids: {} with matching query: {}", searchedProducts, query);
 
-                    return response;
-                })
+        List<String> productIds = productVariantRequest.getProductIds();
+        List<String> variantIds = productVariantRequest.getVariantIds();
+
+        Set<String> variantProductIds = new HashSet<>(this.variantService.getVariantProductIds(variantIds));
+        Logger.info("", "fetched variant products ids: {}", variantProductIds);
+
+        if (productIds != null && !productIds.isEmpty()) {
+            variantProductIds.addAll(productIds);
+        }
+
+        return this.populateProductVariantResponses(searchedProductIds, variantIds, productIds, productVariantRequest.getChannel())
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }

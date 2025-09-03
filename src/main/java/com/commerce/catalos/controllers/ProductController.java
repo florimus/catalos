@@ -115,4 +115,13 @@ public class ProductController {
                 "Received request to fetch the product with variants: {}", productVariantRequest);
         return new ResponseEntity<List<ProductVariantResponse>>(productService.productVariantResponse(productVariantRequest));
     }
+
+    @PreAuthorize("hasRole('PRD:LS')")
+    @PutMapping("/product-variants/search")
+    public ResponseEntity<List<ProductVariantResponse>> searchProductVariantResponse (
+            @RequestBody final ProductVariantRequest productVariantRequest, @RequestParam(required = false, defaultValue = "") String query) {
+        Logger.info("",
+                "Received request to search: {}, and the product with variants: {}", query, productVariantRequest);
+        return new ResponseEntity<List<ProductVariantResponse>>(productService.searchProductVariantResponse(productVariantRequest, query));
+    }
 }

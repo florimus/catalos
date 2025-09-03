@@ -14,4 +14,6 @@ public class ProductVariantRequest {
     private List<String> productIds;
 
     private List<String> variantIds;
+
+    private String channel;
 }

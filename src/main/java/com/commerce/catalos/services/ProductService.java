@@ -30,4 +30,6 @@ public interface ProductService {
             final Pageable pageable);
 
     public List<ProductVariantResponse> productVariantResponse(final ProductVariantRequest productVariantRequest);
+
+    public List<ProductVariantResponse> searchProductVariantResponse(final ProductVariantRequest productVariantRequest, final String query);
 }
