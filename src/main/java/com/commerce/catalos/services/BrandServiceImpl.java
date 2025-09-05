@@ -1,7 +1,9 @@
 package com.commerce.catalos.services;
 
 import java.util.Date;
+import java.util.List;
 
+import com.commerce.catalos.models.brands.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -9,12 +11,6 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.helpers.BrandHelper;
-import com.commerce.catalos.models.brands.BrandResponse;
-import com.commerce.catalos.models.brands.BrandStatusUpdateResponse;
-import com.commerce.catalos.models.brands.CreateBrandRequest;
-import com.commerce.catalos.models.brands.CreateBrandResponse;
-import com.commerce.catalos.models.brands.UpdateBrandRequest;
-import com.commerce.catalos.models.brands.UpdateBrandResponse;
 import com.commerce.catalos.persistence.dtos.Brand;
 import com.commerce.catalos.persistence.repositories.BrandRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -31,6 +27,10 @@ public class BrandServiceImpl implements BrandService {
 
     private Brand findBrandById(final String id) {
         return brandRepository.findBrandByIdAndEnabled(id, true);
+    }
+
+    private List<Brand> getBrandsByIds(final List<String> ids) {
+        return brandRepository.findByIdInAndEnabled(ids, true);
     }
 
     @Override
@@ -121,6 +121,21 @@ public class BrandServiceImpl implements BrandService {
         Logger.info("e1e5ca8e-3761-4a7e-a33b-61696006c21a", "Updated brand with id: {}", id);
         return BrandStatusUpdateResponse.builder().message(status ? "Brand Activated" : "Brand Deactivated")
                 .status(status).build();
+    }
+
+    @Override
+    public List<BrandResponse> listBrandsByIds(BrandListRequest brandListRequest) {
+        if (null == brandListRequest.getIds() || brandListRequest.getIds().isEmpty()) {
+            Logger.warn("", "No Brand Ids");
+            return List.of();
+        }
+        List<Brand> brands = this.getBrandsByIds(brandListRequest.getIds());
+        if (null != brands) {
+            Logger.info("", "Brands found");
+            return brands.stream().map(BrandHelper::toBrandResponseFromBrand).toList();
+        }
+        Logger.warn("", "No Brands found with ids: {}", brandListRequest.getIds());
+        return List.of();
     }
 
 }

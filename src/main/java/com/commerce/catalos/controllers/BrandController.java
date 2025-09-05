@@ -1,5 +1,6 @@
 package com.commerce.catalos.controllers;
 
+import com.commerce.catalos.models.brands.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -19,16 +20,12 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.core.constants.SortConstants;
-import com.commerce.catalos.models.brands.BrandResponse;
-import com.commerce.catalos.models.brands.BrandStatusUpdateResponse;
-import com.commerce.catalos.models.brands.CreateBrandRequest;
-import com.commerce.catalos.models.brands.CreateBrandResponse;
-import com.commerce.catalos.models.brands.UpdateBrandRequest;
-import com.commerce.catalos.models.brands.UpdateBrandResponse;
 import com.commerce.catalos.services.BrandService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @EnableMethodSecurity
@@ -82,10 +79,19 @@ public class BrandController {
     public ResponseEntity<BrandStatusUpdateResponse> updateBrandStatus(
             @PathVariable final String id, @PathVariable final boolean status) {
         Logger.info("3d4e4cf3-285c-4e4c-b7f3-c81d702d4514",
-                "Received request for update category status with id: {}",
+                "Received request for update brand status with id: {}",
                 id);
         return new ResponseEntity<BrandStatusUpdateResponse>(
                 brandService.updateBrandStatus(id, status));
+    }
+
+    @PutMapping("/list")
+    @PreAuthorize("hasRole('BRD:LS')")
+    public ResponseEntity<List<BrandResponse>> listBrandsByIds(@RequestBody final BrandListRequest brandListRequest) {
+        Logger.info("",
+                "Received request for list brands with ids: {}",
+                brandListRequest);
+        return new ResponseEntity<List<BrandResponse>>(brandService.listBrandsByIds(brandListRequest));
     }
 
 }

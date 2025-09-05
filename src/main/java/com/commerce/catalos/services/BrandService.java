@@ -1,14 +1,11 @@
 package com.commerce.catalos.services;
 
+import com.commerce.catalos.models.brands.*;
 import org.springframework.data.domain.Pageable;
 
 import com.commerce.catalos.core.configurations.Page;
-import com.commerce.catalos.models.brands.BrandResponse;
-import com.commerce.catalos.models.brands.BrandStatusUpdateResponse;
-import com.commerce.catalos.models.brands.CreateBrandRequest;
-import com.commerce.catalos.models.brands.CreateBrandResponse;
-import com.commerce.catalos.models.brands.UpdateBrandRequest;
-import com.commerce.catalos.models.brands.UpdateBrandResponse;
+
+import java.util.List;
 
 public interface BrandService {
 
@@ -22,4 +19,5 @@ public interface BrandService {
 
     BrandStatusUpdateResponse updateBrandStatus(final String id, final boolean status);
 
+    List<BrandResponse> listBrandsByIds(final BrandListRequest brandListRequest);
 }
