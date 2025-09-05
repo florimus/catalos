@@ -1,5 +1,6 @@
 package com.commerce.catalos.controllers;
 
+import com.commerce.catalos.models.categories.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -19,16 +20,12 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.configurations.ResponseEntity;
 import com.commerce.catalos.core.constants.SortConstants;
-import com.commerce.catalos.models.categories.CategoryResponse;
-import com.commerce.catalos.models.categories.CategoryStatusUpdateResponse;
-import com.commerce.catalos.models.categories.CreateCategoryRequest;
-import com.commerce.catalos.models.categories.CreateCategoryResponse;
-import com.commerce.catalos.models.categories.UpdateCategoryRequest;
-import com.commerce.catalos.models.categories.UpdateCategoryResponse;
 import com.commerce.catalos.services.CategoryService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @EnableMethodSecurity
@@ -89,5 +86,13 @@ public class CategoryController {
                 id);
         return new ResponseEntity<CategoryStatusUpdateResponse>(
                 categoryService.updateCategoryStatus(id, status));
+    }
+
+    @PutMapping("/list")
+    @PreAuthorize("hasRole('CAT:LS')")
+    public ResponseEntity<List<CategoryResponse>> listCategoriesByIds(@RequestBody final CategoryListRequest categoryListRequest) {
+        Logger.info("a5851c0e-1b0d-4a69-8a53-eed00b62fd68",
+                "Received request to list the categories with ids: {}", categoryListRequest);
+        return new ResponseEntity<List<CategoryResponse>>(categoryService.listCategoriesByIds(categoryListRequest));
     }
 }

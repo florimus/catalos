@@ -1,7 +1,9 @@
 package com.commerce.catalos.services;
 
 import java.util.Date;
+import java.util.List;
 
+import com.commerce.catalos.models.categories.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -11,12 +13,6 @@ import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.errors.ConflictException;
 import com.commerce.catalos.core.errors.NotFoundException;
 import com.commerce.catalos.helpers.CategoryHelper;
-import com.commerce.catalos.models.categories.CategoryResponse;
-import com.commerce.catalos.models.categories.CategoryStatusUpdateResponse;
-import com.commerce.catalos.models.categories.CreateCategoryRequest;
-import com.commerce.catalos.models.categories.CreateCategoryResponse;
-import com.commerce.catalos.models.categories.UpdateCategoryRequest;
-import com.commerce.catalos.models.categories.UpdateCategoryResponse;
 import com.commerce.catalos.persistence.dtos.Category;
 import com.commerce.catalos.persistence.repositories.CategoryRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -33,6 +29,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     private Category getCategoryById(final String id) {
         return categoryRepository.findCategoryByIdAndEnabled(id, true);
+    }
+
+    private List<Category> getCategoriesByIds(final List<String> ids) {
+        return categoryRepository.findByIdInAndEnabled(ids, true);
     }
 
     @Override
@@ -145,6 +145,21 @@ public class CategoryServiceImpl implements CategoryService {
                 .status(category.isActive())
                 .message(category.isActive() ? "Category Activated" : "Category Deactivated")
                 .build();
+    }
+
+    @Override
+    public List<CategoryResponse> listCategoriesByIds(final CategoryListRequest categoryListRequest) {
+        if (null == categoryListRequest.getIds() || categoryListRequest.getIds().isEmpty()) {
+            Logger.warn("", "No categoryIds");
+            return List.of();
+        }
+        List<Category> categories = this.getCategoriesByIds(categoryListRequest.getIds());
+        if (null != categories) {
+            Logger.info("", "Categories found");
+            return categories.stream().map(CategoryHelper::toCategoryResponseFromCategory).toList();
+        }
+        Logger.warn("", "No categories found with ids: {}", categoryListRequest.getIds());
+        return List.of();
     }
 
 }

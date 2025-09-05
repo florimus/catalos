@@ -1,14 +1,11 @@
 package com.commerce.catalos.services;
 
+import com.commerce.catalos.models.categories.*;
 import org.springframework.data.domain.Pageable;
 
 import com.commerce.catalos.core.configurations.Page;
-import com.commerce.catalos.models.categories.CategoryResponse;
-import com.commerce.catalos.models.categories.CategoryStatusUpdateResponse;
-import com.commerce.catalos.models.categories.CreateCategoryRequest;
-import com.commerce.catalos.models.categories.CreateCategoryResponse;
-import com.commerce.catalos.models.categories.UpdateCategoryRequest;
-import com.commerce.catalos.models.categories.UpdateCategoryResponse;
+
+import java.util.List;
 
 public interface CategoryService {
 
@@ -22,4 +19,5 @@ public interface CategoryService {
 
     CategoryStatusUpdateResponse updateCategoryStatus(final String id, final boolean status);
 
+    List<CategoryResponse> listCategoriesByIds(final CategoryListRequest categoryListRequest);
 }
