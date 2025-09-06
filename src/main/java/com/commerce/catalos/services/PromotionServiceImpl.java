@@ -2,14 +2,22 @@ package com.commerce.catalos.services;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.errors.NotFoundException;
+import com.commerce.catalos.models.brands.BrandListRequest;
+import com.commerce.catalos.models.brands.BrandResponse;
+import com.commerce.catalos.models.categories.CategoryListRequest;
+import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.products.ProductResponse;
 import com.commerce.catalos.models.promotions.PromotionFilterInputs;
 import com.commerce.catalos.models.promotions.PromotionResponse;
 import com.commerce.catalos.models.variants.VariantListResponse;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.commerce.catalos.core.configurations.Logger;
@@ -32,22 +40,15 @@ public class PromotionServiceImpl implements PromotionService {
 
     private final VariantService variantService;
 
+    private final CategoryService categoryService;
+
+    private final BrandService brandService;
+
     private final ChannelService channelService;
 
     private final PromotionRepository promotionRepository;
 
     private final AuthContext authContext;
-
-    @Override
-    public CreatePromotionResponse createPromotion(final CreatePromotionRequest createPromotionRequest) {
-        Discount discount = switch (createPromotionRequest.getDiscountType()) {
-            case PercentageOFF -> this.createPercentageOFFDiscount(createPromotionRequest);
-            case FlatOFF -> this.createFlatOFFDiscount(createPromotionRequest);
-            default ->
-                throw new IllegalArgumentException("Unexpected value: " + createPromotionRequest.getDiscountType());
-        };
-        return PromotionHelper.toCreatePromotionResponseFromDiscount(discount);
-    }
 
     private Discount findPromotionById(final String id) {
         return this.promotionRepository.findByIdAndEnabled(id, true);
@@ -61,8 +62,84 @@ public class PromotionServiceImpl implements PromotionService {
         return variantService.getVariantsByIds(variantIds).stream().map(VariantListResponse::getId).toList();
     }
 
+    private List<String> validateCategoriesIds(final List<String> categoriesIds) {
+        CategoryListRequest request = new CategoryListRequest();
+        request.setIds(categoriesIds);
+        return categoryService.listCategoriesByIds(request).stream().map(CategoryResponse::getId).toList();
+    }
+
+    private List<String> validateBrandIds(final List<String> brandIds) {
+        BrandListRequest request = new BrandListRequest();
+        request.setIds(brandIds);
+        return brandService.listBrandsByIds(request).stream().map(BrandResponse::getId).toList();
+    }
+
     private void isValidChannel(final String channelId) {
         channelService.verifyChannels(List.of(channelId), true);
+    }
+
+    @Async
+    private void validateAndUpdateVariants(final Discount discount, final List<String> variantIds) {
+        if (variantIds != null && !variantIds.isEmpty()) {
+            Logger.info("dee18d65-1a1a-415c-8bab-059bb48aefe0", "Setting targeted variants from {}", variantIds);
+            discount.setTargetedVariantIds(this.validateVariantIds(variantIds));
+        }
+    }
+
+    @Async
+    private void validateAndUpdateProducts(final Discount discount, final List<String> productsIds) {
+        if (productsIds != null && !productsIds.isEmpty()) {
+            Logger.info("", "Setting targeted products from {}", productsIds);
+            discount.setTargetedProductIds(this.validateProductIds(productsIds));
+        }
+    }
+
+    @Async
+    private void validateAndUpdateCategories(final Discount discount, final List<String> categoryIds) {
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            Logger.info("", "Setting targeted categories from {}", categoryIds);
+            discount.setTargetedCategories(this.validateCategoriesIds(categoryIds));
+        }
+    }
+
+    @Async
+    private void validateAndUpdateBrands(final Discount discount, final List<String> brandIds) {
+        if (brandIds != null && !brandIds.isEmpty()) {
+            Logger.info("", "Setting targeted brands from {}", brandIds);
+            discount.setTargetedCategories(this.validateBrandIds(brandIds));
+        }
+    }
+
+    private void validateAndUpdateStartDate(final Discount discount, final Date startDate) {
+        if (TimeUtils.isFutureDate(startDate)) {
+            Logger.info("4b8689d3-3bd1-47ba-933d-695a6391449f", "Setting start date to {}",
+                    startDate);
+            discount.setStartDate(startDate);
+        } else {
+            Logger.error("04a8bdb4-7ed1-42bb-968d-f5f661234c4f", "Start date cannot be in the past");
+            throw new BadRequestException("Start date cannot be in the past");
+        }
+    }
+
+    private void validateAndUpdateExpireDate(final Discount discount, final Date expireDate) {
+        if (TimeUtils.isFutureDate(expireDate) && expireDate.after(discount.getStartDate())) {
+            Logger.info("e857d8d4-9df6-48d4-a4a0-18cd5dcca1f8", "Setting expire date to {}", expireDate);
+            discount.setExpireDate(expireDate);
+        } else {
+            Logger.error("6b37abea-6689-4e16-9018-c52592af90b6", "Expire date cannot be in the past");
+            throw new BadRequestException("Expire date cannot be in the past");
+        }
+    }
+
+    @Override
+    public CreatePromotionResponse createPromotion(final CreatePromotionRequest createPromotionRequest) {
+        Discount discount = switch (createPromotionRequest.getDiscountType()) {
+            case PercentageOFF -> this.createPercentageOFFDiscount(createPromotionRequest);
+            case FlatOFF -> this.createFlatOFFDiscount(createPromotionRequest);
+            default ->
+                throw new IllegalArgumentException("Unexpected value: " + createPromotionRequest.getDiscountType());
+        };
+        return PromotionHelper.toCreatePromotionResponseFromDiscount(discount);
     }
 
     public Discount createFlatOFFDiscount(final CreatePromotionRequest createPromotionRequest) {
@@ -74,54 +151,37 @@ public class PromotionServiceImpl implements PromotionService {
         discount.setDiscountType(createPromotionRequest.getDiscountType());
         discount.setDiscountValue(createPromotionRequest.getDiscountValue());
         discount.setMaxDiscountPrice(createPromotionRequest.getMaxDiscountPrice());
-
-        if (createPromotionRequest.getDiscountedProducts() != null
-                && !createPromotionRequest.getDiscountedProducts().isEmpty()) {
-            Logger.info("574a0e91-f38e-4bfc-b5a9-98be719ef2f2", "Setting discounted products to {}",
-                    createPromotionRequest.getDiscountedProducts());
-            discount.setDiscountedProducts(this.validateProductIds(createPromotionRequest.getDiscountedProducts()));
-        }
-
-        discount.setMinItemQuantity(createPromotionRequest.getMinItemQuantity());
         discount.setForAllProducts(createPromotionRequest.isForAllProducts());
+        discount.setMinItemQuantity(createPromotionRequest.getMinItemQuantity());
 
-        if (createPromotionRequest.getTargetedProductIds() != null
-                && !createPromotionRequest.getTargetedProductIds().isEmpty()) {
-            Logger.info("be380ae6-f592-4e5e-b58c-1a6f879d5d51", "Setting targeted products to {}",
-                    createPromotionRequest.getTargetedProductIds());
-            discount.setTargetedProductIds(this.validateProductIds(createPromotionRequest.getTargetedProductIds()));
+        discount.setAvailableChannel(createPromotionRequest.getAvailableChannel());
+
+        if(createPromotionRequest.isForAllProducts()){
+            discount.setTargetedProductIds(List.of());
+            discount.setTargetedVariantIds(List.of());
+            discount.setTargetedCategories(List.of());
+            discount.setTargetedBrands(List.of());
+        } else {
+            ExecutorService executor = Executors.newFixedThreadPool(4);
+
+            CompletableFuture<Void> variantsFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateVariants(discount, createPromotionRequest.getTargetedVariantIds()), executor);
+            CompletableFuture<Void> productsFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateProducts(discount, createPromotionRequest.getDiscountedProducts()), executor);
+            CompletableFuture<Void> categoriesFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateCategories(discount, createPromotionRequest.getTargetedCategories()), executor);
+            CompletableFuture<Void> brandsFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateBrands(discount, createPromotionRequest.getTargetedBrands()), executor);
+            CompletableFuture.allOf(variantsFuture, productsFuture, categoriesFuture, brandsFuture).join();
+
+            executor.shutdown();
         }
 
-        if (createPromotionRequest.getTargetedVariantIds() != null
-                && !createPromotionRequest.getTargetedVariantIds().isEmpty()) {
-            Logger.info("dee18d65-1a1a-415c-8bab-059bb48aefe0", "Setting targeted variants to {}",
-                    createPromotionRequest.getTargetedVariantIds());
-            discount.setTargetedVariantIds(this.validateVariantIds(createPromotionRequest.getTargetedVariantIds()));
-        }
-
-        // TODO: Implement the logic verify categories
         // TODO: Implement the logic verify collections
-        // TODO: Implement the logic verify brands
         // TODO: Implement the logic verify customer groups
 
-        if (TimeUtils.isFutureDate(createPromotionRequest.getStartDate())) {
-            Logger.info("4b8689d3-3bd1-47ba-933d-695a6391449f", "Setting start date to {}",
-                    createPromotionRequest.getStartDate());
-            discount.setStartDate(createPromotionRequest.getStartDate());
-        } else {
-            Logger.error("04a8bdb4-7ed1-42bb-968d-f5f661234c4f", "Start date cannot be in the past");
-            throw new BadRequestException("Start date cannot be in the past");
-        }
-
-        if (TimeUtils.isFutureDate(createPromotionRequest.getExpireDate()) &&
-                createPromotionRequest.getExpireDate().after(createPromotionRequest.getStartDate())) {
-            Logger.info("e857d8d4-9df6-48d4-a4a0-18cd5dcca1f8", "Setting expire date to {}",
-                    createPromotionRequest.getExpireDate());
-            discount.setExpireDate(createPromotionRequest.getExpireDate());
-        } else {
-            Logger.error("6b37abea-6689-4e16-9018-c52592af90b6", "Expire date cannot be in the past");
-            throw new BadRequestException("Expire date cannot be in the past");
-        }
+        this.validateAndUpdateStartDate(discount, createPromotionRequest.getStartDate());
+        this.validateAndUpdateExpireDate(discount, createPromotionRequest.getExpireDate());
 
         this.isValidChannel(createPromotionRequest.getAvailableChannel());
         Logger.info("af6f051c-b0ad-4157-ba22-a8f679ccc5ec", "Setting available channel to {}",
@@ -145,6 +205,8 @@ public class PromotionServiceImpl implements PromotionService {
         discount.setDiscountMode(createPromotionRequest.getDiscountMode());
         discount.setDiscountType(createPromotionRequest.getDiscountType());
 
+        discount.setAvailableChannel(createPromotionRequest.getAvailableChannel());
+
         if (createPromotionRequest.getDiscountValue() == null
                 || createPromotionRequest.getDiscountValue() <= 0 || createPromotionRequest.getDiscountValue() > 100) {
             Logger.error("2bb37130-487c-4c20-abc6-88e5e3a15d98", "Invalid discount value: {}",
@@ -162,58 +224,39 @@ public class PromotionServiceImpl implements PromotionService {
             discount.setMaxDiscountPrice(createPromotionRequest.getMaxDiscountPrice());
         }
 
-        if (createPromotionRequest.getDiscountedProducts() != null
-                && !createPromotionRequest.getDiscountedProducts().isEmpty()) {
-            Logger.info("7012dbea-aa0f-4d1b-b8b6-1a08d08ab3f3", "Setting discounted products to {}",
-                    createPromotionRequest.getDiscountedProducts());
-            discount.setDiscountedProducts(this.validateProductIds(createPromotionRequest.getDiscountedProducts()));
-        }
-
         discount.setMinItemQuantity(createPromotionRequest.getMinItemQuantity());
         discount.setForAllProducts(createPromotionRequest.isForAllProducts());
 
-        if (createPromotionRequest.getTargetedProductIds() != null
-                && !createPromotionRequest.getTargetedProductIds().isEmpty()) {
-            Logger.info("6350320a-065c-4e81-b815-e4df12b5f912", "Setting targeted products to {}",
-                    createPromotionRequest.getTargetedProductIds());
-            discount.setTargetedProductIds(this.validateProductIds(createPromotionRequest.getTargetedProductIds()));
+        if(createPromotionRequest.isForAllProducts()){
+            discount.setTargetedProductIds(List.of());
+            discount.setTargetedVariantIds(List.of());
+            discount.setTargetedCategories(List.of());
+            discount.setTargetedBrands(List.of());
+        } else {
+            ExecutorService executor = Executors.newFixedThreadPool(4);
+
+            CompletableFuture<Void> variantsFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateVariants(discount, createPromotionRequest.getTargetedVariantIds()), executor);
+            CompletableFuture<Void> productsFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateProducts(discount, createPromotionRequest.getDiscountedProducts()), executor);
+            CompletableFuture<Void> categoriesFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateCategories(discount, createPromotionRequest.getTargetedCategories()), executor);
+            CompletableFuture<Void> brandsFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateBrands(discount, createPromotionRequest.getTargetedBrands()), executor);
+            CompletableFuture.allOf(variantsFuture, productsFuture, categoriesFuture, brandsFuture).join();
+
+            executor.shutdown();
         }
 
-        if (createPromotionRequest.getTargetedVariantIds() != null
-                && !createPromotionRequest.getTargetedVariantIds().isEmpty()) {
-            Logger.info("3bc58c3a-5429-41b4-bea7-9bc1266df05c", "Setting targeted variants to {}",
-                    createPromotionRequest.getTargetedVariantIds());
-            discount.setTargetedVariantIds(this.validateVariantIds(createPromotionRequest.getTargetedVariantIds()));
-        }
-
-        // TODO: Implement the logic verify categories
         // TODO: Implement the logic verify collections
-        // TODO: Implement the logic verify brands
         // TODO: Implement the logic verify customer groups
 
-        if (TimeUtils.isFutureDate(createPromotionRequest.getStartDate())) {
-            Logger.info("00cc6b3a-9f22-4377-9b43-6f649c73ff3b", "Setting start date to {}",
-                    createPromotionRequest.getStartDate());
-            discount.setStartDate(createPromotionRequest.getStartDate());
-        } else {
-            Logger.error("fdf88672-c34e-4151-bb3f-0ec86ce34f4c", "Start date cannot be in the past");
-            throw new BadRequestException("Start date cannot be in the past");
-        }
-
-        if (TimeUtils.isFutureDate(createPromotionRequest.getExpireDate()) &&
-                createPromotionRequest.getExpireDate().after(createPromotionRequest.getStartDate())) {
-            Logger.info("40dcf8a4-e9b1-4287-b518-a2541237b9bf", "Setting expire date to {}",
-                    createPromotionRequest.getExpireDate());
-            discount.setExpireDate(createPromotionRequest.getExpireDate());
-        } else {
-            Logger.error("997e3c61-63ee-4e1b-8d56-60a5f3d4f9cd", "Expire date cannot be in the past");
-            throw new BadRequestException("Expire date cannot be in the past");
-        }
+        this.validateAndUpdateStartDate(discount, createPromotionRequest.getStartDate());
+        this.validateAndUpdateExpireDate(discount, createPromotionRequest.getExpireDate());
 
         this.isValidChannel(createPromotionRequest.getAvailableChannel());
         Logger.info("74219d66-6f01-44a6-8979-17993acb9812", "Setting available channel to {}",
                 createPromotionRequest.getAvailableChannel());
-        discount.setAvailableChannel(createPromotionRequest.getAvailableChannel());
 
         discount.setCreatedBy(authContext.getCurrentUser().getEmail());
         discount.setCreatedAt(new Date());
