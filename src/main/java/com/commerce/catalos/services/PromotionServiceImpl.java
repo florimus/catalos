@@ -13,8 +13,7 @@ import com.commerce.catalos.models.brands.BrandResponse;
 import com.commerce.catalos.models.categories.CategoryListRequest;
 import com.commerce.catalos.models.categories.CategoryResponse;
 import com.commerce.catalos.models.products.ProductResponse;
-import com.commerce.catalos.models.promotions.PromotionFilterInputs;
-import com.commerce.catalos.models.promotions.PromotionResponse;
+import com.commerce.catalos.models.promotions.*;
 import com.commerce.catalos.models.variants.VariantListResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -24,8 +23,6 @@ import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.errors.BadRequestException;
 import com.commerce.catalos.core.utils.TimeUtils;
 import com.commerce.catalos.helpers.PromotionHelper;
-import com.commerce.catalos.models.promotions.CreatePromotionRequest;
-import com.commerce.catalos.models.promotions.CreatePromotionResponse;
 import com.commerce.catalos.persistence.dtos.Discount;
 import com.commerce.catalos.persistence.repositories.PromotionRepository;
 import com.commerce.catalos.security.AuthContext;
@@ -83,6 +80,8 @@ public class PromotionServiceImpl implements PromotionService {
         if (variantIds != null && !variantIds.isEmpty()) {
             Logger.info("dee18d65-1a1a-415c-8bab-059bb48aefe0", "Setting targeted variants from {}", variantIds);
             discount.setTargetedVariantIds(this.validateVariantIds(variantIds));
+        } else {
+            discount.setTargetedVariantIds(List.of());
         }
     }
 
@@ -91,6 +90,8 @@ public class PromotionServiceImpl implements PromotionService {
         if (productsIds != null && !productsIds.isEmpty()) {
             Logger.info("", "Setting targeted products from {}", productsIds);
             discount.setTargetedProductIds(this.validateProductIds(productsIds));
+        } else {
+            discount.setTargetedProductIds(List.of());
         }
     }
 
@@ -99,6 +100,8 @@ public class PromotionServiceImpl implements PromotionService {
         if (categoryIds != null && !categoryIds.isEmpty()) {
             Logger.info("", "Setting targeted categories from {}", categoryIds);
             discount.setTargetedCategories(this.validateCategoriesIds(categoryIds));
+        } else {
+            discount.setTargetedCategories(List.of());
         }
     }
 
@@ -107,6 +110,8 @@ public class PromotionServiceImpl implements PromotionService {
         if (brandIds != null && !brandIds.isEmpty()) {
             Logger.info("", "Setting targeted brands from {}", brandIds);
             discount.setTargetedBrands(this.validateBrandIds(brandIds));
+        } else {
+            discount.setTargetedBrands(List.of());
         }
     }
 
@@ -133,101 +138,38 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public CreatePromotionResponse createPromotion(final CreatePromotionRequest createPromotionRequest) {
-        Discount discount = switch (createPromotionRequest.getDiscountType()) {
-            case PercentageOFF -> this.createPercentageOFFDiscount(createPromotionRequest);
-            case FlatOFF -> this.createFlatOFFDiscount(createPromotionRequest);
-            default ->
-                throw new IllegalArgumentException("Unexpected value: " + createPromotionRequest.getDiscountType());
-        };
-        return PromotionHelper.toCreatePromotionResponseFromDiscount(discount);
-    }
-
-    public Discount createFlatOFFDiscount(final CreatePromotionRequest createPromotionRequest) {
-        Logger.info("8013b8ff-a153-423c-ac1b-f647cc7fe609", "Validating Flat Off Discount {}",
-                createPromotionRequest.getName());
         Discount discount = new Discount();
-        discount.setName(createPromotionRequest.getName());
-        discount.setDiscountMode(createPromotionRequest.getDiscountMode());
-        discount.setDiscountType(createPromotionRequest.getDiscountType());
-        discount.setDiscountValue(createPromotionRequest.getDiscountValue());
-        discount.setMaxDiscountPrice(createPromotionRequest.getMaxDiscountPrice());
-        discount.setForAllProducts(createPromotionRequest.isForAllProducts());
-        discount.setMinItemQuantity(createPromotionRequest.getMinItemQuantity());
-
-        discount.setAvailableChannel(createPromotionRequest.getAvailableChannel());
-
-        if(createPromotionRequest.isForAllProducts()){
-            discount.setTargetedProductIds(List.of());
-            discount.setTargetedVariantIds(List.of());
-            discount.setTargetedCategories(List.of());
-            discount.setTargetedBrands(List.of());
-        } else {
-            ExecutorService executor = Executors.newFixedThreadPool(4);
-
-            CompletableFuture<Void> variantsFuture = CompletableFuture.runAsync(
-                    () -> validateAndUpdateVariants(discount, createPromotionRequest.getTargetedVariantIds()), executor);
-            CompletableFuture<Void> productsFuture = CompletableFuture.runAsync(
-                    () -> validateAndUpdateProducts(discount, createPromotionRequest.getTargetedProductIds()), executor);
-            CompletableFuture<Void> categoriesFuture = CompletableFuture.runAsync(
-                    () -> validateAndUpdateCategories(discount, createPromotionRequest.getTargetedCategories()), executor);
-            CompletableFuture<Void> brandsFuture = CompletableFuture.runAsync(
-                    () -> validateAndUpdateBrands(discount, createPromotionRequest.getTargetedBrands()), executor);
-            CompletableFuture.allOf(variantsFuture, productsFuture, categoriesFuture, brandsFuture).join();
-
-            executor.shutdown();
-        }
-
-        // TODO: Implement the logic verify collections
-        // TODO: Implement the logic verify customer groups
-
-        this.validateAndUpdateStartDate(discount, createPromotionRequest.getStartDate());
-        this.validateAndUpdateExpireDate(discount, createPromotionRequest.getExpireDate());
 
         this.isValidChannel(createPromotionRequest.getAvailableChannel());
         Logger.info("af6f051c-b0ad-4157-ba22-a8f679ccc5ec", "Setting available channel to {}",
                 createPromotionRequest.getAvailableChannel());
         discount.setAvailableChannel(createPromotionRequest.getAvailableChannel());
 
-        discount.setCreatedBy(authContext.getCurrentUser().getEmail());
-        discount.setCreatedAt(new Date());
-        discount.setEnabled(true);
-        discount.setActive(true);
-        Logger.info("fd0ac589-0603-4fa3-9ddf-45428ffeb38ba", "Creating discount with name: {}",
-                createPromotionRequest.getName());
-        return promotionRepository.save(discount);
+        PromotionRequestData request = PromotionHelper.toPromotionRequestDataFromCreatePromotionRequest(createPromotionRequest);
+
+        switch (createPromotionRequest.getDiscountType()) {
+            case PercentageOFF -> this.handlePercentageOFFDiscount(discount, request);
+            case FlatOFF -> this.handleFlatOFFDiscount(discount, request);
+            default ->
+                throw new IllegalArgumentException("Unexpected value: " + createPromotionRequest.getDiscountType());
+        };
+        return PromotionHelper.toCreatePromotionResponseFromDiscount(discount);
     }
 
-    public Discount createPercentageOFFDiscount(final CreatePromotionRequest createPromotionRequest) {
-        Logger.info("089a0eaf-0436-48b6-ae44-e3415b313793", "Validating Percentage Off Discount {}",
-                createPromotionRequest.getName());
-        Discount discount = new Discount();
-        discount.setName(createPromotionRequest.getName());
-        discount.setDiscountMode(createPromotionRequest.getDiscountMode());
-        discount.setDiscountType(createPromotionRequest.getDiscountType());
+    public void handleFlatOFFDiscount(Discount discount, final PromotionRequestData promotionRequestData) {
+        Logger.info("8013b8ff-a153-423c-ac1b-f647cc7fe609", "Validating Flat Off Discount {}",
+                promotionRequestData.getName());
+        discount.setName(promotionRequestData.getName());
+        discount.setDiscountMode(promotionRequestData.getDiscountMode());
+        discount.setDiscountType(promotionRequestData.getDiscountType());
+        discount.setDiscountValue(promotionRequestData.getDiscountValue());
+        discount.setMaxDiscountPrice(promotionRequestData.getMaxDiscountPrice());
+        discount.setForAllProducts(promotionRequestData.isForAllProducts());
+        discount.setMinItemQuantity(promotionRequestData.getMinItemQuantity());
 
-        discount.setAvailableChannel(createPromotionRequest.getAvailableChannel());
+        discount.setAvailableChannel(promotionRequestData.getAvailableChannel());
 
-        if (createPromotionRequest.getDiscountValue() == null
-                || createPromotionRequest.getDiscountValue() <= 0 || createPromotionRequest.getDiscountValue() > 100) {
-            Logger.error("2bb37130-487c-4c20-abc6-88e5e3a15d98", "Invalid discount value: {}",
-                    createPromotionRequest.getDiscountValue());
-            throw new BadRequestException("Invalid discount value");
-        }
-
-        Logger.info("950e2ee3-490d-455f-a659-63a1a592444a", "Setting discount value to {}",
-                createPromotionRequest.getDiscountValue());
-        discount.setDiscountValue(createPromotionRequest.getDiscountValue());
-
-        if (createPromotionRequest.getMaxDiscountPrice() != null) {
-            Logger.info("018cf16e-08c2-47c6-b5ef-e147ed5ed9ed", "Setting max discount price to {}",
-                    createPromotionRequest.getMaxDiscountPrice());
-            discount.setMaxDiscountPrice(createPromotionRequest.getMaxDiscountPrice());
-        }
-
-        discount.setMinItemQuantity(createPromotionRequest.getMinItemQuantity());
-        discount.setForAllProducts(createPromotionRequest.isForAllProducts());
-
-        if(createPromotionRequest.isForAllProducts()){
+        if(promotionRequestData.isForAllProducts()){
             discount.setTargetedProductIds(List.of());
             discount.setTargetedVariantIds(List.of());
             discount.setTargetedCategories(List.of());
@@ -236,13 +178,13 @@ public class PromotionServiceImpl implements PromotionService {
             ExecutorService executor = Executors.newFixedThreadPool(4);
 
             CompletableFuture<Void> variantsFuture = CompletableFuture.runAsync(
-                    () -> validateAndUpdateVariants(discount, createPromotionRequest.getTargetedVariantIds()), executor);
+                    () -> validateAndUpdateVariants(discount, promotionRequestData.getTargetedVariantIds()), executor);
             CompletableFuture<Void> productsFuture = CompletableFuture.runAsync(
-                    () -> validateAndUpdateProducts(discount, createPromotionRequest.getDiscountedProducts()), executor);
+                    () -> validateAndUpdateProducts(discount, promotionRequestData.getTargetedProductIds()), executor);
             CompletableFuture<Void> categoriesFuture = CompletableFuture.runAsync(
-                    () -> validateAndUpdateCategories(discount, createPromotionRequest.getTargetedCategories()), executor);
+                    () -> validateAndUpdateCategories(discount, promotionRequestData.getTargetedCategories()), executor);
             CompletableFuture<Void> brandsFuture = CompletableFuture.runAsync(
-                    () -> validateAndUpdateBrands(discount, createPromotionRequest.getTargetedBrands()), executor);
+                    () -> validateAndUpdateBrands(discount, promotionRequestData.getTargetedBrands()), executor);
             CompletableFuture.allOf(variantsFuture, productsFuture, categoriesFuture, brandsFuture).join();
 
             executor.shutdown();
@@ -251,20 +193,85 @@ public class PromotionServiceImpl implements PromotionService {
         // TODO: Implement the logic verify collections
         // TODO: Implement the logic verify customer groups
 
-        this.validateAndUpdateStartDate(discount, createPromotionRequest.getStartDate());
-        this.validateAndUpdateExpireDate(discount, createPromotionRequest.getExpireDate());
+        this.validateAndUpdateStartDate(discount, promotionRequestData.getStartDate());
+        this.validateAndUpdateExpireDate(discount, promotionRequestData.getExpireDate());
 
-        this.isValidChannel(createPromotionRequest.getAvailableChannel());
+        discount.setCreatedBy(authContext.getCurrentUser().getEmail());
+        discount.setCreatedAt(new Date());
+        discount.setEnabled(true);
+        discount.setActive(true);
+        Logger.info("fd0ac589-0603-4fa3-9ddf-45428ffeb38ba", "Creating discount with name: {}",
+                promotionRequestData.getName());
+        promotionRepository.save(discount);
+    }
+
+    public void handlePercentageOFFDiscount(Discount discount, final PromotionRequestData  promotionRequestData) {
+        Logger.info("089a0eaf-0436-48b6-ae44-e3415b313793", "Validating Percentage Off Discount {}",
+                promotionRequestData.getName());
+        discount.setName(promotionRequestData.getName());
+        discount.setDiscountMode(promotionRequestData.getDiscountMode());
+        discount.setDiscountType(promotionRequestData.getDiscountType());
+
+        discount.setAvailableChannel(promotionRequestData.getAvailableChannel());
+
+        if (promotionRequestData.getDiscountValue() == null
+                || promotionRequestData.getDiscountValue() <= 0 || promotionRequestData.getDiscountValue() > 100) {
+            Logger.error("2bb37130-487c-4c20-abc6-88e5e3a15d98", "Invalid discount value: {}",
+                    promotionRequestData.getDiscountValue());
+            throw new BadRequestException("Invalid discount value");
+        }
+
+        Logger.info("950e2ee3-490d-455f-a659-63a1a592444a", "Setting discount value to {}",
+                promotionRequestData.getDiscountValue());
+        discount.setDiscountValue(promotionRequestData.getDiscountValue());
+
+        if (promotionRequestData.getMaxDiscountPrice() != null) {
+            Logger.info("018cf16e-08c2-47c6-b5ef-e147ed5ed9ed", "Setting max discount price to {}",
+                    promotionRequestData.getMaxDiscountPrice());
+            discount.setMaxDiscountPrice(promotionRequestData.getMaxDiscountPrice());
+        }
+
+        discount.setMinItemQuantity(promotionRequestData.getMinItemQuantity());
+        discount.setForAllProducts(promotionRequestData.isForAllProducts());
+
+        if(promotionRequestData.isForAllProducts()){
+            discount.setTargetedProductIds(List.of());
+            discount.setTargetedVariantIds(List.of());
+            discount.setTargetedCategories(List.of());
+            discount.setTargetedBrands(List.of());
+        } else {
+            ExecutorService executor = Executors.newFixedThreadPool(4);
+
+            CompletableFuture<Void> variantsFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateVariants(discount, promotionRequestData.getTargetedVariantIds()), executor);
+            CompletableFuture<Void> productsFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateProducts(discount, promotionRequestData.getTargetedProductIds()), executor);
+            CompletableFuture<Void> categoriesFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateCategories(discount, promotionRequestData.getTargetedCategories()), executor);
+            CompletableFuture<Void> brandsFuture = CompletableFuture.runAsync(
+                    () -> validateAndUpdateBrands(discount, promotionRequestData.getTargetedBrands()), executor);
+            CompletableFuture.allOf(variantsFuture, productsFuture, categoriesFuture, brandsFuture).join();
+
+            executor.shutdown();
+        }
+
+        // TODO: Implement the logic verify collections
+        // TODO: Implement the logic verify customer groups
+
+        this.validateAndUpdateStartDate(discount, promotionRequestData.getStartDate());
+        this.validateAndUpdateExpireDate(discount, promotionRequestData.getExpireDate());
+
+        this.isValidChannel(promotionRequestData.getAvailableChannel());
         Logger.info("74219d66-6f01-44a6-8979-17993acb9812", "Setting available channel to {}",
-                createPromotionRequest.getAvailableChannel());
+                promotionRequestData.getAvailableChannel());
 
         discount.setCreatedBy(authContext.getCurrentUser().getEmail());
         discount.setCreatedAt(new Date());
         discount.setEnabled(true);
         discount.setActive(true);
         Logger.info("8aa9fad3-9a96-411e-a599-03c89e3e5bca", "Creating discount with name: {}",
-                createPromotionRequest.getName());
-        return promotionRepository.save(discount);
+                promotionRequestData.getName());
+        promotionRepository.save(discount);
     }
 
     @Override
@@ -300,6 +307,29 @@ public class PromotionServiceImpl implements PromotionService {
         }
         Logger.error("", "Promotion not found");
         throw new NotFoundException("Promotion not found");
+    }
+
+    @Override
+    public PromotionResponse updatePromotion(final String id, final UpdatePromotionRequest updatePromotionRequest) {
+        if(null == id || id.isBlank()) {
+            Logger.error("", "Promotion id: {} is invalid", id);
+            throw new BadRequestException("Invalid promotion id");
+        }
+        Discount discount = this.findPromotionById(id);
+        if (null == discount) {
+            Logger.error("", "Discount not found with id : {}", id);
+            throw new NotFoundException("Promotion not found");
+        }
+
+        PromotionRequestData requestData = PromotionHelper.toPromotionRequestDataFromCreatePromotionRequest(updatePromotionRequest);
+
+        switch (updatePromotionRequest.getDiscountType()) {
+            case PercentageOFF -> this.handlePercentageOFFDiscount(discount, requestData);
+            case FlatOFF -> this.handleFlatOFFDiscount(discount, requestData);
+            default ->
+                    throw new IllegalArgumentException("Unexpected value: " + updatePromotionRequest.getDiscountType());
+        };
+        return PromotionHelper.toPromotionResponseFromDiscount(discount);
     }
 
 }

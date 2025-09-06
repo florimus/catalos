@@ -3,10 +3,7 @@ package com.commerce.catalos.services;
 import java.util.List;
 
 import com.commerce.catalos.core.configurations.Page;
-import com.commerce.catalos.models.promotions.CreatePromotionRequest;
-import com.commerce.catalos.models.promotions.CreatePromotionResponse;
-import com.commerce.catalos.models.promotions.PromotionFilterInputs;
-import com.commerce.catalos.models.promotions.PromotionResponse;
+import com.commerce.catalos.models.promotions.*;
 import com.commerce.catalos.persistence.dtos.Discount;
 import org.springframework.data.domain.Pageable;
 
@@ -21,4 +18,6 @@ public interface PromotionService {
             final String query, final String channel, final PromotionFilterInputs promotionFilterInputs, final Pageable pageable);
 
     PromotionResponse getPromotionById(final String id);
+
+    PromotionResponse updatePromotion(final String id, final UpdatePromotionRequest updatePromotionRequest);
 }

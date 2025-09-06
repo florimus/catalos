@@ -34,13 +34,13 @@ public class PromotionController {
         return new ResponseEntity<CreatePromotionResponse>(promotionService.createPromotion(createPromotionRequest));
     }
 
-    @PutMapping()
+    @PutMapping("/id/{id}")
     @PreAuthorize("hasRole('PRO:NN')")
-    public ResponseEntity<CreatePromotionResponse> updatePromotion(
+    public ResponseEntity<PromotionResponse> updatePromotion(
+            @PathVariable("id") final String id,
             @RequestBody final @Valid UpdatePromotionRequest updatePromotionRequest) {
-        Logger.info("e084ef41-f387-40e8-aad6-76124f7afabd", "Received request for update promotion: {}",
-                updatePromotionRequest.getName());
-        return new ResponseEntity<CreatePromotionResponse>(promotionService.updatePromotion(updatePromotionRequest));
+        Logger.info("e084ef41-f387-40e8-aad6-76124f7afabd", "Received request for update promotion: {}", id);
+        return new ResponseEntity<PromotionResponse>(promotionService.updatePromotion(id, updatePromotionRequest));
     }
 
     @PutMapping("/search")

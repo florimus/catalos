@@ -1,9 +1,8 @@
 package com.commerce.catalos.helpers;
 
-import com.commerce.catalos.models.promotions.PromotionResponse;
+import com.commerce.catalos.models.promotions.*;
 import org.springframework.beans.BeanUtils;
 
-import com.commerce.catalos.models.promotions.CreatePromotionResponse;
 import com.commerce.catalos.persistence.dtos.Discount;
 
 import java.util.List;
@@ -26,5 +25,19 @@ public class PromotionHelper {
         return discounts.stream()
                 .map(PromotionHelper::toPromotionResponseFromDiscount)
                 .toList();
+    }
+
+    public static PromotionRequestData toPromotionRequestDataFromCreatePromotionRequest(
+            final CreatePromotionRequest createPromotionRequest){
+        PromotionRequestData response = new PromotionRequestData();
+        BeanUtils.copyProperties(createPromotionRequest, response);
+        return response;
+    }
+
+    public static PromotionRequestData toPromotionRequestDataFromCreatePromotionRequest(
+            final UpdatePromotionRequest updatePromotionRequest){
+        PromotionRequestData response = new PromotionRequestData();
+        BeanUtils.copyProperties(updatePromotionRequest, response);
+        return response;
     }
 }
