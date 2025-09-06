@@ -2,8 +2,7 @@ package com.commerce.catalos.controllers;
 
 import com.commerce.catalos.core.configurations.Page;
 import com.commerce.catalos.core.constants.SortConstants;
-import com.commerce.catalos.models.promotions.PromotionFilterInputs;
-import com.commerce.catalos.models.promotions.PromotionResponse;
+import com.commerce.catalos.models.promotions.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -13,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.commerce.catalos.core.configurations.Logger;
 import com.commerce.catalos.core.configurations.ResponseEntity;
-import com.commerce.catalos.models.promotions.CreatePromotionRequest;
-import com.commerce.catalos.models.promotions.CreatePromotionResponse;
 import com.commerce.catalos.services.PromotionService;
 
 import jakarta.validation.Valid;
@@ -35,6 +32,15 @@ public class PromotionController {
         Logger.info("e084ef41-f387-40e8-aad6-76124f7afabd", "Received request for creating promotion: {}",
                 createPromotionRequest.getName());
         return new ResponseEntity<CreatePromotionResponse>(promotionService.createPromotion(createPromotionRequest));
+    }
+
+    @PutMapping()
+    @PreAuthorize("hasRole('PRO:NN')")
+    public ResponseEntity<CreatePromotionResponse> updatePromotion(
+            @RequestBody final @Valid UpdatePromotionRequest updatePromotionRequest) {
+        Logger.info("e084ef41-f387-40e8-aad6-76124f7afabd", "Received request for update promotion: {}",
+                updatePromotionRequest.getName());
+        return new ResponseEntity<CreatePromotionResponse>(promotionService.updatePromotion(updatePromotionRequest));
     }
 
     @PutMapping("/search")

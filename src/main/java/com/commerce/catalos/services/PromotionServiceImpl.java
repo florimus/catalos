@@ -106,7 +106,7 @@ public class PromotionServiceImpl implements PromotionService {
     private void validateAndUpdateBrands(final Discount discount, final List<String> brandIds) {
         if (brandIds != null && !brandIds.isEmpty()) {
             Logger.info("", "Setting targeted brands from {}", brandIds);
-            discount.setTargetedCategories(this.validateBrandIds(brandIds));
+            discount.setTargetedBrands(this.validateBrandIds(brandIds));
         }
     }
 
@@ -167,7 +167,7 @@ public class PromotionServiceImpl implements PromotionService {
             CompletableFuture<Void> variantsFuture = CompletableFuture.runAsync(
                     () -> validateAndUpdateVariants(discount, createPromotionRequest.getTargetedVariantIds()), executor);
             CompletableFuture<Void> productsFuture = CompletableFuture.runAsync(
-                    () -> validateAndUpdateProducts(discount, createPromotionRequest.getDiscountedProducts()), executor);
+                    () -> validateAndUpdateProducts(discount, createPromotionRequest.getTargetedProductIds()), executor);
             CompletableFuture<Void> categoriesFuture = CompletableFuture.runAsync(
                     () -> validateAndUpdateCategories(discount, createPromotionRequest.getTargetedCategories()), executor);
             CompletableFuture<Void> brandsFuture = CompletableFuture.runAsync(
