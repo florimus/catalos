@@ -191,10 +191,14 @@ public class PromotionServiceImpl implements PromotionService {
         }
 
         // TODO: Implement the logic verify collections
-        // TODO: Implement the logic verify customer groups
+        // TODO: Implement the logic verify customer-groups
 
-        this.validateAndUpdateStartDate(discount, promotionRequestData.getStartDate());
-        this.validateAndUpdateExpireDate(discount, promotionRequestData.getExpireDate());
+        if (!discount.getStartDate().equals(promotionRequestData.getStartDate())) {
+            this.validateAndUpdateStartDate(discount, promotionRequestData.getStartDate());
+        }
+        if (!discount.getExpireDate().equals(promotionRequestData.getExpireDate())) {
+            this.validateAndUpdateExpireDate(discount, promotionRequestData.getExpireDate());
+        }
 
         discount.setCreatedBy(authContext.getCurrentUser().getEmail());
         discount.setCreatedAt(new Date());
@@ -258,8 +262,12 @@ public class PromotionServiceImpl implements PromotionService {
         // TODO: Implement the logic verify collections
         // TODO: Implement the logic verify customer groups
 
-        this.validateAndUpdateStartDate(discount, promotionRequestData.getStartDate());
-        this.validateAndUpdateExpireDate(discount, promotionRequestData.getExpireDate());
+        if (!discount.getStartDate().equals(promotionRequestData.getStartDate())) {
+            this.validateAndUpdateStartDate(discount, promotionRequestData.getStartDate());
+        }
+        if (!discount.getExpireDate().equals(promotionRequestData.getExpireDate())) {
+            this.validateAndUpdateExpireDate(discount, promotionRequestData.getExpireDate());
+        }
 
         this.isValidChannel(promotionRequestData.getAvailableChannel());
         Logger.info("74219d66-6f01-44a6-8979-17993acb9812", "Setting available channel to {}",
