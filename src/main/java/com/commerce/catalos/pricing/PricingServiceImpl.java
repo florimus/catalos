@@ -172,7 +172,7 @@ public class PricingServiceImpl implements PricingService {
                 "Searching discounts for variantId: {}, product: {}, channel: {}, quantity: {}, customerGroupId: {}",
                 variant.getId(), product.getId(), channelId, quantity, customerGroupId);
         List<Discount> allDiscounts = this.promotionRepository.getActiveDiscounts(variant.getId(), product.getId(),
-                channelId, quantity, customerGroupId, null, null, null);
+                channelId, quantity, customerGroupId, product.getCategoryId(), product.getBrandId(), null);
 
         return this.calculatePrice(priceInfo, allDiscounts, quantity, channelId);
     }
