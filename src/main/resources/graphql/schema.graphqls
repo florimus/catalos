@@ -8,6 +8,7 @@ type Query {
     getCart(id: ID!): Cart
     getPaymentLink(id: ID!): OrderLinkResponse
     getPriceOfSku(id:ID!, channel: String!, quantity: Int!): ItemPrice
+    getModuleByResourceId(id: String!): Module
 }
 
 type Mutation {
@@ -228,4 +229,12 @@ input AddressInput {
 
 type OrderLinkResponse {
     paymentLink: String
+}
+
+type Module {
+    id: ID
+    resourceId: String
+    data: String
+    translations: JSON
+    active: Boolean
 }
